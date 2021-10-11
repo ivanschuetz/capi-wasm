@@ -15,7 +15,9 @@ wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"]  }
 # algonaut = { path = "/Users/ischuetz/dev/github/algonaut" }
 # algonaut = { git = "https://github.com/manuelmauro/algonaut", branch = "main" }
 algonaut = { git = "https://github.com/ivanschuetz/algonaut", branch = "main" }
-make = { path = "/Users/ischuetz/dev/algorand/make/backend/make" }
+# make = { git = "https://github.com/ivanschuetz/make", branch = "main" }
+# make = { git = "ssh://git@github.com/ivanschuetz/make.git", branch = "main" }
+make = { path = "/Users/ischuetz/dev/algorand/make/make_new/backend/make" }
 # my-algo = { git = "https://github.com/ivanschuetz/my-algo-rust-adapter", branch = "main" }
 my-algo = { path = "/Users/ischuetz/dev/algorand/my_algo" }
 reqwest = { version = "=0.11.4", features = ["json"] }
