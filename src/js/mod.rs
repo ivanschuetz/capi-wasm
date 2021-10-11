@@ -3,6 +3,8 @@ pub mod common;
 pub mod create_project;
 pub mod invest;
 pub mod investment;
+pub mod stake;
+pub mod unstake;
 pub mod view_project;
 pub mod vote;
 pub mod withdraw;
