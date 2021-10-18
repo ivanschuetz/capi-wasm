@@ -12,6 +12,7 @@ use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
 use crate::dependencies::environment;
+use crate::service::constants::WITHDRAWAL_SLOT_COUNT;
 use crate::{
     dependencies::algod,
     js::common::{signed_js_tx_to_signed_tx, to_js_value, to_my_algo_txs, SignedTxFromJs},
@@ -40,12 +41,10 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
     // js doesn't access the individual array txs, just passes the array to myalgo and gets signed array back
     // so this is the order in which we sent the txs to be signed, from the previously called rust fn.
     let create_shares_signed_tx = &pars.create_assets_signed_txs[0];
-    let create_votes_signed_tx = &pars.create_assets_signed_txs[1];
 
     let submit_assets_res = submit_create_assets(
         &algod,
         &signed_js_tx_to_signed_tx(&create_shares_signed_tx)?,
-        &signed_js_tx_to_signed_tx(&create_votes_signed_tx)?,
     )
     .await
     .map_err(to_js_value)?;
@@ -57,8 +56,8 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
         &pars.project_specs().map_err(to_js_value)?,
         creator_address,
         submit_assets_res.shares_id,
-        submit_assets_res.votes_id,
         api::programs().map_err(to_js_value)?,
+        WITHDRAWAL_SLOT_COUNT,
     )
     .await
     .map_err(to_js_value)?;
@@ -67,7 +66,7 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
     // but return the functions in separate groups to the core logic (so rely on indices),
     // (separate groups are needed since groups need to be executed in specific order, e.g. opt in before transferring assets)
     // we double-check length here. The other txs to be signed are in single tx fields so no need to check those.
-    if to_sign.escrow_funding_txs.len() != 6 {
+    if to_sign.escrow_funding_txs.len() != 4 {
         return Err(JsValue::from_str(&format!(
             "Unexpected funding txs length: {}",
             to_sign.escrow_funding_txs.len()
@@ -76,7 +75,7 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
     // double-checking total length as well, just in case
     // in the next step we also check the length of the signed txs
     let txs_to_sign = &txs_to_sign(&to_sign);
-    if txs_to_sign.len() != 9 {
+    if txs_to_sign.len() as u64 != 6 + WITHDRAWAL_SLOT_COUNT {
         return Err(JsValue::from_str(&format!(
             "Unexpected to sign project txs length: {}",
             txs_to_sign.len()
@@ -91,13 +90,10 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
             escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)
                 .map_err(to_js_value)?,
             shares_asset_id: submit_assets_res.shares_id,
-            votes_asset_id: submit_assets_res.votes_id,
             invest_escrow: to_sign.invest_escrow.into(),
             staking_escrow: to_sign.staking_escrow.into(),
             central_escrow: to_sign.central_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
-            vote_out_escrow: to_sign.vote_out_escrow.into(),
-            votein_escrow: to_sign.votein_escrow.into(),
         },
     };
 
@@ -111,7 +107,9 @@ fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
     }
     txs.push(res.create_app_tx.clone());
     txs.push(res.xfer_shares_to_invest_escrow.clone());
-    txs.push(res.xfer_votes_to_invest_escrow.clone());
+    for tx in &res.create_withdrawal_slots_txs {
+        txs.push(tx.to_owned());
+    }
     txs
 }
 

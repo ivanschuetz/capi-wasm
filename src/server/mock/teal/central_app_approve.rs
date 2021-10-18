@@ -1,18 +1,6 @@
 pub const SRC: &str = r#"
 #pragma version 4
 
-txn NumAppArgs
-int 1
-==
-bz after_args_access // without this accessing args 0 fails for calls that have no args
-
-txna ApplicationArgs 0
-byte b64 dmFsaWRhdGVfaW52ZXN0b3Jfdm90ZXM= // validate_investor_votes
-==
-bnz branch_validate_investor_votes
-
-after_args_access:
-
 txn ApplicationID
 int 0
 ==
@@ -26,18 +14,44 @@ int 1
 bnz branch_create
 
 global GroupSize
-int 1
+int 1 // central opt in
+int 3 // slots
++
 ==
 bnz branch_opt_in
 
+// vote validation
 global GroupSize
 int 2
+==
+gtxn 0 NumAppArgs
+int 2
+==
+&&
+bz after_args_access2
+gtxn 0 ApplicationArgs 0 // action
+byte b64 YnJhbmNoX3ZvdGU= // branch_vote
+==
+gtxn 1 ApplicationArgs 0 // action
+byte b64 dmFsaWRhdGVfdm90ZQ== // validate_vote
+==
+&&
+bnz branch_validate_votes
+
+after_args_access2:
+
+global GroupSize
+int 2
+int 3 // slots
++
 ==
 // basically also an investor setup, but when asset was acquired externally (instead of buying in the "ico")
 bnz branch_staking_setup
 
 global GroupSize
-int 6
+int 5
+int 3 // slots
++
 ==
 bnz branch_investor_setup
 
@@ -63,10 +77,27 @@ addr P7GEWDXXW5IONRW6XRIRVPJCT2XXEQGOBGG65VJPBUOYZEJCBZWTPHS3VQ
 
 bnz branch_harvest
 
+// opt out tx group must call all the slots (to clear local state) + unstaking txs
 global GroupSize
-int 3 
+int 3 // central optout + unstake shares  + pay fee for unstake shares
+int 3 // slots
++
 ==
-bnz branch_unstake
+bz after_tx_group_access
+gtxn 0 TypeEnum // unstake shares
+int appl
+==
+int CloseOut 
+gtxn 0 OnCompletion // central opt out (TODO app ids?)
+==
+&&
+bz after_tx_group_access
+gtxn 1 TypeEnum // unstake shares
+int axfer
+==
+bnz branch_opt_out
+
+after_tx_group_access:
 
 int 0
 return
@@ -90,12 +121,46 @@ int axfer
 ==
 &&
 
+// TODO slot opt-in
+// /////////////////////////////////////
+// // verify that the slots are being initialized (valid state)
+// // note that on investing / staking this isn't as critical
+// // if a malicious sender intentionally bypasses sending these transactions, they'll not be able to retrieve their shares
+// // but we could of course have bugs, that omits these transactions, so for overall consistency
+// /////////////////////////////////////
+// gtxn 2 TypeEnum
+// int appl
+// ==
+// &&
+// gtxn 3 TypeEnum
+// int appl
+// ==
+// &&
+// gtxn 4 TypeEnum
+// int appl
+// ==
+// &&
+// /////////////////////////////////////
+
 // don't allow staking 0 assets 
 // no particular reason, just doesn't make sense
 gtxn 1 AssetAmount
 int 0
 !=
 &&
+
+// initialize / increment shares
+gtxn 0 Sender
+byte "Shares"
+
+gtxn 0 Sender
+byte "Shares"
+app_local_get
+
+gtxn 1 AssetAmount // shares bought
+
++
+app_local_put
 
 // initialize HarvestedTotal local state to what the shares are entitled to
 // see more notes in old repo
@@ -129,21 +194,42 @@ int 100 // revert * 100
 /////////////////////////////////////
 app_local_put
 
-// initialize asset holding
-gtxn 0 Sender // sender of app call (investor)
-byte "Shares"
-gtxn 1 AssetAmount // shares staked
-app_local_put
-
 return
 
 branch_investor_setup:
 // initialize investor's local state
 
-// initialize asset holding
-gtxn 0 Sender // sender of app call (investor)
+// TODO slot opt-in
+// /////////////////////////////////////
+// // verify that the slots are being initialized (valid state)
+// // note that on investing / staking this isn't as critical
+// // if a malicious sender intentionally bypasses sending these transactions, they'll not be able to retrieve their shares
+// // but we could of course have bugs, that omits these transactions, so for overall consistency
+// /////////////////////////////////////
+// gtxn 5 TypeEnum
+// int appl
+// ==
+// gtxn 6 TypeEnum
+// int appl
+// ==
+// &&
+// gtxn 7 TypeEnum
+// int appl
+// ==
+// &&
+// /////////////////////////////////////
+
+// initialize / increment shares
+gtxn 0 Sender
 byte "Shares"
+
+gtxn 0 Sender
+byte "Shares"
+app_local_get
+
 gtxn 3 AssetAmount // shares bought
+
++
 app_local_put
 
 // initialize already retrieved (ends with app_local_put at the end of /////// block)
@@ -159,10 +245,8 @@ byte "HarvestedTotal"
 /////////////////////////////////////
 // get the asset holdings of caller
 gtxn 0 Sender
-// important: the asset id has to be passed to the tx foreign assets too (otherwise call fails with "logic eval error: invalid Asset reference")
-int {asset_id} 
-asset_holding_get AssetBalance 
-pop
+byte "Shares"
+app_local_get
 
 int 100
 *
@@ -185,9 +269,6 @@ int 100 // revert * 100
 /////////////////////////////////////
 /////////////////////////////////////
 app_local_put
-
-// TODO support same user buying more shares
-// see notes in old repo
 
 int 1
 return
@@ -237,10 +318,9 @@ int pay
 // TODO refactor with X (search for this text)
 /////////////////////////////////////
 // get the asset holdings of caller
-
-int 0
+gtxn 0 Sender
 byte "Shares"
-app_local_get // if local state doesn't exist yet, this puts a 0 on the stack
+app_local_get
 
 int 100
 *
@@ -293,38 +373,46 @@ app_local_put
 int 1
 return
 
-branch_validate_investor_votes:
+branch_validate_votes:
 
-// Check that votes being transferred == owned shares
-// see more notes in old repo
-gtxn 1 AssetAmount // votes amount (xfer tx)
+// check that owned shares count == votes count (from any of the app calls - we checked they're equal above)
 int 0
 byte "Shares"
 app_local_get // if local state doesn't exist yet, this puts a 0 on the stack
+gtxn 0 ApplicationArgs 1
+btoi
 ==
 
 return
 
-branch_unstake:
-gtxn 0 TypeEnum // app call
-int appl
-==
+branch_opt_out:
 
+// check there's shares xfer
 gtxn 1 TypeEnum // unstake
 int axfer
 ==
-&&
 
-gtxn 2 TypeEnum // pay fee
-int pay
+// check shares xfer goes to the investor (app call tx sender) - review whether this check is really needed
+// we can also check e.g. that all the app calls have the same sender
+gtxn 1 AssetReceiver
+gtxn 0 Sender
 ==
 &&
 
-// shares to be unstaked has to match number of held shares
+// check shares xfer == owned shares count
 gtxn 1 AssetAmount
-int 0 // investor account (TODO verify: is this the tx 0 sender?)
+int 0
 byte "Shares"
 app_local_get
 ==
 &&
+
+// check that all slots are being opted out (votes removed)
+int CloseOut
+gtxn 3 OnCompletion
+==
+&&
+// (TODO other slots)
+
+// local state (owned shares) is cleared automatically by CloseOut
 "#;

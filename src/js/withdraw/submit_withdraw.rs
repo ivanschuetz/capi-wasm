@@ -1,8 +1,13 @@
-use crate::{dependencies::{algod, api, environment}, js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs}};
+use crate::{
+    dependencies::{algod, api, environment},
+    js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
+};
 use anyhow::{anyhow, Result};
 use make::flows::withdraw::logic::{submit_withdraw, WithdrawSigned};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
+
+// TODO rename in submit_init_withdrawal_request
 
 #[wasm_bindgen]
 pub async fn bridge_submit_withdrawal_request(pars: JsValue) -> Result<JsValue, JsValue> {
@@ -25,15 +30,14 @@ pub async fn _bridge_submit_withdrawal_request(
     }
 
     let pay_withdraw_fee_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
-    let pay_vote_fee_tx = signed_js_tx_to_signed_tx1(&pars.txs[1])?;
+    let check_enough_votes_tx = signed_js_tx_to_signed_tx1(&pars.txs[1])?;
 
     let withdraw_tx_id = submit_withdraw(
         &algod,
         &WithdrawSigned {
             withdraw_tx: rmp_serde::from_slice(&pars.pt.withdraw_tx_msg_pack)?,
             pay_withdraw_fee_tx,
-            consume_votes_tx: rmp_serde::from_slice(&pars.pt.consume_votes_tx_msg_pack)?,
-            pay_vote_fee_tx,
+            check_enough_votes_tx,
         },
     )
     .await?;
@@ -57,7 +61,6 @@ pub struct SubmitWithdrawParJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitWithdrawPassthroughParJs {
     pub withdraw_tx_msg_pack: Vec<u8>,
-    pub consume_votes_tx_msg_pack: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize)]

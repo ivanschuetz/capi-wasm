@@ -2,7 +2,10 @@ use std::convert::TryInto;
 
 use crate::{
     dependencies::{algod, environment},
-    js::common::{signed_js_tx_to_signed_tx, to_js_value, SignedTxFromJs},
+    js::common::{
+        signed_js_tx_to_signed_tx, signed_js_txs_to_signed_tx, to_js_value, SignedTxFromJs,
+    },
+    service::constants::WITHDRAWAL_SLOT_COUNT,
 };
 use make::{
     api::json_workaround::ProjectJson,
@@ -21,30 +24,31 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
         .into_serde::<SubmitBuySharesParJs>()
         .map_err(to_js_value)?;
 
-    if pars.txs.len() != 4 {
+    if pars.txs.len() != 4 + WITHDRAWAL_SLOT_COUNT as usize {
         return Err(JsValue::from_str(&format!(
             "Unexpected signed invest txs length: {}",
             pars.txs.len()
         )));
     }
 
-    let central_app_opt_in_tx = signed_js_tx_to_signed_tx(&pars.txs[0])?;
+    let central_app_setup_tx = signed_js_tx_to_signed_tx(&pars.txs[0])?;
     let payment_tx = signed_js_tx_to_signed_tx(&pars.txs[1])?;
     let shares_asset_optin_tx = signed_js_tx_to_signed_tx(&pars.txs[2])?;
     let pay_escrow_fee_tx = signed_js_tx_to_signed_tx(&pars.txs[3])?;
+    let slots_setup_txs =
+        signed_js_txs_to_signed_tx(&pars.txs[4..(4 + WITHDRAWAL_SLOT_COUNT as usize)])?;
 
     let submit_res = submit_invest(
         &algod,
         &InvestSigned {
             project: pars.pt.project.try_into().map_err(to_js_value)?,
-            central_app_opt_in_tx,
+            central_app_setup_tx,
             shares_asset_optin_tx,
             payment_tx,
             pay_escrow_fee_tx,
             shares_xfer_tx: rmp_serde::from_slice(&pars.pt.shares_xfer_tx_msg_pack)
                 .map_err(to_js_value)?,
-            votes_xfer_tx: rmp_serde::from_slice(&pars.pt.votes_xfer_tx_msg_pack)
-                .map_err(to_js_value)?,
+            slots_setup_txs,
         },
     )
     .await
@@ -68,7 +72,6 @@ pub struct SubmitBuySharesParJs {
 pub struct SubmitBuySharesPassthroughParJs {
     pub project: ProjectJson,
     pub shares_xfer_tx_msg_pack: Vec<u8>,
-    pub votes_xfer_tx_msg_pack: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize)]

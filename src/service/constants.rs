@@ -1,0 +1,1 @@
+pub const WITHDRAWAL_SLOT_COUNT: u64 = 3;

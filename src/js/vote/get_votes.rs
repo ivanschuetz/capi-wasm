@@ -1,10 +1,11 @@
 // TODO probably file can be deleted - we don't need bridge only to get votes? if not check repeated code with get_votes_percentage in load_requests
 
-use crate::{dependencies::{algod, api, environment}, js::{
-        common::{parse_bridge_pars, to_bridge_res},
-        vote::common::asset_count,
-    }};
-use anyhow::Result;
+use crate::{
+    dependencies::{algod, api, environment},
+    js::common::{parse_bridge_pars, to_bridge_res},
+};
+use anyhow::{anyhow, Result};
+use make::withdrawal_app_state::votes_global_state;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -21,15 +22,12 @@ pub async fn _bridge_get_votes(pars: GetVotesParJs) -> Result<GetVotesResJs> {
 
     let project = api.load_project(&pars.project_id).await?;
 
-    let vote_in_count = asset_count(
-        &algod,
-        project.votein_escrow.address,
-        project.votes_asset_id,
-    )
-    .await?;
+    let slot_app = algod.application_information(pars.slot_id.parse()?).await?;
+    let votes =
+        votes_global_state(&slot_app).ok_or(anyhow!("No votes in app: {}", pars.slot_id))?;
 
     // TODO Decimal
-    let percentage = vote_in_count as f64 / project.specs.shares.count as f64;
+    let percentage = votes as f64 / project.specs.shares.count as f64;
     Ok(GetVotesResJs {
         votes_percentage: format!("{} %", percentage * 100 as f64),
     })
@@ -38,6 +36,7 @@ pub async fn _bridge_get_votes(pars: GetVotesParJs) -> Result<GetVotesResJs> {
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetVotesParJs {
     pub project_id: String,
+    pub slot_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -39,10 +39,7 @@ pub async fn bridge_create_project_assets_txs(pars: JsValue) -> Result<JsValue, 
     .map_err(to_js_value)?;
 
     let tnxs_for_js = CreateProjectAssetsResJs {
-        to_sign: vec![
-            to_my_algo_tx(&create_assets_txs.create_shares_tx)?,
-            to_my_algo_tx(&create_assets_txs.create_votes_tx)?,
-        ],
+        to_sign: vec![to_my_algo_tx(&create_assets_txs.create_shares_tx)?],
         asset_spec: pars,
     };
 

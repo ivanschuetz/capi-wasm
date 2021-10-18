@@ -2,15 +2,12 @@ use crate::{
     dependencies::{algod, api, environment},
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
-use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Error, Result};
 use data_encoding::BASE64;
 use make::flows::vote::logic::vote;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
-
-use super::submit_vote::SubmitVotePassthroughParJs;
 
 #[wasm_bindgen]
 pub async fn bridge_vote(pars: JsValue) -> Result<JsValue, JsValue> {
@@ -52,30 +49,25 @@ pub async fn _bridge_vote(pars: VoteParJs) -> Result<VoteResJs> {
     let to_sign = vote(
         &algod,
         pars.voter_address.parse().map_err(Error::msg)?,
-        project.votes_asset_id,
         project.central_app_id,
-        &project.staking_escrow,
+        pars.slot_id.parse()?,
         voter_shares_count,
-        project.votein_escrow.address,
     )
     .await?;
 
     Ok(VoteResJs {
-        to_sign: to_my_algo_txs1(&vec![to_sign.validate_investor_vote_count_tx])?,
-        pt: SubmitVotePassthroughParJs {
-            vote_xfer_tx_msg_pack: to_sign.xfer_tx.to_msg_pack()?,
-        },
+        to_sign: to_my_algo_txs1(&vec![to_sign.vote_tx, to_sign.validate_vote_count_tx])?,
     })
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct VoteParJs {
     pub project_id: String,
+    pub slot_id: String,
     pub voter_address: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct VoteResJs {
     pub to_sign: Vec<Value>,
-    pub pt: SubmitVotePassthroughParJs,
 }

@@ -670,7 +670,9 @@ dependencies = [
  "log",
  "rmp-serde",
  "serde",
+ "tealdbg",
  "tinytemplate",
+ "wasm-logger",
 ]
 
 [[package]]
@@ -1347,6 +1349,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
+]
+
+[[package]]
+name = "tealdbg"
+version = "0.1.0"
+dependencies = [
+ "algonaut",
 ]
 
 [[package]]

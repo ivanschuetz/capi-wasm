@@ -1,15 +1,14 @@
-use std::convert::TryInto;
-
 use anyhow::{Error, Result};
 use make::api::json_workaround::{ProjectForUsersJson, ProjectJson};
 use make::api::model::{ProjectForUsers, SavedWithdrawalRequest, WithdrawalRequestInputs};
 use make::flows::create_project::logic::Programs;
 use make::flows::create_project::model::Project;
 use make::teal::{TealSource, TealSourceTemplate};
+use std::convert::TryInto;
 
 use super::mock::teal::{
     central_app_approve, central_app_clear, central_escrow, customer_escrow, invest_escrow,
-    staking_escrow, vote_in_escrow, vote_out_escrow,
+    staking_escrow, withdrawal_slot_approve, withdrawal_slot_clear,
 };
 
 // ideally a trait, but async trait not supported by rust yet
@@ -145,11 +144,13 @@ pub fn programs() -> Result<Programs> {
     Ok(Programs {
         central_app_approval: TealSourceTemplate(central_app_approve::SRC.as_bytes().to_vec()),
         central_app_clear: TealSource(central_app_clear::SRC.as_bytes().to_vec()),
+        withdrawal_slot_approval: TealSourceTemplate(
+            withdrawal_slot_approve::SRC.as_bytes().to_vec(),
+        ),
+        withdrawal_slot_clear: TealSource(withdrawal_slot_clear::SRC.as_bytes().to_vec()),
         central_escrow: TealSourceTemplate(central_escrow::SRC.as_bytes().to_vec()),
         customer_escrow: TealSourceTemplate(customer_escrow::SRC.as_bytes().to_vec()),
         invest_escrow: TealSourceTemplate(invest_escrow::SRC.as_bytes().to_vec()),
         staking_escrow: TealSourceTemplate(staking_escrow::SRC.as_bytes().to_vec()),
-        vote_in_escrow: TealSourceTemplate(vote_in_escrow::SRC.as_bytes().to_vec()),
-        vote_out_escrow: TealSourceTemplate(vote_out_escrow::SRC.as_bytes().to_vec()),
     })
 }

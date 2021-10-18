@@ -6,3 +6,5 @@ pub mod invest_escrow;
 pub mod staking_escrow;
 pub mod vote_in_escrow;
 pub mod vote_out_escrow;
+pub mod withdrawal_slot_approve;
+pub mod withdrawal_slot_clear;

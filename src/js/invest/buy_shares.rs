@@ -1,10 +1,11 @@
 use crate::{
     dependencies::{algod, api, environment},
-    js::common::{signed_js_tx_to_signed_tx1, to_js_value, to_my_algo_txs, SignedTxFromJs},
+    js::common::{to_js_value, to_my_algo_txs, SignedTxFromJs},
+    service::invest_or_stake::submit_apps_optins_from_js,
 };
-use algonaut::{algod::v2::Algod, core::ToMsgPack};
-use anyhow::{Error, Result};
-use make::{flows::invest::logic::invest_txs, network_util::wait_for_pending_transaction};
+use algonaut::core::ToMsgPack;
+use anyhow::Result;
+use make::flows::invest::logic::invest_txs;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -21,8 +22,8 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 
     let pars = pars.into_serde::<InvestParJs>().map_err(to_js_value)?;
 
-    if let Some(app_opt_in_tx) = pars.app_opt_in_tx {
-        submit_app_opt_in(&algod, app_opt_in_tx)
+    if let Some(app_opt_ins) = pars.app_opt_ins {
+        submit_apps_optins_from_js(&algod, &app_opt_ins)
             .await
             .map_err(to_js_value)?;
     }
@@ -47,29 +48,22 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
     .map_err(to_js_value)?;
 
+    let mut to_sign_txs = vec![
+        to_sign.central_app_setup_tx,
+        to_sign.payment_tx,
+        to_sign.shares_asset_optin_tx,
+        to_sign.pay_escrow_fee_tx,
+    ];
+    to_sign_txs.extend(to_sign.slots_setup_txs);
+
     let res: InvestResJs = InvestResJs {
-        to_sign: to_my_algo_txs(&vec![
-            to_sign.central_app_opt_in_tx,
-            to_sign.payment_tx,
-            to_sign.shares_asset_optin_tx,
-            to_sign.pay_escrow_fee_tx,
-        ])?,
+        to_sign: to_my_algo_txs(&to_sign_txs)?,
         pt: SubmitBuySharesPassthroughParJs {
             project: project.into(),
             shares_xfer_tx_msg_pack: to_sign.shares_xfer_tx.to_msg_pack().map_err(to_js_value)?,
-            votes_xfer_tx_msg_pack: to_sign.votes_xfer_tx.to_msg_pack().map_err(to_js_value)?,
         },
     };
     Ok(JsValue::from_serde(&res).map_err(to_js_value)?)
-}
-
-async fn submit_app_opt_in(algod: &Algod, tx: SignedTxFromJs) -> Result<()> {
-    log::debug!("Submitting app opt-in...");
-    let app_opt_in_tx_res = algod
-        .broadcast_signed_transaction(&signed_js_tx_to_signed_tx1(&tx).map_err(Error::msg)?)
-        .await?;
-    let _ = wait_for_pending_transaction(&algod, &app_opt_in_tx_res.tx_id).await?;
-    Ok(())
 }
 
 // TODO rename structs in BuyShares*
@@ -79,7 +73,7 @@ pub struct InvestParJs {
     pub share_count: String,
     pub investor_address: String,
     // not set if the user was already opted in (checked in previous step)
-    pub app_opt_in_tx: Option<SignedTxFromJs>,
+    pub app_opt_ins: Option<Vec<SignedTxFromJs>>,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -5,8 +5,11 @@ use crate::{
     service::str_to_algos::microalgos_to_algos,
 };
 use algonaut::algod::v2::Algod;
-use anyhow::{anyhow, Result};
-use make::{api::model::SavedWithdrawalRequest, flows::create_project::model::Project};
+use anyhow::Result;
+use make::{
+    api::model::SavedWithdrawalRequest, flows::create_project::model::Project,
+    withdrawal_app_state::votes_global_state,
+};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -38,7 +41,7 @@ pub async fn load_withdrawal_requests(
 
     let mut reqs_view_data = vec![];
     for req in requests {
-        let votes = get_votes(&algod, &project).await?;
+        let votes = get_votes(algod, req.slot_id.parse()?).await?;
         let votes_str = format_votes(&project, votes);
         reqs_view_data.push(withdrawal_req_to_view_data(
             req,
@@ -49,24 +52,18 @@ pub async fn load_withdrawal_requests(
     Ok(reqs_view_data)
 }
 
-pub async fn get_votes(algod: &Algod, project: &Project) -> Result<u64> {
-    Ok(algod
-        .account_information(&project.votein_escrow.address)
-        .await?
-        .assets
-        .into_iter()
-        .find(|a| a.asset_id == project.votes_asset_id)
-        // TODO confirm that this means not opted in. Having 0 assets is valid.
-        .ok_or(anyhow!(
-            "Invalid state: vote escrow not opted in to asset: {}.",
-            project.votes_asset_id
-        ))?
-        .amount)
+async fn get_votes(algod: &Algod, slot_id: u64) -> Result<u64> {
+    let slot_app = algod.application_information(slot_id).await?;
+    Ok(votes_global_state(&slot_app).unwrap_or_else(|| 0))
 }
 
-pub async fn get_votes_percentage(algod: &Algod, project: &Project) -> Result<String> {
+pub async fn get_votes_percentage(
+    algod: &Algod,
+    project: &Project,
+    slot_id: u64,
+) -> Result<String> {
     // TODO Decimal
-    let percentage = get_votes(algod, project).await? as f64 / project.specs.shares.count as f64;
+    let percentage = get_votes(algod, slot_id).await? as f64 / project.specs.shares.count as f64;
     Ok(format!("{} %", percentage * 100 as f64))
 }
 
@@ -97,6 +94,7 @@ pub struct WithdrawalRequestViewData {
 
     // passthrough model data
     pub request_id: String,
+    pub slot_id: String,
     pub amount_not_formatted: String,
 }
 
@@ -112,6 +110,7 @@ pub fn withdrawal_req_to_view_data(
         votes,
         can_withdraw: can_withdraw.to_string(),
         request_id: req.id,
+        slot_id: req.slot_id,
         amount_not_formatted: req.amount.to_string(), // microalgos
         complete: req.complete.to_string(),
     })

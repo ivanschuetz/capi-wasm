@@ -25,23 +25,25 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
     let project = api.load_project(&pars.project_id).await?;
 
+    // TODO it's possible only to withdraw everything, so no need to pass amount as a parameter from js
+
     let to_sign = withdraw(
         &algod,
         pars.sender.parse().map_err(Error::msg)?,
         MicroAlgos(pars.withdrawal_amount.parse()?),
-        project.votes_asset_id,
         &project.central_escrow,
-        &project.votein_escrow,
-        &project.vote_out_escrow,
+        pars.slot_id.parse()?,
     )
     .await?;
 
     Ok(WithdrawResJs {
-        to_sign: to_my_algo_txs1(&vec![to_sign.pay_withdraw_fee_tx, to_sign.pay_vote_fee_tx])
-            .map_err(Error::msg)?,
+        to_sign: to_my_algo_txs1(&vec![
+            to_sign.pay_withdraw_fee_tx,
+            to_sign.check_enough_votes_tx,
+        ])
+        .map_err(Error::msg)?,
         pt: SubmitWithdrawPassthroughParJs {
             withdraw_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.withdraw_tx)?,
-            consume_votes_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.consume_votes_tx)?,
         },
     })
 }
@@ -51,6 +53,7 @@ pub struct WithdrawParJs {
     pub project_id: String,
     pub sender: String,
     pub withdrawal_amount: String,
+    pub slot_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
