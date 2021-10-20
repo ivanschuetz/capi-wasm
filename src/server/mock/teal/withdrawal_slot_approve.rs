@@ -155,20 +155,20 @@ int appl
 ==
 &&
 
-gtxn 2 TypeEnum // payment
+gtxn 1 TypeEnum // payment
 int pay
 ==
 &&
 
 // payment amount == requested amount
-gtxn 2 Amount
+gtxn 1 Amount
 byte "Amount"
 app_global_get
 ==
 &&
 
 // payment receiver is project creator
-gtxn 2 Receiver
+gtxn 1 Receiver
 addr {project_creator_address}
 ==
 &&
