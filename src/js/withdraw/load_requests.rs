@@ -41,13 +41,7 @@ pub async fn load_withdrawal_requests(
 
     let mut reqs_view_data = vec![];
     for req in requests {
-        let votes = get_votes(algod, req.slot_id.parse()?).await?;
-        let votes_str = format_votes(&project, votes);
-        reqs_view_data.push(withdrawal_req_to_view_data(
-            req,
-            votes_str,
-            votes >= project.specs.vote_threshold,
-        )?);
+        reqs_view_data.push(withdrawal_req_to_view_data_fetch_votes(algod, &req, &project).await?);
     }
     Ok(reqs_view_data)
 }
@@ -99,19 +93,29 @@ pub struct WithdrawalRequestViewData {
 }
 
 pub fn withdrawal_req_to_view_data(
-    req: SavedWithdrawalRequest,
+    req: &SavedWithdrawalRequest,
     votes: String,
     can_withdraw: bool,
 ) -> Result<WithdrawalRequestViewData> {
     Ok(WithdrawalRequestViewData {
         amount: format!("{} Algo", microalgos_to_algos(req.amount).to_string()),
-        description: req.description,
+        description: req.description.clone(),
         date: req.date.to_rfc2822(),
         votes,
         can_withdraw: can_withdraw.to_string(),
-        request_id: req.id,
-        slot_id: req.slot_id,
+        request_id: req.id.clone(),
+        slot_id: req.slot_id.clone(),
         amount_not_formatted: req.amount.to_string(), // microalgos
         complete: req.complete.to_string(),
     })
+}
+
+pub async fn withdrawal_req_to_view_data_fetch_votes(
+    algod: &Algod,
+    req: &SavedWithdrawalRequest,
+    project: &Project,
+) -> Result<WithdrawalRequestViewData> {
+    let votes = get_votes(algod, req.slot_id.parse()?).await?;
+    let votes_str = format_votes(&project, votes);
+    withdrawal_req_to_view_data(req, votes_str, votes >= project.specs.vote_threshold)
 }

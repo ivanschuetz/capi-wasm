@@ -67,7 +67,7 @@ pub async fn _bridge_submit_init_withdrawal_request(
     Ok(SubmitInitWithdrawalRequestResJs {
         message: "Success, withdrawal success!".to_owned(),
         saved_request: withdrawal_req_to_view_data(
-            saved_request,
+            &saved_request,
             // request was just created so no one has voted yet. TODO refactor formatting
             "0 %".to_owned(),
             false,
