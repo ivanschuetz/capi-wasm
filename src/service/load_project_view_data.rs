@@ -36,6 +36,7 @@ pub struct ProjectForUsersViewData {
     pub share_supply: String,
     pub share_asset_name: String,
     pub share_price: String,
+    pub share_price_number_algo: String,
     pub share_asset_id: String,
     pub central_app_id: String,
     pub slot_ids: Vec<String>,
@@ -60,6 +61,7 @@ pub fn project_for_users_to_view_data(
             "{} Algo",
             microalgos_to_algos(project.asset_price).to_string()
         ),
+        share_price_number_algo: microalgos_to_algos(project.asset_price).to_string(),
         share_asset_id: project.shares_asset_id.to_string(),
         central_app_id: project.central_app_id.to_string(),
         slot_ids: project
