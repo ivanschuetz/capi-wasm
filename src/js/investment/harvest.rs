@@ -2,13 +2,12 @@
 
 use crate::dependencies::environment;
 use crate::js::investment::submit_harvest::SubmitHarvestPassthroughParJs;
-use crate::service::app_state::{
-    investor_can_harvest_amount_from_local_vars, local_vars, owned_shares_count_from_local_vars,
-};
+use crate::service::drain_if_needed::drain_if_needed_txs;
 use crate::{
     dependencies::{algod, api},
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
+use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
 use make::flows::harvest::logic::harvest;
 use serde::{Deserialize, Serialize};
@@ -30,35 +29,34 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
-    let app_local_vars = local_vars(
-        &algod,
-        &pars.investor_address.parse().map_err(Error::msg)?,
-        project.central_app_id,
-    )
-    .await?;
-    let investor_shares_count = owned_shares_count_from_local_vars(&app_local_vars).await?;
-    let amount = investor_can_harvest_amount_from_local_vars(
-        &algod,
-        project.central_app_id,
-        &app_local_vars,
-        investor_shares_count,
-        project.specs.shares.count,
-    )
-    .await?;
-
-    let to_sign = harvest(
+    let to_sign_for_harvest = harvest(
         &algod,
         &investor_address,
         project.central_app_id,
-        amount,
+        MicroAlgos(pars.amount.parse()?),
+        // MicroAlgos(2000000000),
         &project.central_escrow,
     )
     .await?;
 
+    let mut to_sign = vec![];
+    to_sign.push(to_sign_for_harvest.app_call_tx);
+    to_sign.push(to_sign_for_harvest.pay_fee_tx);
+
+    let maybe_to_sign_for_drain = drain_if_needed_txs(&algod, &project, &investor_address).await?;
+    // we append drain at the end since it's optional, so the indices of the non optional txs are fixed
+    let mut maybe_drain_tx_msg_pack = None;
+    if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {
+        to_sign.push(to_sign_for_drain.pay_fee_tx);
+        to_sign.push(to_sign_for_drain.app_call_tx);
+        maybe_drain_tx_msg_pack = Some(rmp_serde::to_vec_named(&to_sign_for_drain.drain_tx)?);
+    }
+
     Ok(HarvestResJs {
-        to_sign: to_my_algo_txs1(&vec![to_sign.app_call_tx, to_sign.pay_fee_tx])?,
+        to_sign: to_my_algo_txs1(&to_sign).map_err(Error::msg)?,
         pt: SubmitHarvestPassthroughParJs {
-            harvest_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.harvest_tx)?,
+            maybe_drain_tx_msg_pack,
+            harvest_tx_msg_pack: rmp_serde::to_vec_named(&to_sign_for_harvest.harvest_tx)?,
         },
     })
 }
@@ -66,6 +64,7 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
 #[derive(Debug, Clone, Deserialize)]
 pub struct HarvestParJs {
     pub project_id: String,
+    pub amount: String,
     pub investor_address: String,
 }
 

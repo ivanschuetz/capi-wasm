@@ -10,6 +10,7 @@ use crate::{
     },
 };
 use anyhow::{Error, Result};
+use make::flows::withdraw::logic::{FIXED_FEE, MIN_BALANCE};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -37,6 +38,10 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     )
     .await?;
 
+    let customer_escrow_balance = algod
+        .account_information(&project.customer_escrow.address)
+        .await?
+        .amount;
     let investor_shares_count = owned_shares_count_from_local_vars(&app_local_vars).await?;
 
     // TODO review redundancy with backend, as we store the share count in the db too
@@ -48,18 +53,25 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let central_received_total = central_received_total(&algod, app_id).await?;
     let already_harvested = harvested_total_from_local_vars(&app_local_vars).await?;
 
+    let withdrawable_customer_escrow_amount = customer_escrow_balance - (MIN_BALANCE + FIXED_FEE);
+    // This is basically "simulate that the customer escrow was already drained"
+    // we use this value, as harvesting will drain the customer escrow if it has a balance (> MIN_BALANCE + FIXED_FEE)
+    // and the draining step is invisible to the user (aside of adding more txs to the harvesting txs to sign)
+    let received_total_including_customer_escrow_balance =
+        central_received_total + withdrawable_customer_escrow_amount;
+
     let can_harvest = investor_can_harvest_amount_calc(
-        central_received_total,
+        received_total_including_customer_escrow_balance,
         already_harvested,
         investor_shares_count,
         project.specs.shares.count,
     );
-
     Ok(LoadInvestmentResJs {
         investor_shares_count: investor_shares_count.to_string(),
         investor_percentage: format!("{} %", (investor_percentage * 100 as f64).to_string()),
         investor_already_retrieved_amount: microalgos_to_algos(already_harvested).to_string(),
         investor_harvestable_amount: microalgos_to_algos(can_harvest).to_string(),
+        investor_harvestable_amount_microalgos: can_harvest.to_string(),
     })
 }
 
@@ -78,4 +90,5 @@ pub struct LoadInvestmentResJs {
     investor_percentage: String,
     investor_already_retrieved_amount: String,
     investor_harvestable_amount: String,
+    investor_harvestable_amount_microalgos: String, // passthrough
 }

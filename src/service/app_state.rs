@@ -45,23 +45,6 @@ pub async fn owned_shares_count_from_local_vars(
         .unwrap_or_else(|| 0))
 }
 
-pub async fn investor_can_harvest_amount_from_local_vars(
-    algod: &Algod,
-    central_app_id: u64,
-    user_local_vars: &Vec<TealKeyValue>,
-    owned_shares_count: u64,
-    total_share_supply: u64,
-) -> Result<MicroAlgos> {
-    let central_received_total = central_received_total(&algod, central_app_id).await?;
-    let harvested_total = harvested_total_from_local_vars(user_local_vars).await?;
-    Ok(investor_can_harvest_amount_calc(
-        central_received_total,
-        harvested_total,
-        owned_shares_count,
-        total_share_supply,
-    ))
-}
-
 pub fn investor_can_harvest_amount_calc(
     central_received_total: MicroAlgos,
     harvested_total: MicroAlgos,
@@ -111,26 +94,6 @@ pub async fn owned_shares_count(
 ) -> Result<u64> {
     let local_vars = local_vars(algod, address, central_app_id).await?;
     owned_shares_count_from_local_vars(&local_vars).await
-}
-
-// convenience - maybe used in the future
-#[allow(dead_code)]
-pub async fn investor_can_harvest_amount(
-    algod: &Algod,
-    address: &Address,
-    central_app_id: u64,
-    owned_shares_count: u64,
-    total_share_supply: u64,
-) -> Result<MicroAlgos> {
-    let local_vars = local_vars(algod, address, central_app_id).await?;
-    investor_can_harvest_amount_from_local_vars(
-        algod,
-        central_app_id,
-        &local_vars,
-        owned_shares_count,
-        total_share_supply,
-    )
-    .await
 }
 
 // convenience - maybe used in the future

@@ -1,5 +1,6 @@
 use crate::dependencies::{algod, api, environment};
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
+use crate::service::available_funds::available_funds;
 use crate::service::load_project_view_data::asset_supply;
 use crate::service::str_to_algos::microalgos_to_algos;
 use algonaut::core::MicroAlgos;
@@ -34,16 +35,6 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
         .ok_or({
             anyhow!("Invalid app state: Investor escrow doesn't have shares asset, Please contact support.")})?.amount;
 
-    let customer_escrow_balance = algod
-        .account_information(&project.customer_escrow_address)
-        .await?
-        .amount;
-
-    let central_escrow_balance = algod
-        .account_information(&project.central_escrow_address)
-        .await?
-        .amount;
-
     // TODO investor count: get all holders of asset (indexer?)
 
     let customer_payment_deeplink =
@@ -51,12 +42,13 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
             .build()
             .as_url();
 
+    let available_funds = available_funds(&algod, &project).await?;
+
     Ok(ViewProjectResJs {
         project: project.into(),
         shares_supply: shares_supply.to_string(),
         shares_available: shares_available.to_string(),
-        funds_to_drain: microalgos_to_algos(customer_escrow_balance).to_string(),
-        funds: microalgos_to_algos(central_escrow_balance).to_string(),
+        available_funds: microalgos_to_algos(available_funds).to_string(),
         customer_payment_deeplink: customer_payment_deeplink.to_string(),
     })
 }
@@ -71,7 +63,6 @@ pub struct ViewProjectResJs {
     pub project: ProjectForUsersJson,
     pub shares_supply: String,
     pub shares_available: String,
-    pub funds_to_drain: String,
-    pub funds: String,
+    pub available_funds: String,
     pub customer_payment_deeplink: String,
 }

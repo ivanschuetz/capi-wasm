@@ -1,8 +1,9 @@
 use crate::dependencies::environment;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::{dependencies::algod, js::common::SignedTxFromJs};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use make::flows::harvest::logic::{submit_harvest, HarvestSigned};
+use make::network_util::wait_for_pending_transaction;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
@@ -16,20 +17,34 @@ pub async fn bridge_submit_harvest(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHarvestResJs> {
     let algod = algod(&environment());
 
-    let app_call_tx = &pars.txs[0];
-    let pay_fee_tx = &pars.txs[1];
+    // 2 txs if only harvest, 4 if withdrawal + drain
+    if pars.txs.len() != 2 && pars.txs.len() != 4 {
+        return Err(anyhow!("Unexpected harvest txs length: {}", pars.txs.len()));
+    }
+    // sanity check
+    if pars.txs.len() == 2 {
+        if pars.pt.maybe_drain_tx_msg_pack.is_some() {
+            return Err(anyhow!(
+                "Invalid state: 2 txs with a passthrough draining tx",
+            ));
+        }
+    }
 
-    let res = submit_harvest(
+    let app_call_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
+    let pay_fee_tx = signed_js_tx_to_signed_tx1(&pars.txs[1])?;
+
+    let harvest_tx_id = submit_harvest(
         &algod,
         &HarvestSigned {
             harvest_tx: rmp_serde::from_slice(&pars.pt.harvest_tx_msg_pack)?,
-            app_call_tx_signed: signed_js_tx_to_signed_tx1(app_call_tx)?,
-            pay_fee_tx: signed_js_tx_to_signed_tx1(pay_fee_tx)?,
+            app_call_tx_signed: app_call_tx,
+            pay_fee_tx,
         },
     )
     .await?;
 
-    log::debug!("Submit harvest res: {:?}", res);
+    log::warn!("Submit harvest tx id: {:?}", harvest_tx_id);
+    wait_for_pending_transaction(&algod, &harvest_tx_id).await?;
 
     Ok(SubmitHarvestResJs {})
 }
@@ -43,6 +58,8 @@ pub struct SubmitHarvestParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitHarvestPassthroughParJs {
+    // set if a drain tx is necessary
+    pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
     pub harvest_tx_msg_pack: Vec<u8>,
 }
 

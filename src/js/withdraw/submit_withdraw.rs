@@ -1,13 +1,12 @@
 use crate::{
     dependencies::{algod, api, environment},
     js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
+    service::drain_if_needed::submit_drain,
 };
 use anyhow::{anyhow, Result};
 use make::flows::withdraw::logic::{submit_withdraw, WithdrawSigned};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
-
-// TODO rename in submit_init_withdrawal_request
 
 #[wasm_bindgen]
 pub async fn bridge_submit_withdrawal_request(pars: JsValue) -> Result<JsValue, JsValue> {
@@ -22,11 +21,31 @@ pub async fn _bridge_submit_withdrawal_request(
     let algod = algod(env);
     let api = api(env);
 
-    if pars.txs.len() != 2 {
+    // 2 txs if only withdrawal, 4 if withdrawal + drain
+    if pars.txs.len() != 2 && pars.txs.len() != 4 {
         return Err(anyhow!(
-            "Unexpected signed withdraw txs length: {}",
+            "Unexpected withdraw txs length: {}",
             pars.txs.len()
         ));
+    }
+    // sanity check
+    if pars.txs.len() == 2 {
+        if pars.pt.maybe_drain_tx_msg_pack.is_some() {
+            return Err(anyhow!(
+                "Invalid state: 2 txs with a passthrough draining tx",
+            ));
+        }
+    }
+
+    if pars.txs.len() == 4 {
+        submit_drain(
+            &algod,
+            &pars.pt.maybe_drain_tx_msg_pack
+                .ok_or(anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?,
+            &pars.txs[2],
+            &pars.txs[3],
+        )
+        .await?;
     }
 
     let pay_withdraw_fee_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
@@ -60,6 +79,8 @@ pub struct SubmitWithdrawParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitWithdrawPassthroughParJs {
+    // set if a drain tx is necessary
+    pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
     pub withdraw_tx_msg_pack: Vec<u8>,
 }
 
