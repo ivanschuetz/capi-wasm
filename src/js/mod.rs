@@ -1,6 +1,7 @@
 pub mod bridge_general;
 pub mod common;
 pub mod create_project;
+pub mod general;
 pub mod invest;
 pub mod investment;
 pub mod stake;
