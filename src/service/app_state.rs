@@ -6,6 +6,8 @@ use algonaut::{
 use anyhow::{anyhow, Result};
 use data_encoding::BASE64;
 
+// TODO refactor with central_app_state in core proj
+
 pub async fn central_received_total(algod: &Algod, app_id: u64) -> Result<MicroAlgos> {
     Ok(algod
         .application_information(app_id)
@@ -43,22 +45,6 @@ pub async fn owned_shares_count_from_local_vars(
         // TODO confirm that not existent local state key means 0
         // we currently assume it's the case
         .unwrap_or_else(|| 0))
-}
-
-pub fn investor_can_harvest_amount_calc(
-    central_received_total: MicroAlgos,
-    harvested_total: MicroAlgos,
-    share_count: u64,
-    share_supply: u64,
-) -> MicroAlgos {
-    let entitled_percentage = share_count as f64 / share_supply as f64;
-    // TODO review floor and ensure that this is used everywhere (in all packages)
-    let entitled_total = (central_received_total.0 as f64 * entitled_percentage).floor() as u64;
-    // Note that this assumes that investor can't sell a part of their shares (with current logic)
-    // otherwise, the smaller share count would render a small entitled_total_count which would take a while to catch up with harvested_total, which remains unchanged.
-    // the easiest solution is to expect the investor to unstake all their shares
-    // if they want to sell only a part, they've to opt-in again with the shares they want to keep.
-    MicroAlgos(entitled_total) - harvested_total
 }
 
 // WARNING: not generic, only for investor (see HACK in body)

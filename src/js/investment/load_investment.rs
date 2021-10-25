@@ -3,14 +3,18 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res},
     service::{
         app_state::{
-            central_received_total, harvested_total_from_local_vars,
-            investor_can_harvest_amount_calc, local_vars, owned_shares_count_from_local_vars,
+            central_received_total, harvested_total_from_local_vars, local_vars,
+            owned_shares_count_from_local_vars,
         },
-        str_to_algos::microalgos_to_algos,
+        str_to_algos::microalgos_to_algos_str,
     },
 };
 use anyhow::{Error, Result};
-use make::flows::withdraw::logic::{FIXED_FEE, MIN_BALANCE};
+use make::{
+    central_app_logic::investor_can_harvest_amount_calc,
+    decimal_util::{AsDecimal, DecimalExt},
+    flows::withdraw::logic::{FIXED_FEE, MIN_BALANCE},
+};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -48,7 +52,8 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     // maybe we shouldn't store them in the backend (also meaning: the backend can't deliver Project objects but a reduced view of them),
     // as it may get out of sync when shares are diluted
     // also use Decimal for everything involving fractions
-    let investor_percentage = investor_shares_count as f64 / project.specs.shares.count as f64;
+    let investor_percentage =
+        investor_shares_count.as_decimal() / project.specs.shares.count.as_decimal();
 
     let central_received_total = central_received_total(&algod, app_id).await?;
     let already_harvested = harvested_total_from_local_vars(&app_local_vars).await?;
@@ -66,11 +71,14 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         investor_shares_count,
         project.specs.shares.count,
     );
+
+    log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_received_total, withdrawable_customer_escrow_amount, investor_shares_count, project.specs.shares.count);
+
     Ok(LoadInvestmentResJs {
         investor_shares_count: investor_shares_count.to_string(),
-        investor_percentage: format!("{} %", (investor_percentage * 100 as f64).to_string()),
-        investor_already_retrieved_amount: microalgos_to_algos(already_harvested).to_string(),
-        investor_harvestable_amount: microalgos_to_algos(can_harvest).to_string(),
+        investor_percentage: investor_percentage.format_percentage(),
+        investor_already_retrieved_amount: microalgos_to_algos_str(already_harvested),
+        investor_harvestable_amount: microalgos_to_algos_str(can_harvest),
         investor_harvestable_amount_microalgos: can_harvest.to_string(),
     })
 }

@@ -34,7 +34,6 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
         &investor_address,
         project.central_app_id,
         MicroAlgos(pars.amount.parse()?),
-        // MicroAlgos(2000000000),
         &project.central_escrow,
     )
     .await?;

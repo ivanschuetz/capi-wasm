@@ -9,6 +9,10 @@ pub fn algos_str_to_microalgos(s: &str) -> Result<MicroAlgos> {
     validate_algos(decimal)
 }
 
+pub fn microalgos_to_algos_str(micro_algos: MicroAlgos) -> String {
+    format!("{:.2}", microalgos_to_algos(micro_algos))
+}
+
 pub fn microalgos_to_algos(micro_algos: MicroAlgos) -> Decimal {
     Decimal::from_i128_with_scale(micro_algos.0 as i128, 6).normalize()
 }

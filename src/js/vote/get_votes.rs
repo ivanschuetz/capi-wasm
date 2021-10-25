@@ -5,7 +5,10 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res},
 };
 use anyhow::{anyhow, Result};
-use make::withdrawal_app_state::votes_global_state;
+use make::{
+    decimal_util::{AsDecimal, DecimalExt},
+    withdrawal_app_state::votes_global_state,
+};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -26,10 +29,9 @@ pub async fn _bridge_get_votes(pars: GetVotesParJs) -> Result<GetVotesResJs> {
     let votes =
         votes_global_state(&slot_app).ok_or(anyhow!("No votes in app: {}", pars.slot_id))?;
 
-    // TODO Decimal
-    let percentage = votes as f64 / project.specs.shares.count as f64;
+    let percentage = votes.as_decimal() / project.specs.shares.count.as_decimal();
     Ok(GetVotesResJs {
-        votes_percentage: format!("{} %", percentage * 100 as f64),
+        votes_percentage: percentage.format_percentage(),
     })
 }
 

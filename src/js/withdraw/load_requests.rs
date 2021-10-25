@@ -7,7 +7,9 @@ use crate::{
 use algonaut::algod::v2::Algod;
 use anyhow::Result;
 use make::{
-    api::model::SavedWithdrawalRequest, flows::create_project::model::Project,
+    api::model::SavedWithdrawalRequest,
+    decimal_util::{AsDecimal, DecimalExt},
+    flows::create_project::model::Project,
     withdrawal_app_state::votes_global_state,
 };
 use serde::{Deserialize, Serialize};
@@ -56,15 +58,14 @@ pub async fn get_votes_percentage(
     project: &Project,
     slot_id: u64,
 ) -> Result<String> {
-    // TODO Decimal
-    let percentage = get_votes(algod, slot_id).await? as f64 / project.specs.shares.count as f64;
-    Ok(format!("{} %", percentage * 100 as f64))
+    let votes = get_votes(algod, slot_id).await?.as_decimal();
+    let shares_count = project.specs.shares.count.as_decimal();
+    Ok((votes / shares_count).format_percentage())
 }
 
 pub fn format_votes(project: &Project, count: u64) -> String {
-    // TODO Decimal
-    let percentage = count as f64 / project.specs.shares.count as f64;
-    format!("{} %", percentage * 100 as f64)
+    let percentage = count.as_decimal() / project.specs.shares.count.as_decimal();
+    percentage.format_percentage()
 }
 
 #[derive(Debug, Clone, Deserialize)]
