@@ -28,7 +28,7 @@ use super::{
 /// submits the signed assets, creates rest of project with generated asset ids
 #[wasm_bindgen]
 pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
-    // log::debug!("in bridge_create_project, pars: {:?}", pars);
+    log::debug!("bridge_create_project, pars: {:?}", pars);
 
     let algod = algod(&environment());
 
