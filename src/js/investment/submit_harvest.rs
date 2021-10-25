@@ -1,5 +1,6 @@
 use crate::dependencies::environment;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
+use crate::service::drain_if_needed::submit_drain;
 use crate::{dependencies::algod, js::common::SignedTxFromJs};
 use anyhow::{anyhow, Result};
 use make::flows::harvest::logic::{submit_harvest, HarvestSigned};
@@ -28,6 +29,17 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
                 "Invalid state: 2 txs with a passthrough draining tx",
             ));
         }
+    }
+
+    if pars.txs.len() == 4 {
+        submit_drain(
+            &algod,
+            &pars.pt.maybe_drain_tx_msg_pack
+                .ok_or(anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?,
+            &pars.txs[2],
+            &pars.txs[3],
+        )
+        .await?;
     }
 
     let app_call_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
