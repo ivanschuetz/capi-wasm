@@ -12,7 +12,7 @@ use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
 use crate::dependencies::environment;
-use crate::service::constants::WITHDRAWAL_SLOT_COUNT;
+use crate::service::constants::{PRECISION, WITHDRAWAL_SLOT_COUNT};
 use crate::{
     dependencies::algod,
     js::common::{signed_js_tx_to_signed_tx, to_js_value, to_my_algo_txs, SignedTxFromJs},
@@ -58,6 +58,7 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
         submit_assets_res.shares_id,
         api::programs().map_err(to_js_value)?,
         WITHDRAWAL_SLOT_COUNT,
+        PRECISION,
     )
     .await
     .map_err(to_js_value)?;

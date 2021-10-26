@@ -6,6 +6,7 @@ use crate::{
             central_received_total, harvested_total_from_local_vars, local_vars,
             owned_shares_count_from_local_vars,
         },
+        constants::PRECISION,
         str_to_algos::microalgos_to_algos_str,
     },
 };
@@ -70,6 +71,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         already_harvested,
         investor_shares_count,
         project.specs.shares.count,
+        PRECISION,
     );
 
     log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_received_total, withdrawable_customer_escrow_amount, investor_shares_count, project.specs.shares.count);
