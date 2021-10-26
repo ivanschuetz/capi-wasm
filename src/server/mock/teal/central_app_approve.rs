@@ -172,7 +172,7 @@ byte "HarvestedTotal"
 // this differs in that we get the shares count from the xfer tx instead of the investor's holdings.
 /////////////////////////////////////
 gtxn 1 AssetAmount // staked xfer (this will become "holdings", if the group passes)
-int 100
+int {precision} 
 *
 
 // the asset's total supply
@@ -188,7 +188,7 @@ app_global_get
 // total percentage user is entitled to from received total
 *
 
-int 100 // revert * 100
+int {precision} // revert mult
 /
 /////////////////////////////////////
 /////////////////////////////////////
@@ -248,7 +248,7 @@ gtxn 0 Sender
 byte "Shares"
 app_local_get
 
-int 100
+int {precision}
 *
 
 // the asset's total supply
@@ -264,7 +264,7 @@ app_global_get
 // total percentage user is entitled to from received total
 *
 
-int 100 // revert * 100
+int {precision} // revert mult
 /
 /////////////////////////////////////
 /////////////////////////////////////
@@ -322,7 +322,7 @@ gtxn 0 Sender
 byte "Shares"
 app_local_get
 
-int 100
+int {precision}
 *
 
 // the asset's total supply
@@ -338,7 +338,7 @@ app_global_get
 // total percentage user is entitled to from received total
 *
 
-int 100 // revert mult by 100
+int {precision} // revert mult
 /
 /////////////////////////////////////
 /////////////////////////////////////
@@ -415,4 +415,5 @@ gtxn 3 OnCompletion
 // (TODO other slots)
 
 // local state (owned shares) is cleared automatically by CloseOut
+
 "#;
