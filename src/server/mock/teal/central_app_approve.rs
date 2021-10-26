@@ -166,32 +166,9 @@ app_local_put
 // see more notes in old repo
 gtxn 0 Sender // sender of app call (investor)
 byte "HarvestedTotal"
-/////////////////////////////////////
-// how many algos is investor entitled to (according to xfer) -> stack
-// TODO refactor (partly) with similar blocks in this contract. 
-// this differs in that we get the shares count from the xfer tx instead of the investor's holdings.
-/////////////////////////////////////
+
 gtxn 1 AssetAmount // staked xfer (this will become "holdings", if the group passes)
-int {precision} 
-*
-
-// the asset's total supply
-int {asset_supply} 
-
-// user's holdings % of total received
-/
-
-// how much has been transferred (total) to the central
-byte "CentralReceivedTotal"
-app_global_get
-
-// total percentage user is entitled to from received total
-*
-
-int {precision} // revert mult
-/
-/////////////////////////////////////
-/////////////////////////////////////
+callsub entitled_harvest_microalgos_for_shares
 app_local_put
 
 return
@@ -247,27 +224,7 @@ byte "HarvestedTotal"
 gtxn 0 Sender
 byte "Shares"
 app_local_get
-
-int {precision}
-*
-
-// the asset's total supply
-int {asset_supply} 
-
-// user's holdings % of total received
-/
-
-// how much has been transferred (total) to the central
-byte "CentralReceivedTotal"
-app_global_get
-
-// total percentage user is entitled to from received total
-*
-
-int {precision} // revert mult
-/
-/////////////////////////////////////
-/////////////////////////////////////
+callsub entitled_harvest_microalgos_for_shares
 app_local_put
 
 int 1
@@ -321,27 +278,7 @@ int pay
 gtxn 0 Sender
 byte "Shares"
 app_local_get
-
-int {precision}
-*
-
-// the asset's total supply
-int {asset_supply} 
-
-// user's holdings % of total received
-/
-
-// how much has been transferred (total) to the central
-byte "CentralReceivedTotal"
-app_global_get
-
-// total percentage user is entitled to from received total
-*
-
-int {precision} // revert mult
-/
-/////////////////////////////////////
-/////////////////////////////////////
+callsub entitled_harvest_microalgos_for_shares
 
 // how much user has already harvested
 int 0
@@ -414,6 +351,34 @@ gtxn 3 OnCompletion
 &&
 // (TODO other slots)
 
+return
+
 // local state (owned shares) is cleared automatically by CloseOut
+
+// How many microalgos (share of total retrieved funds) correspond to investor's share
+// Does *not* account for already harvested funds.
+// arg: owned shares
+entitled_harvest_microalgos_for_shares:
+
+int {precision}
+*
+
+// the asset's total supply
+int {asset_supply} 
+
+// user's holdings % of total received
+/
+
+// how much has been transferred (total) to the central
+byte "CentralReceivedTotal"
+app_global_get
+
+// percentage user is entitled to from received total
+*
+
+int {precision} // revert mult
+/
+
+retsub
 
 "#;
