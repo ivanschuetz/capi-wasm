@@ -72,6 +72,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         investor_shares_count,
         project.specs.shares.count,
         PRECISION,
+        project.specs.investors_share,
     );
 
     log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_received_total, withdrawable_customer_escrow_amount, investor_shares_count, project.specs.shares.count);

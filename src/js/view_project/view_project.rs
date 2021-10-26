@@ -44,10 +44,13 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
 
     let available_funds = available_funds(&algod, &project).await?;
 
+    let investos_share_formatted = format!("{} %", project.investors_share.to_string());
+
     Ok(ViewProjectResJs {
         project: project.into(),
         shares_supply: shares_supply.to_string(),
         shares_available: shares_available.to_string(),
+        investors_share: investos_share_formatted,
         available_funds: microalgos_to_algos(available_funds).to_string(),
         customer_payment_deeplink: customer_payment_deeplink.to_string(),
     })
@@ -63,6 +66,7 @@ pub struct ViewProjectResJs {
     pub project: ProjectForUsersJson,
     pub shares_supply: String,
     pub shares_available: String,
+    pub investors_share: String,
     pub available_funds: String,
     pub customer_payment_deeplink: String,
 }

@@ -121,6 +121,7 @@ pub struct CreateProjectParJs {
     pub creator: String,
     pub asset_specs: CreateProjectAssetsParJs,
     pub asset_price: String,
+    pub investors_share: String,
     pub vote_threshold: String,
     // same order as the unsigned txs were sent to JS
     pub create_assets_signed_txs: Vec<SignedTxFromJs>,
@@ -135,6 +136,7 @@ impl CreateProjectParJs {
                 count: self.asset_specs.count.parse()?,
             },
             asset_price: algos_str_to_microalgos(&self.asset_price)?,
+            investors_share: self.asset_specs.investors_share.parse()?,
             vote_threshold: self.vote_threshold.parse()?,
         })
     }

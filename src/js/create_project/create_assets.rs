@@ -26,9 +26,11 @@ pub async fn bridge_create_project_assets_txs(pars: JsValue) -> Result<JsValue, 
         .into_serde::<CreateProjectAssetsParJs>()
         .map_err(to_js_value)?;
 
-    // validate the price input. we don't use it in this step,
+    // validation. we don't use these in this step,
     // just so the user sees possible errors right away, not after signing the asset txs
     algos_str_to_microalgos(&pars.asset_price).map_err(to_js_value)?;
+    // TODO more validation
+    pars.investors_share.parse::<u64>().map_err(to_js_value)?;
 
     let create_assets_txs = create_investor_assets_txs(
         &algod,
@@ -53,7 +55,8 @@ pub struct CreateProjectAssetsParJs {
     pub creator: String,
     pub token_name: String,
     pub count: String,
-    pub asset_price: String, // only for validation
+    pub asset_price: String,     // only for validation
+    pub investors_share: String, // only for validation
 }
 
 #[derive(Debug, Clone, Serialize)]
