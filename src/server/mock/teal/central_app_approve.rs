@@ -216,10 +216,6 @@ byte "HarvestedTotal"
 // TODO: important: this will reset "already harvested" to "entitled amount" *each time the investor buys shares*
 // see more notes in old repo
 
-/////////////////////////////////////
-// how many algos is investor currently entitled to (according to share holdings) -> stack
-// TODO refactor with X (search for this text)
-/////////////////////////////////////
 // get the asset holdings of caller
 gtxn 0 Sender
 byte "Shares"
@@ -270,10 +266,6 @@ int pay
 ==
 &&
 
-/////////////////////////////////////
-// how many algos is investor currently entitled to (according to share holdings) -> stack
-// TODO refactor with X (search for this text)
-/////////////////////////////////////
 // get the asset holdings of caller
 gtxn 0 Sender
 byte "Shares"
@@ -363,6 +355,9 @@ entitled_harvest_microalgos_for_shares:
 int {precision}
 *
 
+int {investors_share} // already multiplied with precision
+*
+
 // the asset's total supply
 int {asset_supply} 
 
@@ -376,7 +371,7 @@ app_global_get
 // percentage user is entitled to from received total
 *
 
-int {precision} // revert mult
+int {precision_square} // revert mult
 /
 
 retsub
