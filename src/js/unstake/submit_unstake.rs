@@ -24,7 +24,7 @@ pub async fn _bridge_submit_unstake(pars: SubmitUnstakeParJs) -> Result<SubmitUn
     }
     let app_call_tx = &pars.txs[0];
     let pay_fee_tx = &pars.txs[1];
-    let slots_app_calls_txs = &pars.txs[1..(1 + WITHDRAWAL_SLOT_COUNT as usize)];
+    let slots_app_calls_txs = &pars.txs[2..(2 + WITHDRAWAL_SLOT_COUNT as usize)];
 
     let res = submit_unstake(
         &algod,

@@ -32,7 +32,7 @@ pub async fn _bridge_submit_stake(pars: SubmitStakeParJs) -> Result<SubmitStakeR
     // stake tx group
     let central_app_call_tx = &pars.txs[0];
     let shares_xfer_tx = &pars.txs[1];
-    let slots_app_calls_txs = &pars.txs[1..(1 + WITHDRAWAL_SLOT_COUNT as usize)];
+    let slots_app_calls_txs = &pars.txs[2..(2 + WITHDRAWAL_SLOT_COUNT as usize)];
 
     let res = submit_stake(
         &algod,
