@@ -37,9 +37,9 @@ pub async fn _bridge_submit_stake(pars: SubmitStakeParJs) -> Result<SubmitStakeR
     let res = submit_stake(
         &algod,
         StakeSigned {
-            central_app_call_setup_tx: signed_js_tx_to_signed_tx1(shares_xfer_tx)?,
+            central_app_call_setup_tx: signed_js_tx_to_signed_tx1(central_app_call_tx)?,
             slot_setup_app_calls_txs: signed_js_txs_to_signed_tx1(slots_app_calls_txs)?,
-            shares_xfer_tx_signed: signed_js_tx_to_signed_tx1(central_app_call_tx)?,
+            shares_xfer_tx_signed: signed_js_tx_to_signed_tx1(shares_xfer_tx)?,
         },
     )
     .await?;
