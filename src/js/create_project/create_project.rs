@@ -1,15 +1,12 @@
-use super::{
-    create_assets::CreateProjectAssetsParJs, submit_project::SubmitCreateProjectPassthroughParJs,
-};
+use super::submit_project::SubmitCreateProjectPassthroughParJs;
 use crate::dependencies::environment;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, to_my_algo_txs1,
 };
 use crate::service::constants::{PRECISION, WITHDRAWAL_SLOT_COUNT};
-use crate::{
-    dependencies::algod, js::common::SignedTxFromJs, server::api,
-    service::str_to_algos::algos_str_to_microalgos,
-};
+use crate::service::str_to_algos::validate_algos_input;
+use crate::{dependencies::algod, js::common::SignedTxFromJs, server::api};
+use algonaut::core::{Address, MicroAlgos};
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use make::flows::create_project::{
@@ -45,11 +42,12 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     )
     .await?;
 
-    let creator_address = pars.creator.parse().map_err(Error::msg)?;
+    let creator_address = pars.pt.inputs.creator.parse().map_err(Error::msg)?;
+    let project_specs = inputs_to_project_specs(&pars.pt.inputs)?;
 
     let to_sign = create_project_txs(
         &algod,
-        &pars.project_specs()?,
+        &project_specs,
         creator_address,
         submit_assets_res.shares_id,
         api::programs()?,
@@ -81,7 +79,7 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     Ok(CreateProjectResJs {
         to_sign: to_my_algo_txs1(txs_to_sign)?,
         pt: SubmitCreateProjectPassthroughParJs {
-            specs: pars.project_specs()?,
+            specs: project_specs,
             creator: creator_address.to_string(),
             escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)?,
             shares_asset_id: submit_assets_res.shares_id,
@@ -90,6 +88,24 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
             central_escrow: to_sign.central_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
         },
+    })
+}
+
+fn inputs_to_project_specs(inputs: &CreateProjectFormInputsJs) -> Result<CreateProjectSpecs> {
+    let validated_inputs = validate_project_inputs(inputs)?;
+    validated_inputs_to_project_specs(validated_inputs)
+}
+
+fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<CreateProjectSpecs> {
+    Ok(CreateProjectSpecs {
+        name: inputs.name,
+        shares: CreateSharesSpecs {
+            token_name: inputs.token_name,
+            count: inputs.share_count,
+        },
+        asset_price: inputs.asset_price,
+        investors_share: inputs.investors_share,
+        vote_threshold: inputs.vote_threshold,
     })
 }
 
@@ -106,32 +122,123 @@ fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
     txs
 }
 
-/// The assets creation signed transactions and the specs to create the project
-#[derive(Debug, Clone, Deserialize)]
-pub struct CreateProjectParJs {
+pub fn validate_project_inputs(
+    inputs: &CreateProjectFormInputsJs,
+) -> Result<ValidatedProjectInputs> {
+    let project_name = validate_project_name(&inputs.project_name)?;
+    let asset_name = generate_asset_name(&project_name)?;
+    let creator_address = inputs.creator.parse().map_err(Error::msg)?;
+    let share_count = validate_share_count(&inputs.share_count)?;
+    let asset_price = validate_asset_price(&inputs.asset_price)?;
+    let investors_share = validate_investors_share(&inputs.investors_share)?;
+    let vote_threshold = validate_vote_threshold(&inputs.vote_threshold)?;
+
+    Ok(ValidatedProjectInputs {
+        name: inputs.project_name.clone(),
+        creator: creator_address,
+        token_name: asset_name,
+        share_count,
+        asset_price,
+        investors_share,
+        vote_threshold,
+    })
+}
+
+fn validate_project_name(name: &str) -> Result<String> {
+    let name = name.trim();
+
+    let min_length = 2;
+    let max_length = 40;
+
+    let project_name_len = name.len();
+    if project_name_len < min_length {
+        return Err(anyhow!(
+            "Project name must have at least {} characters. Current: {}",
+            min_length,
+            name.len()
+        ));
+    }
+    if project_name_len > max_length {
+        return Err(anyhow!(
+            "Project name must not have more than {} characters. Current: {}",
+            max_length,
+            name.len()
+        ));
+    }
+
+    Ok(name.to_owned())
+}
+
+fn generate_asset_name(validated_project_name: &str) -> Result<String> {
+    let mut asset_name = validated_project_name;
+    let asset_name_max_length = 7;
+    if validated_project_name.len() > asset_name_max_length {
+        asset_name = &asset_name[0..asset_name_max_length];
+    }
+    Ok(asset_name.to_owned())
+}
+
+fn validate_share_count(input: &str) -> Result<u64> {
+    let share_count = input.parse()?;
+    if share_count == 0 {
+        return Err(anyhow!("Please enter a valid share count"));
+    }
+    Ok(share_count)
+}
+
+fn validate_asset_price(input: &str) -> Result<MicroAlgos> {
+    validate_algos_input(input)
+}
+
+fn validate_investors_share(input: &str) -> Result<u64> {
+    let count = input.parse()?;
+    if count == 0 || count > 100 {
+        return Err(anyhow!(
+            "Investor's share must be a number between 1 and 100"
+        ));
+    }
+    Ok(count)
+}
+
+fn validate_vote_threshold(input: &str) -> Result<u64> {
+    let count = input.parse()?;
+    if count <= 1 || count > 100 {
+        return Err(anyhow!("Vote threshold must be a number between 1 and 100"));
+    }
+    Ok(count)
+}
+
+pub struct ValidatedProjectInputs {
     pub name: String,
-    pub creator: String,
-    pub asset_specs: CreateProjectAssetsParJs,
+    pub creator: Address,
+    pub token_name: String,
+    pub share_count: u64,
+    pub asset_price: MicroAlgos,
+    pub investors_share: u64,
+    pub vote_threshold: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateProjectFormInputsJs {
+    pub creator: String, // not strictly a form input ("field"), but for purpose here it can be
+    pub project_name: String,
+    pub share_count: String,
     pub asset_price: String,
     pub investors_share: String,
     pub vote_threshold: String,
+}
+
+/// The assets creation signed transactions and the specs to create the project
+#[derive(Debug, Clone, Deserialize)]
+pub struct CreateProjectParJs {
+    pub pt: CreateProjectPassthroughParJs,
     // same order as the unsigned txs were sent to JS
     pub create_assets_signed_txs: Vec<SignedTxFromJs>,
 }
 
-impl CreateProjectParJs {
-    fn project_specs(&self) -> Result<CreateProjectSpecs> {
-        Ok(CreateProjectSpecs {
-            name: self.name.clone(),
-            shares: CreateSharesSpecs {
-                token_name: self.asset_specs.token_name.clone(),
-                count: self.asset_specs.count.parse()?,
-            },
-            asset_price: algos_str_to_microalgos(&self.asset_price)?,
-            investors_share: self.asset_specs.investors_share.parse()?,
-            vote_threshold: self.vote_threshold.parse()?,
-        })
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateProjectPassthroughParJs {
+    pub inputs: CreateProjectFormInputsJs,
 }
 
 #[derive(Debug, Clone, Serialize)]

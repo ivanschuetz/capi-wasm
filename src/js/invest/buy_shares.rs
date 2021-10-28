@@ -4,7 +4,7 @@ use crate::{
     service::invest_or_stake::submit_apps_optins_from_js,
 };
 use algonaut::core::ToMsgPack;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use make::flows::invest::logic::invest_txs;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -21,6 +21,8 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     let api = api(env);
 
     let pars = pars.into_serde::<InvestParJs>().map_err(to_js_value)?;
+
+    let validated_share_count = validate_share_count(&pars.share_count).map_err(to_js_value)?;
 
     if let Some(app_opt_ins) = pars.app_opt_ins {
         submit_apps_optins_from_js(&algod, &app_opt_ins)
@@ -42,7 +44,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
         &project.staking_escrow,
         project.central_app_id,
         project.shares_asset_id,
-        pars.share_count.parse().map_err(to_js_value)?,
+        validated_share_count,
         project.specs.asset_price,
     )
     .await
@@ -64,6 +66,16 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
         },
     };
     Ok(JsValue::from_serde(&res).map_err(to_js_value)?)
+}
+
+fn validate_share_count(input: &str) -> Result<u64> {
+    // TODO < available shares (asset count in investing escrow).
+    // maybe we can allow investor to enter only a valid amount, e.g. with stepper or graphically
+    let share_count = input.parse()?;
+    if share_count == 0 {
+        return Err(anyhow!("Please enter a valid share count"));
+    }
+    Ok(share_count)
 }
 
 // TODO rename structs in BuyShares*

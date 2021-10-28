@@ -1,12 +1,9 @@
-use std::str::FromStr;
-
 use algonaut::core::MicroAlgos;
 use anyhow::{anyhow, Result};
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 
-pub fn algos_str_to_microalgos(s: &str) -> Result<MicroAlgos> {
-    let decimal = Decimal::from_str(&s)?;
-    validate_algos(decimal)
+pub fn validate_algos_input(s: &str) -> Result<MicroAlgos> {
+    validate_algos(s.parse()?)
 }
 
 pub fn microalgos_to_algos_str(micro_algos: MicroAlgos) -> String {

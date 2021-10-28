@@ -1,9 +1,9 @@
 use crate::{
     dependencies::{algod, api, environment},
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
-    service::str_to_algos::algos_str_to_microalgos,
+    service::str_to_algos::validate_algos_input,
 };
-use algonaut::algod::v2::Algod;
+use algonaut::{algod::v2::Algod, core::MicroAlgos};
 use anyhow::{anyhow, Error, Result};
 use make::{
     flows::{create_project::model::Project, withdraw::init_withdrawal::init_withdrawal},
@@ -26,6 +26,10 @@ pub async fn _bridge_init_withdrawal_request(
 ) -> Result<InitWithdrawalRequestResJs> {
     log::debug!("_bridge_init_withdrawal_request, pars: {:?}", pars);
 
+    let amount = validate_withdrawal_amount(&pars.withdrawal_amount)?;
+    validate_withdrawal_description(&pars.description)?; // not used in this step, only validation
+    let sender = pars.sender.parse().map_err(Error::msg)?;
+
     let env = &environment();
     let algod = algod(env);
     let api = api(env);
@@ -34,13 +38,7 @@ pub async fn _bridge_init_withdrawal_request(
 
     let free_slot = find_free_withdrawal_slot(&algod, &project).await?;
 
-    let to_sign = init_withdrawal(
-        &algod,
-        &pars.sender.parse().map_err(Error::msg)?,
-        algos_str_to_microalgos(&pars.withdrawal_amount)?,
-        free_slot,
-    )
-    .await?;
+    let to_sign = init_withdrawal(&algod, &sender, amount, free_slot).await?;
 
     Ok(InitWithdrawalRequestResJs {
         to_sign: to_my_algo_txs1(&vec![to_sign.init_withdrawal_slot_app_call_tx])?,
@@ -66,10 +64,34 @@ pub struct InitWithdrawalRequestParJs {
     pub project_id: String,
     pub sender: String,
     pub withdrawal_amount: String,
+    pub description: String, // for validation
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct InitWithdrawalRequestResJs {
     pub to_sign: Vec<Value>,
     pub pt: SubmitInitWithdrawalRequestPassthroughParJs,
+}
+
+pub fn validate_withdrawal_amount(input: &str) -> Result<MicroAlgos> {
+    // Note that we can init a request for more than currently in the funds
+    // funds can increase or decrease after creating the request, so there's no point in constraining the amount here.
+    validate_algos_input(input)
+}
+
+pub fn validate_withdrawal_description(input: &str) -> Result<String> {
+    let description = input.trim();
+
+    let max_length = 500;
+
+    let description_len = description.len();
+    if description_len > max_length {
+        return Err(anyhow!(
+            "Request description must not have more than {} characters. Current: {}",
+            max_length,
+            description_len
+        ));
+    }
+
+    Ok(description.to_owned())
 }

@@ -2,9 +2,13 @@ use crate::{
     dependencies::{algod, api, environment},
     js::{
         common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
-        withdraw::load_requests::withdrawal_req_to_view_data,
+        withdraw::{
+            init_withdrawal_request::{
+                validate_withdrawal_amount, validate_withdrawal_description,
+            },
+            load_requests::withdrawal_req_to_view_data,
+        },
     },
-    service::str_to_algos::algos_str_to_microalgos,
 };
 use anyhow::{anyhow, Result};
 use make::{
@@ -25,6 +29,9 @@ pub async fn bridge_submit_init_withdrawal_request(pars: JsValue) -> Result<JsVa
 pub async fn _bridge_submit_init_withdrawal_request(
     pars: SubmitInitWithdrawalRequestParJs,
 ) -> Result<SubmitInitWithdrawalRequestResJs> {
+    let amount = validate_withdrawal_amount(&pars.pt.amount)?;
+    let description = validate_withdrawal_description(&pars.description)?;
+
     let env = &environment();
     let algod = algod(env);
     let api = api(env);
@@ -55,8 +62,8 @@ pub async fn _bridge_submit_init_withdrawal_request(
         .submit_withdrawal_request(&WithdrawalRequestInputs {
             project_id: pars.pt.project_id,
             slot_id: pars.pt.slot_id.to_string(),
-            amount: algos_str_to_microalgos(&pars.pt.amount)?,
-            description: pars.description,
+            amount,
+            description,
         })
         .await?;
 
