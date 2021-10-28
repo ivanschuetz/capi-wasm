@@ -1,5 +1,17 @@
-use algonaut::{core::Address, transaction::Transaction};
-use make::api::model::DefaultError;
+use super::{
+    create_assets::CreateProjectAssetsParJs, submit_project::SubmitCreateProjectPassthroughParJs,
+};
+use crate::dependencies::environment;
+use crate::js::common::{
+    parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, to_my_algo_txs1,
+};
+use crate::service::constants::{PRECISION, WITHDRAWAL_SLOT_COUNT};
+use crate::{
+    dependencies::algod, js::common::SignedTxFromJs, server::api,
+    service::str_to_algos::algos_str_to_microalgos,
+};
+use algonaut::transaction::Transaction;
+use anyhow::{anyhow, Error, Result};
 use make::flows::create_project::{
     logic::create_project_txs,
     model::{CreateProjectSpecs, CreateProjectToSign, CreateSharesSpecs},
@@ -8,33 +20,18 @@ use make::flows::create_project::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;
-
 use wasm_bindgen::prelude::*;
-
-use crate::dependencies::environment;
-use crate::service::constants::{PRECISION, WITHDRAWAL_SLOT_COUNT};
-use crate::{
-    dependencies::algod,
-    js::common::{signed_js_tx_to_signed_tx, to_js_value, to_my_algo_txs, SignedTxFromJs},
-    server::api,
-    service::str_to_algos::algos_str_to_microalgos,
-};
-
-use super::{
-    create_assets::CreateProjectAssetsParJs, submit_project::SubmitCreateProjectPassthroughParJs,
-};
 
 /// create projects specs + signed assets txs -> create project result
 /// submits the signed assets, creates rest of project with generated asset ids
 #[wasm_bindgen]
 pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_create_project, pars: {:?}", pars);
+    to_bridge_res(_bridge_create_project(parse_bridge_pars(pars)?).await)
+}
 
+pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreateProjectResJs> {
     let algod = algod(&environment());
-
-    let pars = pars
-        .into_serde::<CreateProjectParJs>()
-        .map_err(to_js_value)?;
 
     // we assume order: js has as little logic as possible:
     // we send txs to be signed, as an array, and get the signed txs array back
@@ -44,61 +41,56 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
 
     let submit_assets_res = submit_create_assets(
         &algod,
-        &signed_js_tx_to_signed_tx(&create_shares_signed_tx)?,
+        &signed_js_tx_to_signed_tx1(&create_shares_signed_tx)?,
     )
-    .await
-    .map_err(to_js_value)?;
+    .await?;
 
-    let creator_address: Address = pars.creator.parse()?;
+    let creator_address = pars.creator.parse().map_err(Error::msg)?;
 
     let to_sign = create_project_txs(
         &algod,
-        &pars.project_specs().map_err(to_js_value)?,
+        &pars.project_specs()?,
         creator_address,
         submit_assets_res.shares_id,
-        api::programs().map_err(to_js_value)?,
+        api::programs()?,
         WITHDRAWAL_SLOT_COUNT,
         PRECISION,
     )
-    .await
-    .map_err(to_js_value)?;
+    .await?;
 
     // since we've to bundle all the txs to be signed in one array (so the user has to confirm only once in myalgo)
     // but return the functions in separate groups to the core logic (so rely on indices),
     // (separate groups are needed since groups need to be executed in specific order, e.g. opt in before transferring assets)
     // we double-check length here. The other txs to be signed are in single tx fields so no need to check those.
     if to_sign.escrow_funding_txs.len() != 4 {
-        return Err(JsValue::from_str(&format!(
+        return Err(anyhow!(
             "Unexpected funding txs length: {}",
             to_sign.escrow_funding_txs.len()
-        )));
+        ));
     }
     // double-checking total length as well, just in case
     // in the next step we also check the length of the signed txs
     let txs_to_sign = &txs_to_sign(&to_sign);
     if txs_to_sign.len() as u64 != 6 + WITHDRAWAL_SLOT_COUNT {
-        return Err(JsValue::from_str(&format!(
+        return Err(anyhow!(
             "Unexpected to sign project txs length: {}",
             txs_to_sign.len()
-        )));
+        ));
     }
 
-    let res = CreateProjectResJs {
-        to_sign: to_my_algo_txs(txs_to_sign)?,
+    Ok(CreateProjectResJs {
+        to_sign: to_my_algo_txs1(txs_to_sign)?,
         pt: SubmitCreateProjectPassthroughParJs {
-            specs: pars.project_specs().map_err(to_js_value)?,
+            specs: pars.project_specs()?,
             creator: creator_address.to_string(),
-            escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)
-                .map_err(to_js_value)?,
+            escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)?,
             shares_asset_id: submit_assets_res.shares_id,
             invest_escrow: to_sign.invest_escrow.into(),
             staking_escrow: to_sign.staking_escrow.into(),
             central_escrow: to_sign.central_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
         },
-    };
-
-    Ok(JsValue::from_serde(&res).map_err(to_js_value)?)
+    })
 }
 
 fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
@@ -128,7 +120,7 @@ pub struct CreateProjectParJs {
 }
 
 impl CreateProjectParJs {
-    fn project_specs(&self) -> Result<CreateProjectSpecs, DefaultError> {
+    fn project_specs(&self) -> Result<CreateProjectSpecs> {
         Ok(CreateProjectSpecs {
             name: self.name.clone(),
             shares: CreateSharesSpecs {
