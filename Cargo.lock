@@ -750,7 +750,7 @@ dependencies = [
 [[package]]
 name = "make"
 version = "0.1.0"
-source = "git+https://github.com/ivanschuetz/make?branch=main#c6f8a6443e3e0dfcbb53ee1de3172cedf9adb7fc"
+source = "git+https://github.com/ivanschuetz/make?branch=main#7382b6ef8f764d76e47f4c0d4a40cd9b94fe0ebf"
 dependencies = [
  "algonaut",
  "anyhow",
