@@ -10,6 +10,7 @@ use crate::{
 use make::{
     api::json_workaround::ProjectJson,
     flows::invest::{logic::submit_invest, model::InvestSigned},
+    network_util::wait_for_pending_transaction,
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -53,6 +54,10 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
     )
     .await
     .map_err(to_js_value)?;
+
+    let _ = wait_for_pending_transaction(&algod, &submit_res.tx_id)
+        .await
+        .map_err(to_js_value)?;
 
     log::debug!("Submit invest res: {:?}", submit_res);
 
