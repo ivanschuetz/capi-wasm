@@ -1,5 +1,5 @@
 use algonaut::{algod::v2::Algod, core::Address};
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 
 pub async fn asset_holdings(algod: &Algod, address: &Address, asset_id: u64) -> Result<u64> {
     Ok(algod
@@ -8,12 +8,8 @@ pub async fn asset_holdings(algod: &Algod, address: &Address, asset_id: u64) -> 
         .assets
         .iter()
         .find(|a| a.asset_id == asset_id)
-        .ok_or({
-            anyhow!(
-                "Invalid app state: Address: {} doesn't have asset: {}",
-                address,
-                asset_id
-            )
-        })?
-        .amount)
+        .map(|h| h.amount)
+        // asset id not found -> user not opted in -> 0 holdings
+        // we don't differentiate here between not opted in or opted in with no holdings
+        .unwrap_or(0))
 }
