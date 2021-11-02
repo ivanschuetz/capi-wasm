@@ -1,5 +1,5 @@
 use anyhow::Result;
-use make::flows::drain::logic::{submit_drain_customer_escrow, DrainCustomerEscrowSigned};
+use core::flows::drain::logic::{submit_drain_customer_escrow, DrainCustomerEscrowSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

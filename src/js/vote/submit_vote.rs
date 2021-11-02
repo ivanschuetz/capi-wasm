@@ -3,7 +3,7 @@ use crate::{
     js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
 };
 use anyhow::{anyhow, Result};
-use make::{
+use core::{
     flows::vote::logic::{submit_vote, VoteSigned},
     withdrawal_app_state::votes_global_state,
 };

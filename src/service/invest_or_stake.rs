@@ -1,7 +1,7 @@
 use crate::js::common::{signed_js_tx_to_signed_tx1, SignedTxFromJs};
 use algonaut::algod::v2::Algod;
 use anyhow::{anyhow, Result};
-use make::network_util::wait_for_pending_transaction;
+use core::network_util::wait_for_pending_transaction;
 
 use super::constants::WITHDRAWAL_SLOT_COUNT;
 

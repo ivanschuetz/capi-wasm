@@ -6,7 +6,7 @@ use crate::service::str_to_algos::microalgos_to_algos;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
-use make::api::json_workaround::ProjectForUsersJson;
+use core::api::json_workaround::ProjectForUsersJson;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

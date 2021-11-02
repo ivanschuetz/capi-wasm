@@ -11,7 +11,7 @@ use crate::{
     },
 };
 use anyhow::{anyhow, Result};
-use make::{
+use core::{
     api::model::WithdrawalRequestInputs,
     flows::withdraw::init_withdrawal::{submit_init_withdrawal, InitWithdrawalSigned},
 };

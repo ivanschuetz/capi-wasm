@@ -1,9 +1,9 @@
 use anyhow::{Error, Result};
-use make::api::json_workaround::{ProjectForUsersJson, ProjectJson};
-use make::api::model::{ProjectForUsers, SavedWithdrawalRequest, WithdrawalRequestInputs};
-use make::flows::create_project::logic::Programs;
-use make::flows::create_project::model::Project;
-use make::teal::{TealSource, TealSourceTemplate};
+use core::api::json_workaround::{ProjectForUsersJson, ProjectJson};
+use core::api::model::{ProjectForUsers, SavedWithdrawalRequest, WithdrawalRequestInputs};
+use core::flows::create_project::logic::Programs;
+use core::flows::create_project::model::Project;
+use core::teal::{TealSource, TealSourceTemplate};
 use std::convert::TryInto;
 
 use super::mock::teal::{

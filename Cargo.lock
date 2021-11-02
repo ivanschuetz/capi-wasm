@@ -246,6 +246,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
+name = "core"
+version = "0.1.0"
+source = "git+ssh://git@github.com/ivanschuetz/nibble-core.git?branch=main#482c1396539eec4c325bbfc12b3f1c67bbbc33dd"
+dependencies = [
+ "algonaut",
+ "anyhow",
+ "chrono",
+ "data-encoding",
+ "futures-timer",
+ "gloo-timers",
+ "instant",
+ "log",
+ "log4rs",
+ "rmp-serde",
+ "rust_decimal",
+ "serde",
+ "tealdbg",
+ "tinytemplate",
+ "wasm-logger",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -745,28 +767,6 @@ dependencies = [
  "thread-id",
  "typemap",
  "winapi",
-]
-
-[[package]]
-name = "make"
-version = "0.1.0"
-source = "git+https://github.com/ivanschuetz/make?branch=main#7382b6ef8f764d76e47f4c0d4a40cd9b94fe0ebf"
-dependencies = [
- "algonaut",
- "anyhow",
- "chrono",
- "data-encoding",
- "futures-timer",
- "gloo-timers",
- "instant",
- "log",
- "log4rs",
- "rmp-serde",
- "rust_decimal",
- "serde",
- "tealdbg",
- "tinytemplate",
- "wasm-logger",
 ]
 
 [[package]]
@@ -1733,9 +1733,9 @@ version = "0.1.0"
 dependencies = [
  "algonaut",
  "anyhow",
+ "core",
  "data-encoding",
  "log",
- "make",
  "my-algo",
  "reqwest",
  "rmp-serde",

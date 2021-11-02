@@ -1,7 +1,7 @@
 use crate::{server::api::Api, service::str_to_algos::microalgos_to_algos};
 use algonaut::{algod::v2::Algod, model::algod::v2::Asset};
 use anyhow::Result;
-use make::api::model::ProjectForUsers;
+use core::api::model::ProjectForUsers;
 use serde::{Deserialize, Serialize};
 
 pub async fn load_project_view_data(

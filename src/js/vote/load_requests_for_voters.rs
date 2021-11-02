@@ -8,7 +8,7 @@ use crate::{
     },
 };
 use anyhow::{Error, Result};
-use make::withdrawal_app_logic::voted;
+use core::withdrawal_app_logic::voted;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 

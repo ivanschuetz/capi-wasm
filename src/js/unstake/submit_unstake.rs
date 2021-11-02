@@ -5,7 +5,7 @@ use crate::js::common::{
 use crate::service::constants::WITHDRAWAL_SLOT_COUNT;
 use crate::{dependencies::algod, js::common::SignedTxFromJs};
 use anyhow::{anyhow, Result};
-use make::flows::unstake::logic::{submit_unstake, UnstakeSigned};
+use core::flows::unstake::logic::{submit_unstake, UnstakeSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

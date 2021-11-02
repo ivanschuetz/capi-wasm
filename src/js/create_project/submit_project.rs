@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Error, Result};
-use make::api::json_workaround::ContractAccountJson;
-use make::flows::create_project::{
+use core::api::json_workaround::ContractAccountJson;
+use core::flows::create_project::{
     logic::submit_create_project,
     model::{CreateProjectSigned, CreateProjectSpecs, Project},
 };

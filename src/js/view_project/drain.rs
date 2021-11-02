@@ -1,7 +1,7 @@
 use crate::dependencies::{algod, api, environment};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use anyhow::{Error, Result};
-use make::flows::drain::logic::drain_customer_escrow;
+use core::flows::drain::logic::drain_customer_escrow;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;

@@ -1,4 +1,4 @@
-use make::flows::create_project::{
+use core::flows::create_project::{
     model::CreateSharesSpecs, setup::create_assets::create_investor_assets_txs,
 };
 use serde::{Deserialize, Serialize};

@@ -7,7 +7,7 @@ use crate::{
     },
     service::constants::WITHDRAWAL_SLOT_COUNT,
 };
-use make::{
+use core::{
     api::json_workaround::ProjectJson,
     flows::invest::{logic::submit_invest, model::InvestSigned},
     network_util::wait_for_pending_transaction,

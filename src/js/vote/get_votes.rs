@@ -5,7 +5,7 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res},
 };
 use anyhow::{anyhow, Result};
-use make::{
+use core::{
     decimal_util::{AsDecimal, DecimalExt},
     withdrawal_app_state::votes_global_state,
 };

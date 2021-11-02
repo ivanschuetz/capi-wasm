@@ -4,7 +4,7 @@ use crate::{
     service::drain_if_needed::submit_drain,
 };
 use anyhow::{anyhow, Result};
-use make::flows::withdraw::logic::{submit_withdraw, WithdrawSigned};
+use core::flows::withdraw::logic::{submit_withdraw, WithdrawSigned};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 

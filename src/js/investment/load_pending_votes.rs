@@ -3,7 +3,7 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res},
 };
 use anyhow::{Error, Result};
-use make::withdrawal_app_state::{
+use core::withdrawal_app_state::{
     did_vote_local_state_or_err, has_active_withdrawal_request_global_state_or_err,
 };
 use serde::{Deserialize, Serialize};

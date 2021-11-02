@@ -8,7 +8,7 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
 use anyhow::{Error, Result};
-use make::flows::unstake::logic::unstake;
+use core::flows::unstake::logic::unstake;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

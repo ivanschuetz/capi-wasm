@@ -14,14 +14,14 @@ path = "src/lib.rs"
 wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"]  }
 
 algonaut = { git = "https://github.com/manuelmauro/algonaut", branch = "main", features = ["rustls"] }
-# algonaut = { path = "/Users/ischuetz/dev/github/algonaut" }
+# algonaut = { path = "../../algonaut" }
 
-make = { git = "https://github.com/ivanschuetz/make", branch = "main" }
-# make = { path = "/Users/ischuetz/dev/algorand/make/make_new/backend/make" }
-# make = { git = "ssh://git@github.com/ivanschuetz/make.git", branch = "main" }
+# core = { path = "../backend/core" }
+core = { git = "ssh://git@github.com/ivanschuetz/nibble-core.git", branch = "main" }
+# core = { git = "https://github.com/ivanschuetz/nibble-core", branch = "main" }
 
 my-algo = { git = "https://github.com/ivanschuetz/my-algo-rust-adapter", branch = "main" }
-# my-algo = { path = "/Users/ischuetz/dev/algorand/my_algo" }
+# my-algo = { path = "../../my-algo" }
 
 reqwest = { version = "=0.11.4", features = ["json"] }
 anyhow = "1.0"

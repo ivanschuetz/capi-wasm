@@ -9,7 +9,7 @@ use algonaut::{
     transaction::{tx_group::TxGroup, Transaction},
 };
 use anyhow::{anyhow, Result};
-use make::flows::shared::app::optin_to_app;
+use core::flows::shared::app::optin_to_app;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

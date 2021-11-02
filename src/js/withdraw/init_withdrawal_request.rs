@@ -5,7 +5,7 @@ use crate::{
 };
 use algonaut::{algod::v2::Algod, core::MicroAlgos};
 use anyhow::{anyhow, Error, Result};
-use make::{
+use core::{
     flows::{create_project::model::Project, withdraw::init_withdrawal::init_withdrawal},
     withdrawal_app_logic::slot_is_free,
 };

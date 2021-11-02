@@ -3,9 +3,9 @@ use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge
 use crate::service::drain_if_needed::submit_drain;
 use crate::{dependencies::algod, js::common::SignedTxFromJs};
 use anyhow::{anyhow, Error, Result};
-use make::diagnostics::log_harvest_diagnostics;
-use make::flows::harvest::logic::{submit_harvest, HarvestSigned};
-use make::network_util::wait_for_pending_transaction;
+use core::diagnostics::log_harvest_diagnostics;
+use core::flows::harvest::logic::{submit_harvest, HarvestSigned};
+use core::network_util::wait_for_pending_transaction;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

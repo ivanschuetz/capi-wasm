@@ -4,7 +4,7 @@ use crate::{
 };
 use anyhow::{anyhow, Error, Result};
 use data_encoding::BASE64;
-use make::flows::vote::logic::vote;
+use core::flows::vote::logic::vote;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -22,7 +22,7 @@ pub async fn _bridge_vote(pars: VoteParJs) -> Result<VoteResJs> {
 
     let project = api.load_project(&pars.project_id).await?;
 
-    // TODO convenience fns for local / global state reading (in make project)
+    // TODO convenience fns for local / global state reading (in core project)
 
     let voter_account_infos = algod
         .account_information(&pars.voter_address.parse().map_err(Error::msg)?)
