@@ -2,13 +2,13 @@
 
 use crate::dependencies::environment;
 use crate::js::unstake::submit_unstake::SubmitUnstakePassthroughParJs;
-use crate::service::app_state::owned_shares_count;
 use crate::{
     dependencies::{algod, api},
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
 use anyhow::{Error, Result};
 use core::flows::unstake::logic::unstake;
+use core::state::central_app_state::central_investor_state;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -28,15 +28,15 @@ pub async fn _bridge_unstake(pars: UnstakeParJs) -> Result<UnstakeResJs> {
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 
-    let investor_shares_count =
-        owned_shares_count(&algod, &investor_address, project.central_app_id).await?;
+    let investor_state =
+        central_investor_state(&algod, &investor_address, project.central_app_id).await?;
 
-    log::debug!("Unstaking shares: {:?}", investor_shares_count);
+    log::debug!("Unstaking shares: {:?}", investor_state.shares);
 
     let to_sign = unstake(
         &algod,
         investor_address,
-        investor_shares_count,
+        investor_state.shares,
         project.shares_asset_id,
         project.central_app_id,
         &project.withdrawal_slot_ids,

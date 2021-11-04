@@ -1,3 +1,5 @@
+use core::state::withdrawal_app_state::withdrawal_slot_voter_state;
+
 use crate::{
     dependencies::{algod, api, environment},
     js::{
@@ -8,7 +10,6 @@ use crate::{
     },
 };
 use anyhow::{Error, Result};
-use core::withdrawal_app_logic::voted;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -26,19 +27,20 @@ pub async fn _bridge_load_withdrawal_requests_for_voters(
     let algod = algod(env);
     // let requests = load_withdrawal_requests(&algod, &api, &pars.project_id).await?;
 
+    let investor_address = pars.user_address.parse().map_err(Error::msg)?;
+
     let project = api.load_project(&pars.project_id).await?;
     let requests = api.load_withdrawal_requests(&pars.project_id).await?;
 
     let mut reqs_view_data = vec![];
     for req in requests {
+        let slot_id = req.slot_id.parse()?; // hmm why parse here?
+        let investor_state =
+            withdrawal_slot_voter_state(&algod, &investor_address, slot_id).await?;
+
         reqs_view_data.push(WithdrawalRequestForVotersViewData {
             req: withdrawal_req_to_view_data_fetch_votes(&algod, &req, &project).await?,
-            user_voted: voted(
-                &algod,
-                req.slot_id.parse()?,
-                &pars.user_address.parse().map_err(Error::msg)?,
-            )
-            .await?,
+            user_voted: investor_state.did_vote_in_current_round(),
         });
     }
     Ok(LoadWithdrawalRequestsForVotersResJs {

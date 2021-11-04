@@ -1,13 +1,13 @@
 // TODO probably file can be deleted - we don't need bridge only to get votes? if not check repeated code with get_votes_percentage in load_requests
 
 use crate::dependencies::environment;
-use crate::service::account_state::asset_holdings;
 use crate::{
     dependencies::{algod, api},
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
 use anyhow::{Error, Result};
 use core::flows::stake::logic::stake;
+use core::state::account_state::asset_holdings;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

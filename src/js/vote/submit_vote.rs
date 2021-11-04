@@ -5,7 +5,7 @@ use crate::{
 use anyhow::{anyhow, Result};
 use core::{
     flows::vote::logic::{submit_vote, VoteSigned},
-    withdrawal_app_state::votes_global_state,
+    state::withdrawal_app_state::withdrawal_slot_global_state,
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -41,12 +41,12 @@ pub async fn _bridge_submit_vote(pars: SubmitVoteParJs) -> Result<SubmitVoteResJ
 
     log::debug!("Submit withdrawal tx id: {:?}", withdraw_tx_id);
 
-    let slot_app = algod.application_information(pars.slot_id.parse()?).await?;
-    let votes =
-        votes_global_state(&slot_app).ok_or(anyhow!("No votes in app: {}", pars.slot_id))?;
+    let slot_id = pars.slot_id.parse()?;
+
+    let slot_gs = withdrawal_slot_global_state(&algod, slot_id).await?;
 
     Ok(SubmitVoteResJs {
-        updated_votes: votes.to_string(),
+        updated_votes: slot_gs.votes.to_string(),
     })
 }
 

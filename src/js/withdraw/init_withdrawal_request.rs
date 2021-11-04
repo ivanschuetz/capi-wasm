@@ -7,7 +7,7 @@ use algonaut::{algod::v2::Algod, core::MicroAlgos};
 use anyhow::{anyhow, Error, Result};
 use core::{
     flows::{create_project::model::Project, withdraw::init_withdrawal::init_withdrawal},
-    withdrawal_app_logic::slot_is_free,
+    state::withdrawal_app_state::withdrawal_slot_global_state,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -52,7 +52,8 @@ pub async fn _bridge_init_withdrawal_request(
 
 async fn find_free_withdrawal_slot(algod: &Algod, project: &Project) -> Result<u64> {
     for slot_id in &project.withdrawal_slot_ids {
-        if slot_is_free(algod, *slot_id).await? {
+        let slot_gs = withdrawal_slot_global_state(&algod, *slot_id).await?;
+        if slot_gs.is_free() {
             return Ok(*slot_id);
         }
     }

@@ -10,7 +10,7 @@ use core::{
     api::model::SavedWithdrawalRequest,
     decimal_util::{AsDecimal, DecimalExt},
     flows::create_project::model::Project,
-    withdrawal_app_state::votes_global_state,
+    state::withdrawal_app_state::withdrawal_slot_global_state,
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -48,17 +48,15 @@ pub async fn load_withdrawal_requests(
     Ok(reqs_view_data)
 }
 
-async fn get_votes(algod: &Algod, slot_id: u64) -> Result<u64> {
-    let slot_app = algod.application_information(slot_id).await?;
-    Ok(votes_global_state(&slot_app).unwrap_or_else(|| 0))
-}
-
 pub async fn get_votes_percentage(
     algod: &Algod,
     project: &Project,
     slot_id: u64,
 ) -> Result<String> {
-    let votes = get_votes(algod, slot_id).await?.as_decimal();
+    let votes_gs = withdrawal_slot_global_state(algod, slot_id).await?;
+    let votes = votes_gs.votes.as_decimal();
+
+    // let votes = get_votes(algod, slot_id).await?.as_decimal();
     let shares_count = project.specs.shares.count.as_decimal();
     Ok((votes / shares_count).format_percentage())
 }
@@ -116,7 +114,13 @@ pub async fn withdrawal_req_to_view_data_fetch_votes(
     req: &SavedWithdrawalRequest,
     project: &Project,
 ) -> Result<WithdrawalRequestViewData> {
-    let votes = get_votes(algod, req.slot_id.parse()?).await?;
-    let votes_str = format_votes(&project, votes);
-    withdrawal_req_to_view_data(req, votes_str, votes >= project.specs.vote_threshold)
+    let slot_id = req.slot_id.parse()?;
+
+    let slot_gs = withdrawal_slot_global_state(algod, slot_id).await?;
+    let votes_str = format_votes(&project, slot_gs.votes);
+    withdrawal_req_to_view_data(
+        req,
+        votes_str,
+        slot_gs.votes >= project.specs.vote_threshold,
+    )
 }

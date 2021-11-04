@@ -4,10 +4,10 @@ use crate::{
     dependencies::{algod, api, environment},
     js::common::{parse_bridge_pars, to_bridge_res},
 };
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use core::{
     decimal_util::{AsDecimal, DecimalExt},
-    withdrawal_app_state::votes_global_state,
+    state::withdrawal_app_state::withdrawal_slot_global_state,
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -23,13 +23,13 @@ pub async fn _bridge_get_votes(pars: GetVotesParJs) -> Result<GetVotesResJs> {
     let algod = algod(env);
     let api = api(env);
 
+    let slot_id = pars.slot_id.parse()?;
+
     let project = api.load_project(&pars.project_id).await?;
 
-    let slot_app = algod.application_information(pars.slot_id.parse()?).await?;
-    let votes =
-        votes_global_state(&slot_app).ok_or(anyhow!("No votes in app: {}", pars.slot_id))?;
+    let slot_gs = withdrawal_slot_global_state(&algod, slot_id).await?;
 
-    let percentage = votes.as_decimal() / project.specs.shares.count.as_decimal();
+    let percentage = slot_gs.votes.as_decimal() / project.specs.shares.count.as_decimal();
     Ok(GetVotesResJs {
         votes_percentage: percentage.format_percentage(),
     })

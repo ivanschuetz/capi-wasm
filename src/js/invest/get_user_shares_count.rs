@@ -1,7 +1,8 @@
+use core::state::account_state::asset_holdings;
+
 use crate::{
     dependencies::{algod, environment},
     js::common::{parse_bridge_pars, to_bridge_res},
-    service::account_state::asset_holdings,
 };
 use anyhow::{Error, Result};
 use serde::Deserialize;
