@@ -240,26 +240,15 @@ int 0
 >
 &&
 
-///////////////////////////////////////
-// check that the user hasn't voted already for the current round
-///////////////////////////////////////
-// hasn't voted yet
-gtxn 0 Sender
-byte "LVotes"
-app_local_get
-int 0
-==
-// OR has voted for a past round
+// has not voted for the current round
 gtxn 0 Sender
 byte "VWRound"
 app_local_get
 byte "WRound"
 app_global_get
 <
-||
 &&
 bz branch_exit_false
-///////////////////////////////////////
 
 // increment votes
 byte "Votes"
@@ -338,13 +327,6 @@ int 1
 return
 
 branch_invest_or_stake:
-
-// set LVotes to 0, just to increment easily later
-int 0
-byte "LVotes"
-int 0
-app_local_put
-
 
 // set a "valid state" flag - this helps to prevent issues like double voting if the user maliciously (or somehow accidentally) clears their local state (ClearState)
 // local state can only be cleared totally, so this flag will be removed too, making the state invalid.
