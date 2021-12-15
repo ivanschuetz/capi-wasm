@@ -39,8 +39,6 @@ pub struct ProjectForUsersViewData {
     pub share_price_number_algo: String,
     pub share_asset_id: String,
     pub central_app_id: String,
-    pub slot_ids: Vec<String>,
-    pub vote_threshold: String,
     pub customer_escrow_address: String,
     pub invest_link: String,
     pub my_investment_link: String,
@@ -64,12 +62,6 @@ pub fn project_for_users_to_view_data(
         share_price_number_algo: microalgos_to_algos(project.asset_price).to_string(),
         share_asset_id: project.shares_asset_id.to_string(),
         central_app_id: project.central_app_id.to_string(),
-        slot_ids: project
-            .slot_ids
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect(),
-        vote_threshold: project.vote_threshold.to_string(),
         customer_escrow_address: project.customer_escrow_address.to_string(),
         invest_link: project.invest_link,
         my_investment_link: project.my_investment_link,

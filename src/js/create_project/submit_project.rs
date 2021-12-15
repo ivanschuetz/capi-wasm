@@ -13,7 +13,6 @@ use crate::dependencies::environment;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, signed_js_txs_to_signed_tx1, to_bridge_res,
 };
-use crate::service::constants::WITHDRAWAL_SLOT_COUNT;
 use crate::service::load_project_view_data::{
     project_for_users_to_view_data, ProjectForUsersViewData,
 };
@@ -39,7 +38,7 @@ async fn _bridge_submit_create_project(
     let algod = algod(env);
     let api = api(env);
 
-    if pars.txs.len() != 6 + WITHDRAWAL_SLOT_COUNT as usize {
+    if pars.txs.len() != 6 {
         return Err(anyhow!(
             "Unexpected signed project txs length: {}",
             pars.txs.len()
@@ -53,7 +52,6 @@ async fn _bridge_submit_create_project(
     let escrow_funding_txs = &pars.txs[0..4];
     let create_app_tx = &pars.txs[4];
     let xfer_shares_to_invest_escrow = &pars.txs[5];
-    let create_withdrawal_slots_txs = &pars.txs[6..(6 + WITHDRAWAL_SLOT_COUNT as usize)];
 
     log::debug!("Submitting the project..");
 
@@ -74,7 +72,6 @@ async fn _bridge_submit_create_project(
             staking_escrow: pars.pt.staking_escrow.try_into().map_err(Error::msg)?,
             central_escrow: pars.pt.central_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
-            create_withdrawal_slots_txs: signed_js_txs_to_signed_tx1(&create_withdrawal_slots_txs)?,
         },
     )
     .await?;

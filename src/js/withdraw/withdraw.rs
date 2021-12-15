@@ -33,13 +33,11 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         pars.sender.parse().map_err(Error::msg)?,
         MicroAlgos(pars.withdrawal_amount.parse()?),
         &project.central_escrow,
-        pars.slot_id.parse()?,
     )
     .await?;
 
     let mut to_sign = vec![];
     to_sign.push(to_sign_for_withdrawal.pay_withdraw_fee_tx);
-    to_sign.push(to_sign_for_withdrawal.check_enough_votes_tx);
 
     let maybe_to_sign_for_drain =
         drain_if_needed_txs(&algod, &project, &pars.sender.parse().map_err(Error::msg)?).await?;
@@ -65,7 +63,6 @@ pub struct WithdrawParJs {
     pub project_id: String,
     pub sender: String,
     pub withdrawal_amount: String,
-    pub slot_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -1,5 +1,3 @@
-// TODO probably file can be deleted - we don't need bridge only to get votes? if not check repeated code with get_votes_percentage in load_requests
-
 use crate::dependencies::environment;
 use crate::js::investment::submit_harvest::SubmitHarvestPassthroughParJs;
 use crate::service::drain_if_needed::drain_if_needed_txs;

@@ -50,13 +50,12 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
     .map_err(to_js_value)?;
 
-    let mut to_sign_txs = vec![
+    let to_sign_txs = vec![
         to_sign.central_app_setup_tx,
         to_sign.payment_tx,
         to_sign.shares_asset_optin_tx,
         to_sign.pay_escrow_fee_tx,
     ];
-    to_sign_txs.extend(to_sign.slots_setup_txs);
 
     let res: InvestResJs = InvestResJs {
         to_sign: to_my_algo_txs(&to_sign_txs)?,

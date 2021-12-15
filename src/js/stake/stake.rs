@@ -1,5 +1,3 @@
-// TODO probably file can be deleted - we don't need bridge only to get votes? if not check repeated code with get_votes_percentage in load_requests
-
 use crate::dependencies::environment;
 use crate::{
     dependencies::{algod, api},
@@ -36,13 +34,11 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
         investor_shares_count,
         project.shares_asset_id,
         project.central_app_id,
-        &project.withdrawal_slot_ids,
         &project.staking_escrow,
     )
     .await?;
 
-    let mut to_sign_txs = vec![to_sign.central_app_call_setup_tx, to_sign.shares_xfer_tx];
-    to_sign_txs.extend(to_sign.slot_setup_app_calls_txs);
+    let to_sign_txs = vec![to_sign.central_app_call_setup_tx, to_sign.shares_xfer_tx];
 
     Ok(StakeResJs {
         to_sign: to_my_algo_txs1(&to_sign_txs)?,

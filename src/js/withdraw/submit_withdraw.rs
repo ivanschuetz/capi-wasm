@@ -49,14 +49,12 @@ pub async fn _bridge_submit_withdrawal_request(
     }
 
     let pay_withdraw_fee_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
-    let check_enough_votes_tx = signed_js_tx_to_signed_tx1(&pars.txs[1])?;
 
     let withdraw_tx_id = submit_withdraw(
         &algod,
         &WithdrawSigned {
             withdraw_tx: rmp_serde::from_slice(&pars.pt.withdraw_tx_msg_pack)?,
             pay_withdraw_fee_tx,
-            check_enough_votes_tx,
         },
     )
     .await?;

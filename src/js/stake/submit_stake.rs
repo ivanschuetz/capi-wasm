@@ -1,8 +1,5 @@
 use crate::dependencies::environment;
-use crate::js::common::{
-    parse_bridge_pars, signed_js_tx_to_signed_tx1, signed_js_txs_to_signed_tx1, to_bridge_res,
-};
-use crate::service::constants::WITHDRAWAL_SLOT_COUNT;
+use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::service::invest_or_stake::submit_apps_optins_from_js;
 use crate::{dependencies::algod, js::common::SignedTxFromJs};
 use anyhow::{anyhow, Result};
@@ -25,20 +22,18 @@ pub async fn _bridge_submit_stake(pars: SubmitStakeParJs) -> Result<SubmitStakeR
     }
 
     // sanity check
-    if pars.txs.len() != 2 + WITHDRAWAL_SLOT_COUNT as usize {
+    if pars.txs.len() != 2 {
         return Err(anyhow!("Invalid app optins count: {}", pars.txs.len()));
     }
 
     // stake tx group
     let central_app_call_tx = &pars.txs[0];
     let shares_xfer_tx = &pars.txs[1];
-    let slots_app_calls_txs = &pars.txs[2..(2 + WITHDRAWAL_SLOT_COUNT as usize)];
 
     let res = submit_stake(
         &algod,
         StakeSigned {
             central_app_call_setup_tx: signed_js_tx_to_signed_tx1(central_app_call_tx)?,
-            slot_setup_app_calls_txs: signed_js_txs_to_signed_tx1(slots_app_calls_txs)?,
             shares_xfer_tx_signed: signed_js_tx_to_signed_tx1(shares_xfer_tx)?,
         },
     )

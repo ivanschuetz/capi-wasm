@@ -1,5 +1,3 @@
-// TODO probably file can be deleted - we don't need bridge only to get votes? if not check repeated code with get_votes_percentage in load_requests
-
 use crate::dependencies::environment;
 use crate::js::unstake::submit_unstake::SubmitUnstakePassthroughParJs;
 use crate::{
@@ -39,16 +37,14 @@ pub async fn _bridge_unstake(pars: UnstakeParJs) -> Result<UnstakeResJs> {
         investor_state.shares,
         project.shares_asset_id,
         project.central_app_id,
-        &project.withdrawal_slot_ids,
         &project.staking_escrow,
     )
     .await?;
 
-    let mut to_sign_txs = vec![
+    let to_sign_txs = vec![
         to_sign.central_app_optout_tx,
         to_sign.pay_shares_xfer_fee_tx,
     ];
-    to_sign_txs.extend(to_sign.slot_optout_txs);
 
     Ok(UnstakeResJs {
         to_sign: to_my_algo_txs1(&to_sign_txs)?,

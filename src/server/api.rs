@@ -8,7 +8,7 @@ use std::convert::TryInto;
 
 use super::mock::teal::{
     central_app_approve, central_app_clear, central_escrow, customer_escrow, invest_escrow,
-    staking_escrow, withdrawal_slot_approve, withdrawal_slot_clear,
+    staking_escrow,
 };
 
 // ideally a trait, but async trait not supported by rust yet
@@ -144,10 +144,6 @@ pub fn programs() -> Result<Programs> {
     Ok(Programs {
         central_app_approval: TealSourceTemplate(central_app_approve::SRC.as_bytes().to_vec()),
         central_app_clear: TealSource(central_app_clear::SRC.as_bytes().to_vec()),
-        withdrawal_slot_approval: TealSourceTemplate(
-            withdrawal_slot_approve::SRC.as_bytes().to_vec(),
-        ),
-        withdrawal_slot_clear: TealSource(withdrawal_slot_clear::SRC.as_bytes().to_vec()),
         central_escrow: TealSourceTemplate(central_escrow::SRC.as_bytes().to_vec()),
         customer_escrow: TealSourceTemplate(customer_escrow::SRC.as_bytes().to_vec()),
         invest_escrow: TealSourceTemplate(invest_escrow::SRC.as_bytes().to_vec()),

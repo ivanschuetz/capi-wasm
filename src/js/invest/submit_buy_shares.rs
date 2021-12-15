@@ -2,10 +2,7 @@ use std::convert::TryInto;
 
 use crate::{
     dependencies::{algod, environment},
-    js::common::{
-        signed_js_tx_to_signed_tx, signed_js_txs_to_signed_tx, to_js_value, SignedTxFromJs,
-    },
-    service::constants::WITHDRAWAL_SLOT_COUNT,
+    js::common::{signed_js_tx_to_signed_tx, to_js_value, SignedTxFromJs},
 };
 use core::{
     api::json_workaround::ProjectJson,
@@ -25,7 +22,7 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
         .into_serde::<SubmitBuySharesParJs>()
         .map_err(to_js_value)?;
 
-    if pars.txs.len() != 4 + WITHDRAWAL_SLOT_COUNT as usize {
+    if pars.txs.len() != 4 {
         return Err(JsValue::from_str(&format!(
             "Unexpected signed invest txs length: {}",
             pars.txs.len()
@@ -36,8 +33,6 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
     let payment_tx = signed_js_tx_to_signed_tx(&pars.txs[1])?;
     let shares_asset_optin_tx = signed_js_tx_to_signed_tx(&pars.txs[2])?;
     let pay_escrow_fee_tx = signed_js_tx_to_signed_tx(&pars.txs[3])?;
-    let slots_setup_txs =
-        signed_js_txs_to_signed_tx(&pars.txs[4..(4 + WITHDRAWAL_SLOT_COUNT as usize)])?;
 
     let submit_res = submit_invest(
         &algod,
@@ -49,7 +44,6 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
             pay_escrow_fee_tx,
             shares_xfer_tx: rmp_serde::from_slice(&pars.pt.shares_xfer_tx_msg_pack)
                 .map_err(to_js_value)?,
-            slots_setup_txs,
         },
     )
     .await

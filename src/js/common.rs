@@ -67,7 +67,6 @@ pub fn signed_js_txs_to_signed_tx1(txs: &[SignedTxFromJs]) -> Result<Vec<SignedT
     Ok(res)
 }
 
-// pub fn to_js_value<T: Debug>(t: T) -> String {
 pub fn to_js_value<T: Debug>(t: T) -> JsValue {
     JsValue::from_str(&format!("{:?}", t))
 }

@@ -7,5 +7,4 @@ pub mod investment;
 pub mod stake;
 pub mod unstake;
 pub mod view_project;
-pub mod vote;
 pub mod withdraw;

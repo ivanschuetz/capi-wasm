@@ -3,7 +3,7 @@ use crate::dependencies::environment;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, to_my_algo_txs1,
 };
-use crate::service::constants::{PRECISION, WITHDRAWAL_SLOT_COUNT};
+use crate::service::constants::PRECISION;
 use crate::service::str_to_algos::validate_algos_input;
 use crate::{dependencies::algod, js::common::SignedTxFromJs, server::api};
 use algonaut::core::{Address, MicroAlgos};
@@ -51,7 +51,6 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
         creator_address,
         submit_assets_res.shares_id,
         api::programs()?,
-        WITHDRAWAL_SLOT_COUNT,
         PRECISION,
     )
     .await?;
@@ -69,7 +68,7 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     // double-checking total length as well, just in case
     // in the next step we also check the length of the signed txs
     let txs_to_sign = &txs_to_sign(&to_sign);
-    if txs_to_sign.len() as u64 != 6 + WITHDRAWAL_SLOT_COUNT {
+    if txs_to_sign.len() as u64 != 6 {
         return Err(anyhow!(
             "Unexpected to sign project txs length: {}",
             txs_to_sign.len()
@@ -105,7 +104,6 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
         },
         asset_price: inputs.asset_price,
         investors_share: inputs.investors_share,
-        vote_threshold: inputs.vote_threshold,
     })
 }
 
@@ -116,9 +114,6 @@ fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
     }
     txs.push(res.create_app_tx.clone());
     txs.push(res.xfer_shares_to_invest_escrow.clone());
-    for tx in &res.create_withdrawal_slots_txs {
-        txs.push(tx.to_owned());
-    }
     txs
 }
 
@@ -131,7 +126,6 @@ pub fn validate_project_inputs(
     let share_count = validate_share_count(&inputs.share_count)?;
     let asset_price = validate_asset_price(&inputs.asset_price)?;
     let investors_share = validate_investors_share(&inputs.investors_share)?;
-    let vote_threshold = validate_vote_threshold(&inputs.vote_threshold)?;
 
     Ok(ValidatedProjectInputs {
         name: inputs.project_name.clone(),
@@ -140,7 +134,6 @@ pub fn validate_project_inputs(
         share_count,
         asset_price,
         investors_share,
-        vote_threshold,
     })
 }
 
@@ -200,14 +193,6 @@ fn validate_investors_share(input: &str) -> Result<u64> {
     Ok(count)
 }
 
-fn validate_vote_threshold(input: &str) -> Result<u64> {
-    let count = input.parse()?;
-    if count <= 1 || count > 100 {
-        return Err(anyhow!("Vote threshold must be a number between 1 and 100"));
-    }
-    Ok(count)
-}
-
 pub struct ValidatedProjectInputs {
     pub name: String,
     pub creator: Address,
@@ -215,7 +200,6 @@ pub struct ValidatedProjectInputs {
     pub share_count: u64,
     pub asset_price: MicroAlgos,
     pub investors_share: u64,
-    pub vote_threshold: u64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -225,7 +209,6 @@ pub struct CreateProjectFormInputsJs {
     pub share_count: String,
     pub asset_price: String,
     pub investors_share: String,
-    pub vote_threshold: String,
 }
 
 /// The assets creation signed transactions and the specs to create the project
