@@ -1,6 +1,6 @@
 use anyhow::{Error, Result};
 use core::api::json_workaround::{ProjectForUsersJson, ProjectJson};
-use core::api::model::{ProjectForUsers, SavedWithdrawalRequest, WithdrawalRequestInputs};
+use core::api::model::{ProjectForUsers, SavedWithdrawal, WithdrawalInputs};
 use core::flows::create_project::logic::Programs;
 use core::flows::create_project::model::Project;
 use core::teal::{TealSource, TealSourceTemplate};
@@ -76,14 +76,11 @@ impl Api {
         }
     }
 
-    pub async fn submit_withdrawal_request(
-        &self,
-        request: &WithdrawalRequestInputs,
-    ) -> Result<SavedWithdrawalRequest> {
-        log::debug!("calling api to submit withdrawal request: {:?}", request);
+    pub async fn save_withdrawal(&self, request: &WithdrawalInputs) -> Result<SavedWithdrawal> {
+        log::debug!("calling api to submit withdrawal: {:?}", request);
 
         // note that we're sending the rust Result "as is". might change this.
-        let res: Result<SavedWithdrawalRequest, String> = reqwest::Client::new()
+        let res: Result<SavedWithdrawal, String> = reqwest::Client::new()
             .post(format!("{}/withdraw", self.url))
             .json(&request)
             .send()
@@ -97,17 +94,14 @@ impl Api {
         }
     }
 
-    pub async fn load_withdrawal_requests(
-        &self,
-        project_id: &str,
-    ) -> Result<Vec<SavedWithdrawalRequest>> {
+    pub async fn load_withdrawal_requests(&self, project_id: &str) -> Result<Vec<SavedWithdrawal>> {
         log::debug!(
             "calling api to load withdrawal requests for project id: {:?}",
             project_id
         );
 
         // note that we're sending the rust Result "as is". might change this.
-        let res: Result<Vec<SavedWithdrawalRequest>, String> = reqwest::Client::new()
+        let res: Result<Vec<SavedWithdrawal>, String> = reqwest::Client::new()
             .get(format!("{}/withdrawals/{}", self.url, project_id))
             .send()
             .await?
@@ -117,25 +111,6 @@ impl Api {
         match res {
             Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
             Err(s) => Err(Error::msg(s.to_owned())),
-        }
-    }
-
-    // tmp hack, should be determined on chain
-    pub async fn complete_withdrawal_request(&self, request_id: &String) -> Result<()> {
-        log::debug!(
-            "calling api to complete withdrawal request_id: {:?}",
-            request_id
-        );
-
-        let res = reqwest::Client::new()
-            .post(format!("{}/complete_withdrawal/{}", self.url, request_id))
-            .send()
-            .await?
-            .status();
-
-        match res.is_success() {
-            true => Ok(()),
-            false => Err(Error::msg(format!("Request error: {:?}", res))),
         }
     }
 }

@@ -1,7 +1,10 @@
 use super::submit_withdraw::SubmitWithdrawPassthroughParJs;
 use crate::{
     dependencies::{algod, api, environment},
-    js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
+    js::{
+        common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
+        withdraw::submit_withdraw::{validate_withdrawal_inputs, WithdrawInputsPassthroughJs},
+    },
     service::drain_if_needed::drain_if_needed_txs,
 };
 use algonaut::core::MicroAlgos;
@@ -24,6 +27,15 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let algod = algod(env);
     let api = api(env);
 
+    let inputs_par = WithdrawInputsPassthroughJs {
+        project_id: pars.project_id.clone(),
+        sender: pars.sender.clone(),
+        withdrawal_amount: pars.withdrawal_amount.clone(),
+        description: pars.description.clone(),
+    };
+    // just for validation (the result is not used) - inputs are passed through to submit, which validates them again and processes them.
+    validate_withdrawal_inputs(&inputs_par)?;
+
     let project = api.load_project(&pars.project_id).await?;
 
     // TODO we could check balance first (enough to withdraw) but then more requests? depends on which state is more likely, think about this
@@ -36,8 +48,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     )
     .await?;
 
-    let mut to_sign = vec![];
-    to_sign.push(to_sign_for_withdrawal.pay_withdraw_fee_tx);
+    let mut to_sign = vec![to_sign_for_withdrawal.pay_withdraw_fee_tx];
 
     let maybe_to_sign_for_drain =
         drain_if_needed_txs(&algod, &project, &pars.sender.parse().map_err(Error::msg)?).await?;
@@ -54,6 +65,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         pt: SubmitWithdrawPassthroughParJs {
             maybe_drain_tx_msg_pack,
             withdraw_tx_msg_pack: rmp_serde::to_vec_named(&to_sign_for_withdrawal.withdraw_tx)?,
+            inputs: inputs_par.clone(),
         },
     })
 }
@@ -63,6 +75,7 @@ pub struct WithdrawParJs {
     pub project_id: String,
     pub sender: String,
     pub withdrawal_amount: String,
+    pub description: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -1,35 +1,43 @@
+use super::withdrawal_history::WithdrawalViewData;
 use crate::{
     dependencies::{algod, api, environment},
-    js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
-    service::drain_if_needed::submit_drain,
+    js::{
+        common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
+        withdraw::withdrawal_history::withdrawal_to_view_data,
+    },
+    service::{drain_if_needed::submit_drain, str_to_algos::validate_algos_input},
 };
-use anyhow::{anyhow, Result};
-use core::flows::withdraw::logic::{submit_withdraw, WithdrawSigned};
+use algonaut::core::{Address, MicroAlgos};
+use anyhow::{anyhow, Error, Result};
+use core::{
+    api::model::WithdrawalInputs,
+    flows::withdraw::logic::{submit_withdraw, WithdrawSigned},
+};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub async fn bridge_submit_withdrawal_request(pars: JsValue) -> Result<JsValue, JsValue> {
+pub async fn bridge_submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_submit_withdraw, pars: {:?}", pars);
-    to_bridge_res(_bridge_submit_withdrawal_request(parse_bridge_pars(pars)?).await)
+    to_bridge_res(_bridge_submit_withdraw(parse_bridge_pars(pars)?).await)
 }
 
-pub async fn _bridge_submit_withdrawal_request(
-    pars: SubmitWithdrawParJs,
-) -> Result<SubmitWithdrawResJs> {
+pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs> {
     let env = &environment();
     let algod = algod(env);
     let api = api(env);
 
-    // 2 txs if only withdrawal, 4 if withdrawal + drain
-    if pars.txs.len() != 2 && pars.txs.len() != 4 {
+    let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs)?;
+
+    // 1 tx if only withdrawal, 3 if withdrawal + drain
+    if pars.txs.len() != 1 && pars.txs.len() != 3 {
         return Err(anyhow!(
             "Unexpected withdraw txs length: {}",
             pars.txs.len()
         ));
     }
     // sanity check
-    if pars.txs.len() == 2 {
+    if pars.txs.len() == 1 {
         if pars.pt.maybe_drain_tx_msg_pack.is_some() {
             return Err(anyhow!(
                 "Invalid state: 2 txs with a passthrough draining tx",
@@ -37,13 +45,13 @@ pub async fn _bridge_submit_withdrawal_request(
         }
     }
 
-    if pars.txs.len() == 4 {
+    if pars.txs.len() == 3 {
         submit_drain(
             &algod,
             &pars.pt.maybe_drain_tx_msg_pack
                 .ok_or(anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?,
+            &pars.txs[1],
             &pars.txs[2],
-            &pars.txs[3],
         )
         .await?;
     }
@@ -61,16 +69,21 @@ pub async fn _bridge_submit_withdrawal_request(
 
     log::debug!("Submit withdrawal tx id: {:?}", withdraw_tx_id);
 
-    api.complete_withdrawal_request(&pars.request_id).await?;
+    let saved_withdrawal = api
+        .save_withdrawal(&WithdrawalInputs {
+            project_id: withdrawal_inputs.project_id.to_string(),
+            amount: withdrawal_inputs.amount,
+            description: withdrawal_inputs.description,
+        })
+        .await?;
 
     Ok(SubmitWithdrawResJs {
-        message: "Success, withdrawal success!".to_owned(),
+        saved_withdrawal: withdrawal_to_view_data(&saved_withdrawal)?,
     })
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitWithdrawParJs {
-    pub request_id: String,
     pub txs: Vec<SignedTxFromJs>,
     pub pt: SubmitWithdrawPassthroughParJs,
 }
@@ -80,9 +93,38 @@ pub struct SubmitWithdrawPassthroughParJs {
     // set if a drain tx is necessary
     pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
     pub withdraw_tx_msg_pack: Vec<u8>,
+
+    pub inputs: WithdrawInputsPassthroughJs,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WithdrawInputsPassthroughJs {
+    pub project_id: String,
+    pub sender: String,
+    pub withdrawal_amount: String,
+    pub description: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ValidatedWithdrawalInputs {
+    pub project_id: String,
+    pub sender: Address,
+    pub amount: MicroAlgos,
+    pub description: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SubmitWithdrawResJs {
-    pub message: String,
+    pub saved_withdrawal: WithdrawalViewData,
+}
+
+pub fn validate_withdrawal_inputs(
+    inputs: &WithdrawInputsPassthroughJs,
+) -> Result<ValidatedWithdrawalInputs> {
+    Ok(ValidatedWithdrawalInputs {
+        project_id: inputs.project_id.parse()?,
+        sender: inputs.sender.parse().map_err(Error::msg)?,
+        amount: validate_algos_input(&inputs.withdrawal_amount)?,
+        description: inputs.description.clone(),
+    })
 }
