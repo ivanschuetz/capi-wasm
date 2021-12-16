@@ -37,19 +37,17 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
         ));
     }
     // sanity check
-    if pars.txs.len() == 1 {
-        if pars.pt.maybe_drain_tx_msg_pack.is_some() {
-            return Err(anyhow!(
-                "Invalid state: 2 txs with a passthrough draining tx",
-            ));
-        }
+    if pars.txs.len() == 1 && pars.pt.maybe_drain_tx_msg_pack.is_some() {
+        return Err(anyhow!(
+            "Invalid state: 2 txs with a passthrough draining tx",
+        ));
     }
 
     if pars.txs.len() == 3 {
         submit_drain(
             &algod,
             &pars.pt.maybe_drain_tx_msg_pack
-                .ok_or(anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?,
+                .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?,
             &pars.txs[1],
             &pars.txs[2],
         )

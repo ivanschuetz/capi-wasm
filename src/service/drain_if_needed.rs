@@ -29,7 +29,7 @@ pub async fn drain_if_needed_txs(
         log::debug!("There's an amount to drain: {}", customer_escrow_balance);
         Ok(Some(
             drain_customer_escrow(
-                &algod,
+                algod,
                 sender,
                 project.central_app_id,
                 &project.customer_escrow,
@@ -56,7 +56,7 @@ pub async fn submit_drain(
     let drain_app_call_tx = signed_js_tx_to_signed_tx1(drain_app_call_tx)?;
 
     let drain_tx_id = submit_drain_customer_escrow(
-        &algod,
+        algod,
         &DrainCustomerEscrowSigned {
             drain_tx,
             pay_fee_tx: drain_pay_drain_tx_fee_tx,
@@ -66,7 +66,7 @@ pub async fn submit_drain(
     .await?;
     log::debug!("Submit drain tx id: {:?}", drain_tx_id);
 
-    wait_for_pending_transaction(&algod, &drain_tx_id).await?;
+    wait_for_pending_transaction(algod, &drain_tx_id).await?;
 
     Ok(())
 }

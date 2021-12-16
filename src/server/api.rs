@@ -38,7 +38,7 @@ impl Api {
 
         match res {
             Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
-            Err(s) => Err(Error::msg(s.to_owned())),
+            Err(s) => Err(Error::msg(s)),
         }
     }
 
@@ -55,7 +55,7 @@ impl Api {
 
         match res {
             Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
-            Err(s) => Err(Error::msg(s.to_owned())),
+            Err(s) => Err(Error::msg(s)),
         }
     }
 
@@ -72,7 +72,7 @@ impl Api {
 
         match res {
             Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
-            Err(s) => Err(Error::msg(s.to_owned())),
+            Err(s) => Err(Error::msg(s)),
         }
     }
 
@@ -89,8 +89,8 @@ impl Api {
             .await?;
 
         match res {
-            Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
-            Err(s) => Err(Error::msg(s.to_owned())),
+            Ok(p) => Ok(p),
+            Err(s) => Err(Error::msg(s)),
         }
     }
 
@@ -109,8 +109,8 @@ impl Api {
             .await?;
 
         match res {
-            Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
-            Err(s) => Err(Error::msg(s.to_owned())),
+            Ok(p) => Ok(p),
+            Err(s) => Err(Error::msg(s)),
         }
     }
 }

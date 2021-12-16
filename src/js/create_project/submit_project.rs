@@ -58,13 +58,11 @@ async fn _bridge_submit_create_project(
     let submit_project_res = submit_create_project(
         &algod,
         CreateProjectSigned {
-            escrow_funding_txs: signed_js_txs_to_signed_tx1(&escrow_funding_txs)?,
+            escrow_funding_txs: signed_js_txs_to_signed_tx1(escrow_funding_txs)?,
             optin_txs: rmp_serde::from_slice(&pars.pt.escrow_optin_signed_txs_msg_pack)
                 .map_err(Error::msg)?,
-            create_app_tx: signed_js_tx_to_signed_tx1(&create_app_tx)?,
-            xfer_shares_to_invest_escrow: signed_js_tx_to_signed_tx1(
-                &xfer_shares_to_invest_escrow,
-            )?,
+            create_app_tx: signed_js_tx_to_signed_tx1(create_app_tx)?,
+            xfer_shares_to_invest_escrow: signed_js_tx_to_signed_tx1(xfer_shares_to_invest_escrow)?,
             specs: pars.pt.specs,
             creator: pars.pt.creator.parse().map_err(Error::msg)?,
             shares_asset_id: pars.pt.shares_asset_id,
@@ -81,7 +79,7 @@ async fn _bridge_submit_create_project(
     let save_project_res = api.save_project(&submit_project_res.project).await?;
 
     Ok(project_for_users_to_view_data(
-        save_project_res.into(),
+        save_project_res,
         // project was just created: share supply is what was entered as share count
         // (in the future share count can change with dilution)
         submit_project_res.project.specs.shares.count,

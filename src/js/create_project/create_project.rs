@@ -38,7 +38,7 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
 
     let submit_assets_res = submit_create_assets(
         &algod,
-        &signed_js_tx_to_signed_tx1(&create_shares_signed_tx)?,
+        &signed_js_tx_to_signed_tx1(create_shares_signed_tx)?,
     )
     .await?;
 

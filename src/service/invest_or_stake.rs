@@ -8,13 +8,13 @@ pub async fn submit_apps_optins_from_js(algod: &Algod, optins: &[SignedTxFromJs]
         return Err(anyhow!("Invalid app optins count: {}", optins.len()));
     }
     let central_optin = &optins[0];
-    submit_apps_optins(&algod, central_optin).await
+    submit_apps_optins(algod, central_optin).await
 }
 
 async fn submit_apps_optins(algod: &Algod, central_optin: &SignedTxFromJs) -> Result<()> {
     let app_optins_txs = vec![signed_js_tx_to_signed_tx1(central_optin)?];
     let res = algod.broadcast_signed_transactions(&app_optins_txs).await?;
-    let _ = wait_for_pending_transaction(&algod, &res.tx_id);
+    let _ = wait_for_pending_transaction(algod, &res.tx_id);
 
     Ok(())
 }

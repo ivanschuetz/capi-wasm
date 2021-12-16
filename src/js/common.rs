@@ -21,7 +21,7 @@ pub fn to_my_algo_tx1(tx: &Transaction) -> Result<Value> {
     my_algo::to_my_algo_transaction::to_my_algo_transaction_value(tx)
 }
 
-pub fn to_my_algo_txs(txs: &Vec<Transaction>) -> Result<Vec<Value>, JsValue> {
+pub fn to_my_algo_txs(txs: &[Transaction]) -> Result<Vec<Value>, JsValue> {
     let mut res = vec![];
     for tx in txs {
         res.push(to_my_algo_tx(tx)?);
@@ -30,7 +30,7 @@ pub fn to_my_algo_txs(txs: &Vec<Transaction>) -> Result<Vec<Value>, JsValue> {
 }
 
 // TODO remove the other one, use this (js "decorator" refactoring)
-pub fn to_my_algo_txs1(txs: &Vec<Transaction>) -> Result<Vec<Value>> {
+pub fn to_my_algo_txs1(txs: &[Transaction]) -> Result<Vec<Value>> {
     let mut res = vec![];
     for tx in txs {
         res.push(to_my_algo_tx1(tx)?);
@@ -41,7 +41,7 @@ pub fn to_my_algo_txs1(txs: &Vec<Transaction>) -> Result<Vec<Value>> {
 pub fn signed_js_tx_to_signed_tx(
     signed_js_tx: &SignedTxFromJs,
 ) -> Result<SignedTransaction, JsValue> {
-    Ok(rmp_serde::from_slice(&signed_js_tx.blob).map_err(to_js_value)?)
+    rmp_serde::from_slice(&signed_js_tx.blob).map_err(to_js_value)
 }
 
 // TODO remove the other one, use this (js "decorator" refactoring)
@@ -72,10 +72,10 @@ pub fn to_js_value<T: Debug>(t: T) -> JsValue {
 }
 
 pub fn parse_bridge_pars<T: DeserializeOwned>(pars: JsValue) -> Result<T, JsValue> {
-    Ok(pars.into_serde::<T>().map_err(to_js_value)?)
+    pars.into_serde::<T>().map_err(to_js_value)
 }
 
 pub fn to_bridge_res<T: Serialize>(res: Result<T>) -> Result<JsValue, JsValue> {
     let res = res.map_err(to_js_value)?;
-    Ok(JsValue::from_serde(&res).map_err(to_js_value)?)
+    JsValue::from_serde(&res).map_err(to_js_value)
 }

@@ -23,8 +23,8 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
     Ok(LoadWithdrawalResJs { entries })
 }
 
-pub async fn load_withdrawals(api: &Api, project_id: &String) -> Result<Vec<WithdrawalViewData>> {
-    let entries = api.load_withdrawal_requests(&project_id).await?;
+pub async fn load_withdrawals(api: &Api, project_id: &str) -> Result<Vec<WithdrawalViewData>> {
+    let entries = api.load_withdrawal_requests(project_id).await?;
     let mut reqs_view_data = vec![];
     for req in entries {
         reqs_view_data.push(withdrawal_to_view_data(&req)?);

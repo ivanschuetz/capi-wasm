@@ -29,18 +29,19 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
 
     let to_sign_for_harvest = harvest(
         &algod,
-        &investor_address,
+        investor_address,
         project.central_app_id,
         MicroAlgos(pars.amount.parse()?),
         &project.central_escrow,
     )
     .await?;
 
-    let mut to_sign = vec![];
-    to_sign.push(to_sign_for_harvest.app_call_tx);
-    to_sign.push(to_sign_for_harvest.pay_fee_tx);
+    let mut to_sign = vec![
+        to_sign_for_harvest.app_call_tx,
+        to_sign_for_harvest.pay_fee_tx,
+    ];
 
-    let maybe_to_sign_for_drain = drain_if_needed_txs(&algod, &project, &investor_address).await?;
+    let maybe_to_sign_for_drain = drain_if_needed_txs(&algod, &project, investor_address).await?;
     // we append drain at the end since it's optional, so the indices of the non optional txs are fixed
     let mut maybe_drain_tx_msg_pack = None;
     if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {
