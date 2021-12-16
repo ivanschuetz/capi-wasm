@@ -17,8 +17,8 @@ algonaut = { git = "https://github.com/manuelmauro/algonaut", branch = "main", f
 # algonaut = { path = "../../../algonaut" }
 
 core = { path = "../../backend/core" }
-# core = { git = "ssh://git@github.com/ivanschuetz/nibble-core.git", branch = "main" }
-# core = { git = "https://github.com/ivanschuetz/nibble-core", branch = "main" }
+# core = { git = "ssh://git@github.com/ivanschuetz/capi-core.git", branch = "main" }
+# core = { git = "https://github.com/ivanschuetz/capi-core", branch = "main" }
 
 my-algo = { git = "https://github.com/ivanschuetz/my-algo-rust-adapter", branch = "main" }
 # my-algo = { path = "../../../my-algo" }
