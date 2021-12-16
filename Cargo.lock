@@ -1449,6 +1449,7 @@ dependencies = [
 [[package]]
 name = "tealdbg"
 version = "0.1.0"
+source = "git+https://github.com/ivanschuetz/tealdbg_launcher#062de80f14a6f0562e3e1d318a90d6ac481ee703"
 dependencies = [
  "algonaut",
 ]
