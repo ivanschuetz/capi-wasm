@@ -2,7 +2,7 @@ use algonaut::{algod::v2::Algod, core::MicroAlgos};
 use anyhow::Result;
 use core::{
     api::model::ProjectForUsers,
-    flows::withdraw::logic::{FIXED_FEE, MIN_BALANCE},
+    flows::withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
 };
 
 pub async fn available_funds(algod: &Algod, project: &ProjectForUsers) -> Result<MicroAlgos> {

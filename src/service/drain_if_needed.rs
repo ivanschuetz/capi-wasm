@@ -3,7 +3,7 @@ use anyhow::Result;
 use core::{
     flows::{
         create_project::model::Project,
-        drain::logic::{
+        drain::drain::{
             drain_customer_escrow, submit_drain_customer_escrow, DrainCustomerEscrowSigned,
             DrainCustomerEscrowToSign, FIXED_FEE, MIN_BALANCE,
         },

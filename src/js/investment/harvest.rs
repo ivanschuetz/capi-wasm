@@ -7,7 +7,7 @@ use crate::{
 };
 use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
-use core::flows::harvest::logic::harvest;
+use core::flows::harvest::harvest::harvest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

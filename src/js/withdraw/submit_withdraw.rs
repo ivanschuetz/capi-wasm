@@ -11,7 +11,7 @@ use algonaut::core::{Address, MicroAlgos};
 use anyhow::{anyhow, Error, Result};
 use core::{
     api::model::WithdrawalInputs,
-    flows::withdraw::logic::{submit_withdraw, WithdrawSigned},
+    flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned},
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;

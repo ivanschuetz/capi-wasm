@@ -1,7 +1,7 @@
 use anyhow::{Error, Result};
 use core::api::json_workaround::{ProjectForUsersJson, ProjectJson};
 use core::api::model::{ProjectForUsers, SavedWithdrawal, WithdrawalInputs};
-use core::flows::create_project::logic::Programs;
+use core::flows::create_project::create_project::Programs;
 use core::flows::create_project::model::Project;
 use core::teal::{TealSource, TealSourceTemplate};
 use std::convert::TryInto;

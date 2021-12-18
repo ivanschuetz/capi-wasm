@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Error, Result};
 use core::api::json_workaround::ContractAccountJson;
 use core::flows::create_project::{
-    logic::submit_create_project,
+    create_project::submit_create_project,
     model::{CreateProjectSigned, CreateProjectSpecs, Project},
 };
 use serde::{Deserialize, Serialize};

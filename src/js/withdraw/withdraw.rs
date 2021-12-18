@@ -9,7 +9,7 @@ use crate::{
 };
 use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
-use core::flows::withdraw::logic::withdraw;
+use core::flows::withdraw::withdraw::withdraw;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

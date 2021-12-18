@@ -5,7 +5,7 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
 use anyhow::{Error, Result};
-use core::flows::unstake::logic::unstake;
+use core::flows::unstake::unstake::unstake;
 use core::state::central_app_state::central_investor_state;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

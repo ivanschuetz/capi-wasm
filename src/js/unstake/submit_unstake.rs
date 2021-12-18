@@ -2,7 +2,7 @@ use crate::dependencies::environment;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::{dependencies::algod, js::common::SignedTxFromJs};
 use anyhow::{anyhow, Result};
-use core::flows::unstake::logic::{submit_unstake, UnstakeSigned};
+use core::flows::unstake::unstake::{submit_unstake, UnstakeSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

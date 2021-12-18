@@ -3,7 +3,7 @@ use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge
 use crate::service::invest_or_stake::submit_apps_optins_from_js;
 use crate::{dependencies::algod, js::common::SignedTxFromJs};
 use anyhow::{anyhow, Result};
-use core::flows::stake::logic::{submit_stake, StakeSigned};
+use core::flows::stake::stake::{submit_stake, StakeSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

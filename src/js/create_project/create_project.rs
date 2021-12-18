@@ -10,7 +10,7 @@ use algonaut::core::{Address, MicroAlgos};
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use core::flows::create_project::{
-    logic::create_project_txs,
+    create_project::create_project_txs,
     model::{CreateProjectSpecs, CreateProjectToSign, CreateSharesSpecs},
     setup::create_assets::submit_create_assets,
 };

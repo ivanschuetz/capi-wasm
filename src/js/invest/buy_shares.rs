@@ -5,7 +5,7 @@ use crate::{
 };
 use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Result};
-use core::flows::invest::logic::invest_txs;
+use core::flows::invest::invest::invest_txs;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

@@ -7,8 +7,8 @@ use anyhow::{Error, Result};
 use core::{
     decimal_util::{AsDecimal, DecimalExt},
     flows::{
-        harvest::logic::investor_can_harvest_amount_calc,
-        withdraw::logic::{FIXED_FEE, MIN_BALANCE},
+        harvest::harvest::investor_can_harvest_amount_calc,
+        withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
     },
     state::central_app_state::{central_global_state, central_investor_state},
 };
