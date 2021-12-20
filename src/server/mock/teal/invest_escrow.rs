@@ -1,21 +1,24 @@
 pub const SRC: &str = r#"
 #pragma version 4
+// int 1
 
 // escrow setup on project creation
 global GroupSize
-int 2
+int 8
 ==
-gtxn 1 XferAsset
+
+bz after_tx_group_access
+
+gtxn 6 XferAsset
 int {shares_asset_id}
 ==
-&&
 // the escrow is opting in
-bnz branch_shares_and_votes_opt_in 
+bnz branch_shares_opt_in 
+
+after_tx_group_access:
 
 global GroupSize
 int 5
-int 3 // slots: when swapping (i.e. buying shares) the investor inits local state in the withdrawal request slots 
-+
 ==
 bnz branch_invest
 
@@ -25,28 +28,28 @@ return
 
 // verifies that it's an opt-in to your asset + few security checks
 // see more notes in old repo
-branch_shares_and_votes_opt_in:
-gtxn 1 XferAsset
+branch_shares_opt_in:
+gtxn 6 XferAsset
 int {shares_asset_id}
 ==
-gtxn 1 TypeEnum
+gtxn 6 TypeEnum
 int axfer
 ==
 &&
-gtxn 1 AssetAmount
+gtxn 6 AssetAmount
 int 0
 ==
 &&
 
-gtxn 1 Fee
+gtxn 6 Fee
 int 1000
 <=
 &&
-gtxn 1 RekeyTo
+gtxn 6 RekeyTo
 global ZeroAddress
 ==
 &&
-gtxn 1 AssetCloseTo
+gtxn 6 AssetCloseTo
 global ZeroAddress
 ==
 &&

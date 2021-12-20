@@ -5,53 +5,28 @@ txn ApplicationID
 int 0
 ==
 
-// Note: temporary (maybe): we want to send create app in a group with the other project setup txs
 global GroupSize
-int 1
+int 8
 ==
 &&
 
 bnz branch_create
 
 global GroupSize
-int 1 // central opt in
-int 3 // slots
-+
+int 1 // central opt in - TODO what is this? who's opting in?
 ==
 bnz branch_opt_in
-
-// vote validation
-global GroupSize
-int 2
-==
-gtxn 0 NumAppArgs
-int 2
-==
-&&
-bz after_args_access2
-gtxn 0 ApplicationArgs 0 // action
-byte b64 YnJhbmNoX3ZvdGU= // branch_vote
-==
-gtxn 1 ApplicationArgs 0 // action
-byte b64 dmFsaWRhdGVfdm90ZQ== // validate_vote
-==
-&&
-bnz branch_validate_votes
 
 after_args_access2:
 
 global GroupSize
 int 2
-int 3 // slots
-+
 ==
 // basically also an investor setup, but when asset was acquired externally (instead of buying in the "ico")
 bnz branch_staking_setup
 
 global GroupSize
 int 5
-int 3 // slots
-+
 ==
 bnz branch_investor_setup
 
@@ -59,8 +34,7 @@ global GroupSize
 int 3
 ==
 gtxn 1 Sender // drain tx
-// escrow address (from where we're draining) TODO template
-addr 3BW2V2NE7AIFGSARHF7ULZFWJPCOYOJTP3NL6ZQ3TWMSK673HTWTPPKEBA
+addr {customer_escrow_address}
 ==
 &&
 
@@ -70,18 +44,15 @@ global GroupSize
 int 3 
 ==
 gtxn 1 Sender // harvest tx
-// central address (from where investors harvest) TODO template
-addr P7GEWDXXW5IONRW6XRIRVPJCT2XXEQGOBGG65VJPBUOYZEJCBZWTPHS3VQ
+addr {central_escrow_address}
 ==
 &&
 
 bnz branch_harvest
 
-// opt out tx group must call all the slots (to clear local state) + unstaking txs
+// opt out tx group
 global GroupSize
 int 3 // central optout + unstake shares  + pay fee for unstake shares
-int 3 // slots
-+
 ==
 bz after_tx_group_access
 gtxn 0 TypeEnum // unstake shares
@@ -121,27 +92,6 @@ int axfer
 ==
 &&
 
-// TODO slot opt-in
-// /////////////////////////////////////
-// // verify that the slots are being initialized (valid state)
-// // note that on investing / staking this isn't as critical
-// // if a malicious sender intentionally bypasses sending these transactions, they'll not be able to retrieve their shares
-// // but we could of course have bugs, that omits these transactions, so for overall consistency
-// /////////////////////////////////////
-// gtxn 2 TypeEnum
-// int appl
-// ==
-// &&
-// gtxn 3 TypeEnum
-// int appl
-// ==
-// &&
-// gtxn 4 TypeEnum
-// int appl
-// ==
-// &&
-// /////////////////////////////////////
-
 // don't allow staking 0 assets 
 // no particular reason, just doesn't make sense
 gtxn 1 AssetAmount
@@ -175,26 +125,6 @@ return
 
 branch_investor_setup:
 // initialize investor's local state
-
-// TODO slot opt-in
-// /////////////////////////////////////
-// // verify that the slots are being initialized (valid state)
-// // note that on investing / staking this isn't as critical
-// // if a malicious sender intentionally bypasses sending these transactions, they'll not be able to retrieve their shares
-// // but we could of course have bugs, that omits these transactions, so for overall consistency
-// /////////////////////////////////////
-// gtxn 5 TypeEnum
-// int appl
-// ==
-// gtxn 6 TypeEnum
-// int appl
-// ==
-// &&
-// gtxn 7 TypeEnum
-// int appl
-// ==
-// &&
-// /////////////////////////////////////
 
 // initialize / increment shares
 gtxn 0 Sender
@@ -302,18 +232,6 @@ app_local_put
 int 1
 return
 
-branch_validate_votes:
-
-// check that owned shares count == votes count (from any of the app calls - we checked they're equal above)
-int 0
-byte "Shares"
-app_local_get // if local state doesn't exist yet, this puts a 0 on the stack
-gtxn 0 ApplicationArgs 1
-btoi
-==
-
-return
-
 branch_opt_out:
 
 // check there's shares xfer
@@ -335,13 +253,6 @@ byte "Shares"
 app_local_get
 ==
 &&
-
-// check that all slots are being opted out (votes removed)
-int CloseOut
-gtxn 3 OnCompletion
-==
-&&
-// (TODO other slots)
 
 return
 
@@ -375,5 +286,4 @@ int {precision_square} // revert mult
 /
 
 retsub
-
 "#;
