@@ -108,11 +108,10 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
 }
 
 fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
-    let mut txs = vec![];
+    let mut txs = vec![res.create_app_tx.clone()];
     for tx in &res.escrow_funding_txs {
         txs.push(tx.to_owned());
     }
-    txs.push(res.create_app_tx.clone());
     txs.push(res.xfer_shares_to_invest_escrow.clone());
     txs
 }

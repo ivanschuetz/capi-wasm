@@ -49,8 +49,8 @@ async fn _bridge_submit_create_project(
     // and assign the txs to incorrect variables, which may cause subtle bugs
     // maybe refactor writing/reading into a helper struct or function
     // (written in create_project::txs_to_sign)
-    let escrow_funding_txs = &pars.txs[0..4];
-    let create_app_tx = &pars.txs[4];
+    let create_app_tx = &pars.txs[0];
+    let escrow_funding_txs = &pars.txs[1..5];
     let xfer_shares_to_invest_escrow = &pars.txs[5];
 
     log::debug!("Submitting the project..");
