@@ -1,11 +1,10 @@
-use crate::dependencies::environment;
 use crate::{
-    dependencies::{algod, api},
+    dependencies::api,
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
 use anyhow::{Error, Result};
-use core::flows::stake::stake::stake;
 use core::state::account_state::asset_holdings;
+use core::{dependencies::algod, flows::stake::stake::stake};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -17,9 +16,8 @@ pub async fn bridge_stake(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let project = api.load_project(&pars.project_id).await?;
 

@@ -1,11 +1,11 @@
 use crate::{
-    dependencies::{algod, api, environment},
+    dependencies::api,
     js::common::{to_js_value, to_my_algo_txs, SignedTxFromJs},
     service::invest_or_stake::submit_apps_optins_from_js,
 };
 use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Result};
-use core::flows::invest::invest::invest_txs;
+use core::{dependencies::algod, flows::invest::invest::invest_txs};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -16,9 +16,8 @@ use super::submit_buy_shares::SubmitBuySharesPassthroughParJs;
 pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_buy_shares, pars: {:?}", pars);
 
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let pars = pars.into_serde::<InvestParJs>().map_err(to_js_value)?;
 

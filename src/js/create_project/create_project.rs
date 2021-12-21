@@ -1,14 +1,14 @@
 use super::submit_project::SubmitCreateProjectPassthroughParJs;
-use crate::dependencies::environment;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, to_my_algo_txs1,
 };
 use crate::service::constants::PRECISION;
 use crate::service::str_to_algos::validate_algos_input;
-use crate::{dependencies::algod, js::common::SignedTxFromJs, server::api};
+use crate::{js::common::SignedTxFromJs, server::api};
 use algonaut::core::{Address, MicroAlgos};
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
+use core::dependencies::algod;
 use core::flows::create_project::{
     create_project::create_project_txs,
     model::{CreateProjectSpecs, CreateProjectToSign, CreateSharesSpecs},
@@ -28,7 +28,7 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreateProjectResJs> {
-    let algod = algod(&environment());
+    let algod = algod();
 
     // we assume order: js has as little logic as possible:
     // we send txs to be signed, as an array, and get the signed txs array back

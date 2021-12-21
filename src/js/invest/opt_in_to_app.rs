@@ -1,14 +1,11 @@
-use crate::{
-    dependencies::{algod, environment},
-    js::common::{to_js_value, to_my_algo_txs},
-};
+use crate::js::common::{to_js_value, to_my_algo_txs};
 use algonaut::{
     algod::v2::Algod,
     core::Address,
     transaction::{tx_group::TxGroup, Transaction},
 };
 use anyhow::{anyhow, Result};
-use core::flows::shared::app::optin_to_app;
+use core::{dependencies::algod, flows::shared::app::optin_to_app};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -17,7 +14,7 @@ use wasm_bindgen::prelude::*;
 pub async fn bridge_opt_in_to_apps_if_needed(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_opt_in_to_apps_if_needed, pars: {:?}", pars);
 
-    let algod = algod(&environment());
+    let algod = algod();
 
     let pars = pars.into_serde::<OptInToAppParJs>().map_err(to_js_value)?;
 

@@ -1,10 +1,10 @@
-use crate::dependencies::environment;
 use crate::js::unstake::submit_unstake::SubmitUnstakePassthroughParJs;
 use crate::{
-    dependencies::{algod, api},
+    dependencies::api,
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
 use anyhow::{Error, Result};
+use core::dependencies::algod;
 use core::flows::unstake::unstake::unstake;
 use core::state::central_app_state::central_investor_state;
 use serde::{Deserialize, Serialize};
@@ -18,9 +18,8 @@ pub async fn bridge_unstake(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_unstake(pars: UnstakeParJs) -> Result<UnstakeResJs> {
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let project = api.load_project(&pars.project_id).await?;
 

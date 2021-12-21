@@ -1,12 +1,12 @@
-use crate::dependencies::environment;
 use crate::js::investment::submit_harvest::SubmitHarvestPassthroughParJs;
 use crate::service::drain_if_needed::drain_if_needed_txs;
 use crate::{
-    dependencies::{algod, api},
+    dependencies::api,
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
 use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
+use core::dependencies::algod;
 use core::flows::harvest::harvest::harvest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -19,9 +19,8 @@ pub async fn bridge_harvest(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> {
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let project = api.load_project(&pars.project_id).await?;
 

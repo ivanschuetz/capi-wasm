@@ -1,3 +1,4 @@
+use core::dependencies::algod;
 use core::flows::create_project::{
     model::CreateSharesSpecs, setup::create_assets::create_investor_assets_txs,
 };
@@ -7,18 +8,15 @@ use std::fmt::Debug;
 
 use wasm_bindgen::prelude::*;
 
+use crate::js::common::{to_js_value, to_my_algo_tx};
 use crate::js::create_project::create_project::validate_project_inputs;
-use crate::{
-    dependencies::{algod, environment},
-    js::common::{to_js_value, to_my_algo_tx},
-};
 
 use super::create_project::{CreateProjectFormInputsJs, CreateProjectPassthroughParJs};
 
 /// asset specs -> create assets txs
 #[wasm_bindgen]
 pub async fn bridge_create_project_assets_txs(pars: JsValue) -> Result<JsValue, JsValue> {
-    let algod = algod(&environment());
+    let algod = algod();
 
     let pars = pars
         .into_serde::<CreateProjectAssetsParJs>()

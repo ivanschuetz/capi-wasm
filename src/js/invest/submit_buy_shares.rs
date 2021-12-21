@@ -1,11 +1,9 @@
 use std::convert::TryInto;
 
-use crate::{
-    dependencies::{algod, environment},
-    js::common::{signed_js_tx_to_signed_tx, to_js_value, SignedTxFromJs},
-};
+use crate::js::common::{signed_js_tx_to_signed_tx, to_js_value, SignedTxFromJs};
 use core::{
     api::json_workaround::ProjectJson,
+    dependencies::algod,
     flows::invest::{invest::submit_invest, model::InvestSigned},
     network_util::wait_for_pending_transaction,
 };
@@ -16,7 +14,7 @@ use wasm_bindgen::prelude::*;
 pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_submit_buy_shares, pars: {:?}", pars);
 
-    let algod = algod(&environment());
+    let algod = algod();
 
     let pars = pars
         .into_serde::<SubmitBuySharesParJs>()

@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Error, Result};
 use core::api::json_workaround::ContractAccountJson;
+use core::dependencies::algod;
 use core::flows::create_project::{
     create_project::submit_create_project,
     model::{CreateProjectSigned, CreateProjectSpecs, Project},
@@ -9,17 +10,13 @@ use std::convert::TryInto;
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
-use crate::dependencies::environment;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, signed_js_txs_to_signed_tx1, to_bridge_res,
 };
 use crate::service::load_project_view_data::{
     project_for_users_to_view_data, ProjectForUsersViewData,
 };
-use crate::{
-    dependencies::{algod, api},
-    js::common::SignedTxFromJs,
-};
+use crate::{dependencies::api, js::common::SignedTxFromJs};
 
 #[wasm_bindgen]
 pub async fn bridge_submit_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
@@ -34,9 +31,8 @@ async fn _bridge_submit_create_project(
 ) -> Result<ProjectForUsersViewData> {
     // log::debug!("in bridge_submit_create_project, pars: {:?}", pars);
 
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     if pars.txs.len() != 6 {
         return Err(anyhow!(

@@ -1,4 +1,4 @@
-use crate::dependencies::{algod, api, environment};
+use crate::dependencies::api;
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use crate::service::available_funds::available_funds;
 use crate::service::load_project_view_data::asset_supply;
@@ -7,6 +7,7 @@ use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use core::api::json_workaround::ProjectForUsersJson;
+use core::dependencies::algod;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
@@ -18,9 +19,8 @@ pub async fn bridge_view_project(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectResJs> {
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let project = api.load_project_user_view(&pars.project_id).await?;
 

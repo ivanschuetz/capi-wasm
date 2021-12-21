@@ -1,13 +1,13 @@
+use crate::dependencies::api;
+use crate::js::common::SignedTxFromJs;
+use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
+use crate::service::str_to_algos::microalgos_to_algos;
 use anyhow::Result;
+use core::dependencies::algod;
 use core::flows::drain::drain::{submit_drain_customer_escrow, DrainCustomerEscrowSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
-
-use crate::dependencies::{api, environment};
-use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
-use crate::service::str_to_algos::microalgos_to_algos;
-use crate::{dependencies::algod, js::common::SignedTxFromJs};
 
 #[wasm_bindgen]
 pub async fn bridge_submit_drain(pars: JsValue) -> Result<JsValue, JsValue> {
@@ -16,9 +16,8 @@ pub async fn bridge_submit_drain(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainResJs> {
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let app_call_tx = &pars.txs[0];
     let pay_fee_tx = &pars.txs[1];

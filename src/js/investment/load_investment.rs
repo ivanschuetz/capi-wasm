@@ -1,11 +1,12 @@
 use crate::{
-    dependencies::{algod, api, environment},
+    dependencies::api,
     js::common::{parse_bridge_pars, to_bridge_res},
     service::{constants::PRECISION, str_to_algos::microalgos_to_algos_str},
 };
 use anyhow::{Error, Result};
 use core::{
     decimal_util::{AsDecimal, DecimalExt},
+    dependencies::algod,
     flows::{
         harvest::harvest::investor_can_harvest_amount_calc,
         withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
@@ -24,9 +25,8 @@ pub async fn bridge_load_investment(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadInvestmentResJs> {
     log::debug!("bridge_load_investment, pars: {:?}", pars);
 
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let project = api.load_project(&pars.project_id).await?;
 

@@ -1,6 +1,7 @@
-use crate::dependencies::{algod, api, environment};
+use crate::dependencies::api;
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use anyhow::{Error, Result};
+use core::dependencies::algod;
 use core::flows::drain::drain::drain_customer_escrow;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -16,9 +17,8 @@ pub async fn bridge_drain(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let project = api.load_project(&pars.project_id).await?;
 

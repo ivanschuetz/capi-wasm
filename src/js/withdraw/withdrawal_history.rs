@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::{api, environment},
+    dependencies::api,
     js::common::{parse_bridge_pars, to_bridge_res},
     server::api::Api,
     service::str_to_algos::microalgos_to_algos,
@@ -16,8 +16,7 @@ pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> 
 }
 
 pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs> {
-    let env = &environment();
-    let api = api(env);
+    let api = api();
     let entries = load_withdrawals(&api, &pars.project_id).await?;
 
     Ok(LoadWithdrawalResJs { entries })

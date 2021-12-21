@@ -1,7 +1,7 @@
-use crate::dependencies::environment;
+use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
-use crate::{dependencies::algod, js::common::SignedTxFromJs};
 use anyhow::{anyhow, Result};
+use core::dependencies::algod;
 use core::flows::unstake::unstake::{submit_unstake, UnstakeSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -14,7 +14,7 @@ pub async fn bridge_submit_unstake(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_submit_unstake(pars: SubmitUnstakeParJs) -> Result<SubmitUnstakeResJs> {
-    let algod = algod(&environment());
+    let algod = algod();
 
     if pars.txs.len() != 2 {
         return Err(anyhow!("Invalid unstake txs count: {}", pars.txs.len()));

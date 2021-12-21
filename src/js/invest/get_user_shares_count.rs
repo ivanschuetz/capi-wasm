@@ -1,9 +1,6 @@
-use core::state::account_state::asset_holdings;
+use core::{dependencies::algod, state::account_state::asset_holdings};
 
-use crate::{
-    dependencies::{algod, environment},
-    js::common::{parse_bridge_pars, to_bridge_res},
-};
+use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use anyhow::{Error, Result};
 use serde::Deserialize;
 use wasm_bindgen::prelude::*;
@@ -16,8 +13,7 @@ pub async fn bridge_get_user_shares_count(pars: JsValue) -> Result<JsValue, JsVa
 }
 
 async fn _bridge_get_user_shares_count(pars: GetUserSharesCountParJs) -> Result<u64> {
-    let env = &environment();
-    let algod = algod(env);
+    let algod = algod();
 
     Ok(asset_holdings(
         &algod,

@@ -1,6 +1,6 @@
 use super::withdrawal_history::WithdrawalViewData;
 use crate::{
-    dependencies::{algod, api, environment},
+    dependencies::api,
     js::{
         common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
         withdraw::withdrawal_history::withdrawal_to_view_data,
@@ -11,6 +11,7 @@ use algonaut::core::{Address, MicroAlgos};
 use anyhow::{anyhow, Error, Result};
 use core::{
     api::model::WithdrawalInputs,
+    dependencies::algod,
     flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned},
 };
 use serde::{Deserialize, Serialize};
@@ -23,9 +24,8 @@ pub async fn bridge_submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs> {
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs)?;
 

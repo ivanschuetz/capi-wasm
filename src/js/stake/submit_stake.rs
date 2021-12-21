@@ -1,8 +1,8 @@
-use crate::dependencies::environment;
+use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::service::invest_or_stake::submit_apps_optins_from_js;
-use crate::{dependencies::algod, js::common::SignedTxFromJs};
 use anyhow::{anyhow, Result};
+use core::dependencies::algod;
 use core::flows::stake::stake::{submit_stake, StakeSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -15,7 +15,7 @@ pub async fn bridge_submit_stake(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_submit_stake(pars: SubmitStakeParJs) -> Result<SubmitStakeResJs> {
-    let algod = algod(&environment());
+    let algod = algod();
 
     if let Some(app_opt_ins) = pars.app_opt_ins {
         submit_apps_optins_from_js(&algod, &app_opt_ins).await?;

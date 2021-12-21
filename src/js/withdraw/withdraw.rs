@@ -1,6 +1,6 @@
 use super::submit_withdraw::SubmitWithdrawPassthroughParJs;
 use crate::{
-    dependencies::{algod, api, environment},
+    dependencies::api,
     js::{
         common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
         withdraw::submit_withdraw::{validate_withdrawal_inputs, WithdrawInputsPassthroughJs},
@@ -9,7 +9,7 @@ use crate::{
 };
 use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
-use core::flows::withdraw::withdraw::withdraw;
+use core::{dependencies::algod, flows::withdraw::withdraw::withdraw};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -23,9 +23,8 @@ pub async fn bridge_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
-    let env = &environment();
-    let algod = algod(env);
-    let api = api(env);
+    let algod = algod();
+    let api = api();
 
     let inputs_par = WithdrawInputsPassthroughJs {
         project_id: pars.project_id.clone(),
