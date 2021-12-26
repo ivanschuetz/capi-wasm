@@ -1,6 +1,6 @@
 use anyhow::{Error, Result};
 use core::api::json_workaround::{ProjectForUsersJson, ProjectJson};
-use core::api::model::{ProjectForUsers, SavedWithdrawal, WithdrawalInputs};
+use core::api::model::ProjectForUsers;
 use core::flows::create_project::create_project::Programs;
 use core::flows::create_project::model::Project;
 use core::teal::{TealSource, TealSourceTemplate};
@@ -72,44 +72,6 @@ impl Api {
 
         match res {
             Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
-            Err(s) => Err(Error::msg(s)),
-        }
-    }
-
-    pub async fn save_withdrawal(&self, request: &WithdrawalInputs) -> Result<SavedWithdrawal> {
-        log::debug!("calling api to submit withdrawal: {:?}", request);
-
-        // note that we're sending the rust Result "as is". might change this.
-        let res: Result<SavedWithdrawal, String> = reqwest::Client::new()
-            .post(format!("{}/withdraw", self.url))
-            .json(&request)
-            .send()
-            .await?
-            .json()
-            .await?;
-
-        match res {
-            Ok(p) => Ok(p),
-            Err(s) => Err(Error::msg(s)),
-        }
-    }
-
-    pub async fn load_withdrawal_requests(&self, project_id: &str) -> Result<Vec<SavedWithdrawal>> {
-        log::debug!(
-            "calling api to load withdrawal requests for project id: {:?}",
-            project_id
-        );
-
-        // note that we're sending the rust Result "as is". might change this.
-        let res: Result<Vec<SavedWithdrawal>, String> = reqwest::Client::new()
-            .get(format!("{}/withdrawals/{}", self.url, project_id))
-            .send()
-            .await?
-            .json()
-            .await?;
-
-        match res {
-            Ok(p) => Ok(p),
             Err(s) => Err(Error::msg(s)),
         }
     }

@@ -1,13 +1,11 @@
-use crate::{
-    dependencies::api,
-    js::common::{parse_bridge_pars, to_bridge_res},
-    server::api::Api,
-    service::str_to_algos::microalgos_to_algos,
-};
-use anyhow::Result;
-use core::api::model::SavedWithdrawal;
+use crate::js::common::{parse_bridge_pars, to_bridge_res};
+use algonaut::{core::Address, indexer::v2::Indexer};
+use anyhow::{Error, Result};
+use core::{dependencies::indexer, queries::withdrawals::withdrawals};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
+
+use super::withdrawal_view_data;
 
 #[wasm_bindgen]
 pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> {
@@ -16,17 +14,28 @@ pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> 
 }
 
 pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs> {
-    let api = api();
-    let entries = load_withdrawals(&api, &pars.project_id).await?;
+    let indexer = indexer();
+
+    let creator = pars.creator_address.parse().map_err(Error::msg)?;
+
+    let entries = load_withdrawals(&indexer, &pars.project_id, &creator).await?;
 
     Ok(LoadWithdrawalResJs { entries })
 }
 
-pub async fn load_withdrawals(api: &Api, project_id: &str) -> Result<Vec<WithdrawalViewData>> {
-    let entries = api.load_withdrawal_requests(project_id).await?;
+pub async fn load_withdrawals(
+    indexer: &Indexer,
+    project_id: &str,
+    creator: &Address,
+) -> Result<Vec<WithdrawalViewData>> {
+    let entries = withdrawals(indexer, creator, project_id.parse()?).await?;
     let mut reqs_view_data = vec![];
-    for req in entries {
-        reqs_view_data.push(withdrawal_to_view_data(&req)?);
+    for entry in entries {
+        reqs_view_data.push(withdrawal_view_data(
+            entry.amount,
+            entry.description,
+            entry.date.to_rfc2822(),
+        ));
     }
     Ok(reqs_view_data)
 }
@@ -34,6 +43,7 @@ pub async fn load_withdrawals(api: &Api, project_id: &str) -> Result<Vec<Withdra
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadWithdrawalParJs {
     pub project_id: String,
+    pub creator_address: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -47,17 +57,8 @@ pub struct WithdrawalViewData {
     pub description: String,
     pub date: String,
 
-    // passthrough model data
-    pub request_id: String,
+    /// unique id for React list
+    pub view_id: String,
+    /// passthrough model data
     pub amount_not_formatted: String,
-}
-
-pub fn withdrawal_to_view_data(req: &SavedWithdrawal) -> Result<WithdrawalViewData> {
-    Ok(WithdrawalViewData {
-        amount: format!("{} Algo", microalgos_to_algos(req.amount).to_string()),
-        description: req.description.clone(),
-        date: req.date.to_rfc2822(),
-        request_id: req.id.clone(),
-        amount_not_formatted: req.amount.to_string(), // microalgos
-    })
 }

@@ -9,7 +9,10 @@ use crate::{
 };
 use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
-use core::{dependencies::algod, flows::withdraw::withdraw::withdraw};
+use core::{
+    dependencies::algod,
+    flows::withdraw::withdraw::{withdraw, WithdrawalInputs},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -39,10 +42,16 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
     // TODO we could check balance first (enough to withdraw) but then more requests? depends on which state is more likely, think about this
 
+    let inputs = &WithdrawalInputs {
+        project_id: pars.project_id.to_string(),
+        amount: MicroAlgos(pars.withdrawal_amount.parse()?),
+        description: pars.description,
+    };
+
     let to_sign_for_withdrawal = withdraw(
         &algod,
         pars.sender.parse().map_err(Error::msg)?,
-        MicroAlgos(pars.withdrawal_amount.parse()?),
+        inputs,
         &project.central_escrow,
     )
     .await?;

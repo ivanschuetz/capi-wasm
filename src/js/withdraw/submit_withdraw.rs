@@ -1,16 +1,14 @@
 use super::withdrawal_history::WithdrawalViewData;
 use crate::{
-    dependencies::api,
     js::{
         common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
-        withdraw::withdrawal_history::withdrawal_to_view_data,
+        withdraw::withdrawal_view_data,
     },
     service::{drain_if_needed::submit_drain, str_to_algos::validate_algos_input},
 };
 use algonaut::core::{Address, MicroAlgos};
 use anyhow::{anyhow, Error, Result};
 use core::{
-    api::model::WithdrawalInputs,
     dependencies::algod,
     flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned},
 };
@@ -25,7 +23,6 @@ pub async fn bridge_submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs> {
     let algod = algod();
-    let api = api();
 
     let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs)?;
 
@@ -67,16 +64,12 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
 
     log::debug!("Submit withdrawal tx id: {:?}", withdraw_tx_id);
 
-    let saved_withdrawal = api
-        .save_withdrawal(&WithdrawalInputs {
-            project_id: withdrawal_inputs.project_id.to_string(),
-            amount: withdrawal_inputs.amount,
-            description: withdrawal_inputs.description,
-        })
-        .await?;
-
     Ok(SubmitWithdrawResJs {
-        saved_withdrawal: withdrawal_to_view_data(&saved_withdrawal)?,
+        saved_withdrawal: withdrawal_view_data(
+            withdrawal_inputs.amount,
+            withdrawal_inputs.description,
+            "Just now".to_owned(),
+        ),
     })
 }
 
