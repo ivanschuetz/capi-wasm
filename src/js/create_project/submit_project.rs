@@ -59,6 +59,7 @@ async fn _bridge_submit_create_project(
                 .map_err(Error::msg)?,
             create_app_tx: signed_js_tx_to_signed_tx1(create_app_tx)?,
             xfer_shares_to_invest_escrow: signed_js_tx_to_signed_tx1(xfer_shares_to_invest_escrow)?,
+            uuid: pars.pt.uuid.parse()?,
             specs: pars.pt.specs,
             creator: pars.pt.creator.parse().map_err(Error::msg)?,
             shares_asset_id: pars.pt.shares_asset_id,
@@ -75,7 +76,7 @@ async fn _bridge_submit_create_project(
     let save_project_res = api.save_project(&submit_project_res.project).await?;
 
     Ok(project_for_users_to_view_data(
-        save_project_res,
+        &save_project_res,
         // project was just created: share supply is what was entered as share count
         // (in the future share count can change with dilution)
         submit_project_res.project.specs.shares.count,
@@ -93,6 +94,7 @@ pub struct SubmitCreateProjectParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitCreateProjectPassthroughParJs {
+    pub uuid: String,
     pub specs: CreateProjectSpecs,
     // not sure how to passthrough, if we use Address, when deserializing, we get:
     // index.js:1 Error("invalid type: sequence, expected a 32 byte array", line: 1, column: 10711)

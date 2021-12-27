@@ -46,8 +46,27 @@ impl Api {
         log::debug!("calling api to load project with id: {:?}", id);
 
         // note that we're sending the rust Result "as is". might change this.
+        // TODO: naming "invest" is wrong - it's a just a lightweight project view (to display on UI)
         let res: Result<ProjectForUsersJson, String> = reqwest::Client::new()
             .get(format!("{}/invest/{}", self.url, id))
+            .send()
+            .await?
+            .json()
+            .await?;
+
+        match res {
+            Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
+            Err(s) => Err(Error::msg(s)),
+        }
+    }
+
+    pub async fn load_project_user_view_with_uuid(&self, uuid: &str) -> Result<ProjectForUsers> {
+        log::debug!("calling api to load project with uuid: {:?}", uuid);
+
+        // note that we're sending the rust Result "as is". might change this.
+        // TODO: naming "invest" is wrong - it's a just a lightweight project view (to display on UI)
+        let res: Result<ProjectForUsersJson, String> = reqwest::Client::new()
+            .get(format!("{}/invest_with_uuid/{}", self.url, uuid))
             .send()
             .await?
             .json()
@@ -65,6 +84,23 @@ impl Api {
         // note that we're sending the rust Result "as is". might change this.
         let res: Result<ProjectJson, String> = reqwest::Client::new()
             .get(format!("{}/project/{}", self.url, id))
+            .send()
+            .await?
+            .json()
+            .await?;
+
+        match res {
+            Ok(p) => Ok(p.try_into().map_err(Error::msg)?),
+            Err(s) => Err(Error::msg(s)),
+        }
+    }
+
+    pub async fn load_project_with_uuid(&self, uuid: &str) -> Result<Project> {
+        log::debug!("calling api to load project with uuid: {:?}", uuid);
+
+        // note that we're sending the rust Result "as is". might change this.
+        let res: Result<ProjectJson, String> = reqwest::Client::new()
+            .get(format!("{}/project_with_uuid/{}", self.url, uuid))
             .send()
             .await?
             .json()

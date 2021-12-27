@@ -4,7 +4,7 @@ use anyhow::Result;
 use core::api::model::ProjectForUsers;
 use serde::{Deserialize, Serialize};
 
-pub async fn load_project_view_data(
+pub async fn load_project_for_users_view_data(
     api: &Api,
     algod: &Algod,
     project_id: String,
@@ -12,7 +12,14 @@ pub async fn load_project_view_data(
     log::debug!("load_project_view_data, id: {:?}", project_id);
 
     let project = api.load_project_user_view(&project_id).await?;
+    load_project_for_users_view_data_with_project(algod, &project).await
+}
 
+/// Temporary common entry for project loaded with id and uuid (in the future we will use only uuid)
+pub async fn load_project_for_users_view_data_with_project(
+    algod: &Algod,
+    project: &ProjectForUsers,
+) -> Result<ProjectForUsersViewData> {
     let shares_info = asset_info(algod, project.shares_asset_id).await?;
 
     Ok(project_for_users_to_view_data(
@@ -47,7 +54,7 @@ pub struct ProjectForUsersViewData {
 }
 
 pub fn project_for_users_to_view_data(
-    project: ProjectForUsers,
+    project: &ProjectForUsers,
     share_supply: u64,
     share_asset_name: String,
 ) -> ProjectForUsersViewData {
@@ -63,9 +70,9 @@ pub fn project_for_users_to_view_data(
         share_asset_id: project.shares_asset_id.to_string(),
         central_app_id: project.central_app_id.to_string(),
         customer_escrow_address: project.customer_escrow_address.to_string(),
-        invest_link: project.invest_link,
-        my_investment_link: project.my_investment_link,
-        project_link: project.project_link,
+        invest_link: project.invest_link.clone(),
+        my_investment_link: project.my_investment_link.clone(),
+        project_link: project.project_link.clone(),
         creator_address: project.creator.to_string(),
     }
 }

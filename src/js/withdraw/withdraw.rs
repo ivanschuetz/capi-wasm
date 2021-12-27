@@ -30,7 +30,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let api = api();
 
     let inputs_par = WithdrawInputsPassthroughJs {
-        project_id: pars.project_id.clone(),
+        project_uuid: pars.project_uuid.clone(),
         sender: pars.sender.clone(),
         withdrawal_amount: pars.withdrawal_amount.clone(),
         description: pars.description.clone(),
@@ -38,12 +38,12 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     // just for validation (the result is not used) - inputs are passed through to submit, which validates them again and processes them.
     validate_withdrawal_inputs(&inputs_par)?;
 
-    let project = api.load_project(&pars.project_id).await?;
+    let project = api.load_project_with_uuid(&pars.project_uuid).await?;
 
     // TODO we could check balance first (enough to withdraw) but then more requests? depends on which state is more likely, think about this
 
     let inputs = &WithdrawalInputs {
-        project_id: pars.project_id.to_string(),
+        project_uuid: pars.project_uuid.parse()?,
         amount: MicroAlgos(pars.withdrawal_amount.parse()?),
         description: pars.description,
     };
@@ -80,7 +80,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct WithdrawParJs {
-    pub project_id: String,
+    pub project_uuid: String,
     pub sender: String,
     pub withdrawal_amount: String,
     pub description: String,

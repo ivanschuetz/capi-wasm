@@ -18,17 +18,17 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
-    let entries = load_withdrawals(&indexer, &pars.project_id, &creator).await?;
+    let entries = load_withdrawals(&indexer, &pars.project_uuid, &creator).await?;
 
     Ok(LoadWithdrawalResJs { entries })
 }
 
 pub async fn load_withdrawals(
     indexer: &Indexer,
-    project_id: &str,
+    project_uuid: &str,
     creator: &Address,
 ) -> Result<Vec<WithdrawalViewData>> {
-    let entries = withdrawals(indexer, creator, project_id.parse()?).await?;
+    let entries = withdrawals(indexer, creator, &project_uuid.parse()?).await?;
     let mut reqs_view_data = vec![];
     for entry in entries {
         reqs_view_data.push(withdrawal_view_data(
@@ -42,7 +42,7 @@ pub async fn load_withdrawals(
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadWithdrawalParJs {
-    pub project_id: String,
+    pub project_uuid: String,
     pub creator_address: String,
 }
 

@@ -90,7 +90,7 @@ pub struct SubmitWithdrawPassthroughParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WithdrawInputsPassthroughJs {
-    pub project_id: String,
+    pub project_uuid: String,
     pub sender: String,
     pub withdrawal_amount: String,
     pub description: String,
@@ -113,7 +113,7 @@ pub fn validate_withdrawal_inputs(
     inputs: &WithdrawInputsPassthroughJs,
 ) -> Result<ValidatedWithdrawalInputs> {
     Ok(ValidatedWithdrawalInputs {
-        project_id: inputs.project_id.parse()?,
+        project_id: inputs.project_uuid.parse()?,
         sender: inputs.sender.parse().map_err(Error::msg)?,
         amount: validate_algos_input(&inputs.withdrawal_amount)?,
         description: inputs.description.clone(),

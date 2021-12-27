@@ -4,6 +4,7 @@ pub mod create_project;
 pub mod general;
 pub mod invest;
 pub mod investment;
+pub mod load_project_user_view_with_uuid;
 pub mod stake;
 pub mod unstake;
 pub mod view_project;
