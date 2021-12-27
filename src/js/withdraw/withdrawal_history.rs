@@ -35,6 +35,7 @@ pub async fn load_withdrawals(
             entry.amount,
             entry.description,
             entry.date.to_rfc2822(),
+            entry.tx_id,
         ));
     }
     Ok(reqs_view_data)
@@ -57,8 +58,9 @@ pub struct WithdrawalViewData {
     pub description: String,
     pub date: String,
 
-    /// unique id for React list
-    pub view_id: String,
+    pub tx_id: String,
+    pub tx_link: String,
+
     /// passthrough model data
     pub amount_not_formatted: String,
 }

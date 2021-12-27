@@ -69,6 +69,7 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
             withdrawal_inputs.amount,
             withdrawal_inputs.description,
             "Just now".to_owned(),
+            withdraw_tx_id,
         ),
     })
 }
