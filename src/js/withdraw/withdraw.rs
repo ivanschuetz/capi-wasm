@@ -7,7 +7,6 @@ use crate::{
     },
     service::drain_if_needed::drain_if_needed_txs,
 };
-use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
 use core::{
     dependencies::algod,
@@ -35,17 +34,17 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         withdrawal_amount: pars.withdrawal_amount.clone(),
         description: pars.description.clone(),
     };
-    // just for validation (the result is not used) - inputs are passed through to submit, which validates them again and processes them.
-    validate_withdrawal_inputs(&inputs_par)?;
+
+    let validated_inputs = validate_withdrawal_inputs(&inputs_par)?;
 
     let project = api.load_project_with_uuid(&pars.project_uuid).await?;
 
     // TODO we could check balance first (enough to withdraw) but then more requests? depends on which state is more likely, think about this
 
     let inputs = &WithdrawalInputs {
-        project_uuid: pars.project_uuid.parse()?,
-        amount: MicroAlgos(pars.withdrawal_amount.parse()?),
-        description: pars.description,
+        project_uuid: validated_inputs.project_uuid,
+        amount: validated_inputs.amount,
+        description: validated_inputs.description,
     };
 
     let to_sign_for_withdrawal = withdraw(
