@@ -1,7 +1,6 @@
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use anyhow::Result;
-use core::dependencies::indexer;
-use core::queries::holders_count::holders_count;
+use core::{dependencies::indexer, queries::shares_distribution::holders_count};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

@@ -2,7 +2,7 @@ use core::dependencies::{env, network, Env, Network};
 
 use crate::server::api::Api;
 
-/// Convenience to not have to pass env everywhere
+/// URL determined by environment variable
 pub fn api() -> Api {
     api_for_env(&env())
 }
@@ -17,7 +17,7 @@ fn api_for_env(env: &Env) -> Api {
     )
 }
 
-/// Convenience to not have to pass net everywhere
+/// URL determined by environment variable
 pub fn explorer_base_url<'a>() -> &'a str {
     explorer_base_url_for_net(&network())
 }

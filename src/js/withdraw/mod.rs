@@ -1,8 +1,8 @@
 use self::withdrawal_history::WithdrawalViewData;
-use crate::{dependencies::explorer_base_url, service::str_to_algos::microalgos_to_algos};
+use crate::service::str_to_algos::microalgos_to_algos;
 use algonaut::core::MicroAlgos;
 
-use super::explorer_links::explorer_tx_id_link;
+use super::explorer_links::explorer_tx_id_link_env;
 
 pub mod submit_withdraw;
 #[allow(clippy::module_inception)]
@@ -20,7 +20,7 @@ pub fn withdrawal_view_data(
         description,
         date: date_str,
         tx_id: tx_id.clone(),
-        tx_link: explorer_tx_id_link(explorer_base_url(), &tx_id),
+        tx_link: explorer_tx_id_link_env(&tx_id),
         amount_not_formatted: amount.to_string(), // microalgos
     }
 }
