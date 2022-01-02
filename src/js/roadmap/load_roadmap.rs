@@ -1,4 +1,7 @@
-use crate::js::common::{parse_bridge_pars, to_bridge_res};
+use crate::js::{
+    common::{parse_bridge_pars, to_bridge_res},
+    explorer_links::explorer_tx_id_link_env,
+};
 use anyhow::{Error, Result};
 use core::dependencies::indexer;
 use core::roadmap::get_roadmap::get_roadmap;
@@ -27,6 +30,7 @@ pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapRes
             .into_iter()
             .map(|i| RoadmapItemJs {
                 tx_id: i.tx_id.clone(),
+                tx_link: explorer_tx_id_link_env(&i.tx_id),
                 project_uuid: i.project_uuid.to_string(),
                 title: i.title.clone(),
                 parent: i.parent.map(|h| BASE64.encode(&h.0)),
@@ -50,6 +54,7 @@ pub struct GetRoadmapResJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct RoadmapItemJs {
     pub tx_id: String,
+    pub tx_link: String,
     pub project_uuid: String,
     pub title: String,
     pub parent: Option<String>,

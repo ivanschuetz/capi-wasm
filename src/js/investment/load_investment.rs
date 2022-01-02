@@ -67,7 +67,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
     let investors_share_normalized: Decimal = Decimal::from(project.specs.investors_share)
         .checked_div(100.into())
-        .ok_or(anyhow!("Unexpected: dividing returned None"))?;
+        .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
     let investor_percentage_relative_to_total: Decimal =
         investor_percentage * investors_share_normalized;
 
