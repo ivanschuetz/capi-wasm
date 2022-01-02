@@ -26,6 +26,7 @@ pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapRes
             .items
             .into_iter()
             .map(|i| RoadmapItemJs {
+                tx_id: i.tx_id.clone(),
                 project_uuid: i.project_uuid.to_string(),
                 title: i.title.clone(),
                 parent: i.parent.map(|h| BASE64.encode(&h.0)),
@@ -48,6 +49,7 @@ pub struct GetRoadmapResJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct RoadmapItemJs {
+    pub tx_id: String,
     pub project_uuid: String,
     pub title: String,
     pub parent: Option<String>,
