@@ -249,6 +249,7 @@ dependencies = [
  "rmp-serde",
  "rust_decimal",
  "serde",
+ "sha2",
  "tealdbg",
  "tinytemplate",
  "uuid",

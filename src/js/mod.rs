@@ -7,6 +7,7 @@ pub mod invest;
 pub mod investment;
 pub mod load_project_user_view_with_uuid;
 pub mod queries;
+pub mod roadmap;
 pub mod stake;
 pub mod unstake;
 pub mod view_project;
