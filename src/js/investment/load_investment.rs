@@ -38,7 +38,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let central_state = central_global_state(&algod, project.central_app_id).await?;
 
     let customer_escrow_balance = algod
-        .account_information(&project.customer_escrow.address)
+        .account_information(project.customer_escrow.address())
         .await?
         .amount;
 

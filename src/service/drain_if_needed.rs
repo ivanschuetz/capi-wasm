@@ -20,7 +20,7 @@ pub async fn drain_if_needed_txs(
     sender: &Address,
 ) -> Result<Option<DrainCustomerEscrowToSign>> {
     let customer_escrow_balance = algod
-        .account_information(&project.customer_escrow.address)
+        .account_information(project.customer_escrow.address())
         .await?
         .amount;
 

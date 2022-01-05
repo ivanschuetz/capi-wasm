@@ -28,7 +28,7 @@ pub async fn _bridge_income_vs_spending(
 
     let project = api.load_project_with_uuid(&project_uuid_str).await?;
 
-    let mut income = received_payments(&indexer, &project.customer_escrow.address).await?;
+    let mut income = received_payments(&indexer, project.customer_escrow.address()).await?;
     log::debug!("Income: {:?}", income);
     income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 

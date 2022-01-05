@@ -14,14 +14,28 @@ dependencies = [
 [[package]]
 name = "algonaut"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#56845c55d7221e16722114282df0cdfb63221357"
 dependencies = [
- "algonaut_client",
- "algonaut_core",
- "algonaut_crypto",
- "algonaut_encoding",
- "algonaut_model",
- "algonaut_transaction",
+ "algonaut_client 0.3.0",
+ "algonaut_core 0.3.0",
+ "algonaut_crypto 0.3.0",
+ "algonaut_encoding 0.3.0",
+ "algonaut_model 0.3.0",
+ "algonaut_transaction 0.3.0",
+ "rmp-serde",
+ "thiserror",
+]
+
+[[package]]
+name = "algonaut"
+version = "0.3.0"
+source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
+dependencies = [
+ "algonaut_client 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_core 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_crypto 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_encoding 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_model 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_transaction 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
  "rmp-serde",
  "thiserror",
 ]
@@ -29,12 +43,30 @@ dependencies = [
 [[package]]
 name = "algonaut_client"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#56845c55d7221e16722114282df0cdfb63221357"
 dependencies = [
- "algonaut_core",
- "algonaut_crypto",
- "algonaut_encoding",
- "algonaut_model",
+ "algonaut_core 0.3.0",
+ "algonaut_crypto 0.3.0",
+ "algonaut_encoding 0.3.0",
+ "algonaut_model 0.3.0",
+ "async-trait",
+ "data-encoding",
+ "derive_more",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "url",
+]
+
+[[package]]
+name = "algonaut_client"
+version = "0.3.0"
+source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
+dependencies = [
+ "algonaut_core 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_crypto 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_encoding 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_model 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
  "async-trait",
  "data-encoding",
  "derive_more",
@@ -48,10 +80,26 @@ dependencies = [
 [[package]]
 name = "algonaut_core"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#56845c55d7221e16722114282df0cdfb63221357"
 dependencies = [
- "algonaut_crypto",
- "algonaut_encoding",
+ "algonaut_crypto 0.3.0",
+ "algonaut_encoding 0.3.0",
+ "data-encoding",
+ "derive_more",
+ "ring",
+ "rmp-serde",
+ "serde",
+ "sha2",
+ "static_assertions",
+ "thiserror",
+]
+
+[[package]]
+name = "algonaut_core"
+version = "0.3.0"
+source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
+dependencies = [
+ "algonaut_crypto 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_encoding 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
  "data-encoding",
  "derive_more",
  "ring",
@@ -65,9 +113,25 @@ dependencies = [
 [[package]]
 name = "algonaut_crypto"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#56845c55d7221e16722114282df0cdfb63221357"
 dependencies = [
- "algonaut_encoding",
+ "algonaut_encoding 0.3.0",
+ "data-encoding",
+ "derive_more",
+ "indexmap",
+ "lazy_static",
+ "ring",
+ "serde",
+ "sha2",
+ "static_assertions",
+ "thiserror",
+]
+
+[[package]]
+name = "algonaut_crypto"
+version = "0.3.0"
+source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
+dependencies = [
+ "algonaut_encoding 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
  "data-encoding",
  "derive_more",
  "indexmap",
@@ -82,7 +146,15 @@ dependencies = [
 [[package]]
 name = "algonaut_encoding"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#56845c55d7221e16722114282df0cdfb63221357"
+dependencies = [
+ "data-encoding",
+ "serde",
+]
+
+[[package]]
+name = "algonaut_encoding"
+version = "0.3.0"
+source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
 dependencies = [
  "data-encoding",
  "serde",
@@ -91,11 +163,25 @@ dependencies = [
 [[package]]
 name = "algonaut_model"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#56845c55d7221e16722114282df0cdfb63221357"
 dependencies = [
- "algonaut_core",
- "algonaut_crypto",
- "algonaut_encoding",
+ "algonaut_core 0.3.0",
+ "algonaut_crypto 0.3.0",
+ "algonaut_encoding 0.3.0",
+ "data-encoding",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+]
+
+[[package]]
+name = "algonaut_model"
+version = "0.3.0"
+source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
+dependencies = [
+ "algonaut_core 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_crypto 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_encoding 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
  "data-encoding",
  "serde",
  "serde_bytes",
@@ -106,12 +192,35 @@ dependencies = [
 [[package]]
 name = "algonaut_transaction"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#56845c55d7221e16722114282df0cdfb63221357"
 dependencies = [
- "algonaut_core",
- "algonaut_crypto",
- "algonaut_encoding",
- "algonaut_model",
+ "algonaut_core 0.3.0",
+ "algonaut_crypto 0.3.0",
+ "algonaut_encoding 0.3.0",
+ "algonaut_model 0.3.0",
+ "data-encoding",
+ "derive_more",
+ "getrandom",
+ "num-traits",
+ "rand",
+ "ring",
+ "rmp-serde",
+ "serde",
+ "serde_bytes",
+ "sha2",
+ "thiserror",
+ "url",
+ "urlencoding",
+]
+
+[[package]]
+name = "algonaut_transaction"
+version = "0.3.0"
+source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
+dependencies = [
+ "algonaut_core 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_crypto 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_encoding 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
+ "algonaut_model 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
  "data-encoding",
  "derive_more",
  "getrandom",
@@ -237,7 +346,7 @@ checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 name = "core"
 version = "0.1.0"
 dependencies = [
- "algonaut",
+ "algonaut 0.3.0",
  "anyhow",
  "chrono",
  "data-encoding",
@@ -790,9 +899,8 @@ dependencies = [
 [[package]]
 name = "my-algo"
 version = "0.1.0"
-source = "git+https://github.com/ivanschuetz/my-algo-rust-adapter?branch=main#ddbe61fb41302ce07f779bb38bf1f10caa1c81e8"
 dependencies = [
- "algonaut",
+ "algonaut 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
  "anyhow",
  "data-encoding",
  "js-sys",
@@ -1430,9 +1538,8 @@ dependencies = [
 [[package]]
 name = "tealdbg"
 version = "0.1.0"
-source = "git+https://github.com/ivanschuetz/tealdbg_launcher#a042c97f404344080654f2dd6b64dd4ed230458f"
 dependencies = [
- "algonaut",
+ "algonaut 0.3.0",
 ]
 
 [[package]]
@@ -1720,7 +1827,7 @@ checksum = "1a143597ca7c7793eff794def352d41792a93c481eb1042423ff7ff72ba2c31f"
 name = "wasm"
 version = "0.1.0"
 dependencies = [
- "algonaut",
+ "algonaut 0.3.0 (git+https://github.com/manuelmauro/algonaut?branch=main)",
  "anyhow",
  "core",
  "data-encoding",
