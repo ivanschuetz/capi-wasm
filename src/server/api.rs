@@ -1,7 +1,7 @@
 use anyhow::{Error, Result};
 use core::api::json_workaround::{ProjectForUsersJson, ProjectJson};
 use core::api::model::ProjectForUsers;
-use core::flows::create_project::create_project::Programs;
+use core::flows::create_project::create_project::{Escrows, Programs};
 use core::flows::create_project::model::Project;
 use core::teal::{TealSource, TealSourceTemplate};
 use std::convert::TryInto;
@@ -117,9 +117,11 @@ pub fn programs() -> Result<Programs> {
     Ok(Programs {
         central_app_approval: TealSourceTemplate(central_app_approve::SRC.as_bytes().to_vec()),
         central_app_clear: TealSource(central_app_clear::SRC.as_bytes().to_vec()),
-        central_escrow: TealSourceTemplate(central_escrow::SRC.as_bytes().to_vec()),
-        customer_escrow: TealSourceTemplate(customer_escrow::SRC.as_bytes().to_vec()),
-        invest_escrow: TealSourceTemplate(invest_escrow::SRC.as_bytes().to_vec()),
-        staking_escrow: TealSourceTemplate(staking_escrow::SRC.as_bytes().to_vec()),
+        escrows: Escrows {
+            central_escrow: TealSourceTemplate(central_escrow::SRC.as_bytes().to_vec()),
+            customer_escrow: TealSourceTemplate(customer_escrow::SRC.as_bytes().to_vec()),
+            invest_escrow: TealSourceTemplate(invest_escrow::SRC.as_bytes().to_vec()),
+            staking_escrow: TealSourceTemplate(staking_escrow::SRC.as_bytes().to_vec()),
+        },
     })
 }
