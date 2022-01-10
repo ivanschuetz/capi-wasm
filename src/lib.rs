@@ -1,4 +1,5 @@
 mod dependencies;
 pub mod js;
-pub mod server;
+mod model;
+pub mod teal;
 mod service;

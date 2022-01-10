@@ -1,10 +1,11 @@
-use crate::dependencies::api;
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::service::drain_if_needed::submit_drain;
+use crate::teal::programs;
 use anyhow::{anyhow, Error, Result};
-use core::dependencies::algod;
+use core::dependencies::{algod, indexer};
 use core::diagnostics::log_harvest_diagnostics;
+use core::flows::create_project::storage::load_project::load_project;
 use core::flows::harvest::harvest::{submit_harvest, HarvestSigned};
 use core::network_util::wait_for_pending_transaction;
 use serde::{Deserialize, Serialize};
@@ -19,6 +20,7 @@ pub async fn bridge_submit_harvest(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHarvestResJs> {
     let algod = algod();
+    let indexer = indexer();
 
     // 2 txs if only harvest, 4 if withdrawal + drain
     if pars.txs.len() != 2 && pars.txs.len() != 4 {
@@ -46,8 +48,14 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
     let pay_fee_tx = signed_js_tx_to_signed_tx1(&pars.txs[1])?;
 
     ///////////////////////////
-    let api = api();
-    let project = api.load_project(&pars.project_id_for_diagnostics).await?;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.project_id_for_diagnostics.parse()?,
+        &programs().escrows,
+    )
+    .await?;
+
     log_harvest_diagnostics(
         &algod,
         &pars

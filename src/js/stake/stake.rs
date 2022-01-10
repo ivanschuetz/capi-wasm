@@ -1,10 +1,10 @@
-use crate::{
-    dependencies::api,
-    js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
-};
+use crate::{js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1}, teal::programs};
 use anyhow::{Error, Result};
-use core::state::account_state::asset_holdings;
-use core::{dependencies::algod, flows::stake::stake::stake};
+use core::{
+    dependencies::algod,
+    flows::{create_project::storage::load_project::load_project, stake::stake::stake},
+};
+use core::{dependencies::indexer, state::account_state::asset_holdings};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -17,9 +17,15 @@ pub async fn bridge_stake(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
     let algod = algod();
-    let api = api();
+    let indexer = indexer();
 
-    let project = api.load_project(&pars.project_id).await?;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.project_id.parse()?,
+        &programs().escrows,
+    )
+    .await?;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 

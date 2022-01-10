@@ -1,10 +1,9 @@
+use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::js::unstake::submit_unstake::SubmitUnstakePassthroughParJs;
-use crate::{
-    dependencies::api,
-    js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
-};
+use crate::teal::programs;
 use anyhow::{Error, Result};
-use core::dependencies::algod;
+use core::dependencies::{algod, indexer};
+use core::flows::create_project::storage::load_project::load_project;
 use core::flows::unstake::unstake::unstake;
 use core::state::central_app_state::central_investor_state;
 use serde::{Deserialize, Serialize};
@@ -19,9 +18,15 @@ pub async fn bridge_unstake(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_unstake(pars: UnstakeParJs) -> Result<UnstakeResJs> {
     let algod = algod();
-    let api = api();
+    let indexer = indexer();
 
-    let project = api.load_project(&pars.project_id).await?;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.project_id.parse()?,
+        &programs().escrows,
+    )
+    .await?;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 

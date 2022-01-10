@@ -1,9 +1,10 @@
-use crate::dependencies::api;
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::service::str_to_algos::microalgos_to_algos;
+use crate::teal::programs;
 use anyhow::Result;
-use core::dependencies::algod;
+use core::dependencies::{algod, indexer};
+use core::flows::create_project::storage::load_project::load_project;
 use core::flows::drain::drain::{submit_drain_customer_escrow, DrainCustomerEscrowSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -17,7 +18,7 @@ pub async fn bridge_submit_drain(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainResJs> {
     let algod = algod();
-    let api = api();
+    let indexer = indexer();
 
     let app_call_tx = &pars.txs[0];
     let pay_fee_tx = &pars.txs[1];
@@ -36,17 +37,23 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
 
     // TODO pass the project from drain request, no need to fetch again here?
 
-    let project = api.load_project_user_view(&pars.pt.project_id).await?;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.pt.project_id.parse()?,
+        &programs().escrows,
+    )
+    .await?;
 
     // TODO (low prio) Consider just recalculating instead of new fetch
 
     let customer_escrow_balance = algod
-        .account_information(&project.customer_escrow_address)
+        .account_information(project.customer_escrow.address())
         .await?
         .amount;
 
     let central_escrow_balance = algod
-        .account_information(&project.central_escrow_address)
+        .account_information(project.central_escrow.address())
         .await?
         .amount;
 

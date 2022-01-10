@@ -1,10 +1,11 @@
 use super::submit_project::SubmitCreateProjectPassthroughParJs;
+use crate::js::common::SignedTxFromJs;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, to_my_algo_txs1,
 };
 use crate::service::constants::PRECISION;
 use crate::service::str_to_algos::validate_algos_input;
-use crate::{js::common::SignedTxFromJs, server::api};
+use crate::teal;
 use algonaut::core::{Address, MicroAlgos};
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
@@ -50,7 +51,7 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
         &project_specs,
         creator_address,
         submit_assets_res.shares_id,
-        api::programs()?,
+        teal::programs(),
         PRECISION,
     )
     .await?;

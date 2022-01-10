@@ -1,21 +1,4 @@
-use core::dependencies::{env, network, Env, Network};
-
-use crate::server::api::Api;
-
-/// URL determined by environment variable
-pub fn api() -> Api {
-    api_for_env(&env())
-}
-
-fn api_for_env(env: &Env) -> Api {
-    Api::new(
-        match env {
-            Env::Local => "http://127.0.0.1:3030",
-            Env::Test => "http://test.app.capi.finance:3030",
-        }
-        .to_owned(),
-    )
-}
+use core::dependencies::{network, Network};
 
 /// URL determined by environment variable
 pub fn explorer_base_url<'a>() -> &'a str {

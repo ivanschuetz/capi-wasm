@@ -1,11 +1,12 @@
 use anyhow::{anyhow, Error, Result};
-use core::api::json_workaround::ContractAccountJson;
 use core::dependencies::algod;
+use core::flows::create_project::storage::save_project::save_project;
 use core::flows::create_project::{
     create_project::submit_create_project,
-    model::{CreateProjectSigned, CreateProjectSpecs, Project},
+    model::{CreateProjectSigned, CreateProjectSpecs},
 };
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::convert::TryInto;
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
@@ -13,10 +14,10 @@ use wasm_bindgen::prelude::*;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, signed_js_txs_to_signed_tx1, to_bridge_res,
 };
-use crate::service::load_project_view_data::{
-    project_for_users_to_view_data, ProjectForUsersViewData,
-};
-use crate::{dependencies::api, js::common::SignedTxFromJs};
+use crate::js::common::{to_my_algo_tx1, SignedTxFromJs};
+use crate::js::general::js_types_workarounds::ContractAccountJs;
+
+use super::submit_save_project::SubmitSaveProjectPassthroughParJs;
 
 #[wasm_bindgen]
 pub async fn bridge_submit_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
@@ -28,11 +29,10 @@ pub async fn bridge_submit_create_project(pars: JsValue) -> Result<JsValue, JsVa
 /// submits the signed assets, creates rest of project with generated asset ids
 async fn _bridge_submit_create_project(
     pars: SubmitCreateProjectParJs,
-) -> Result<ProjectForUsersViewData> {
+) -> Result<SubmitCreateProjectResJs> {
     // log::debug!("in bridge_submit_create_project, pars: {:?}", pars);
 
     let algod = algod();
-    let api = api();
 
     if pars.txs.len() != 6 {
         return Err(anyhow!(
@@ -48,6 +48,8 @@ async fn _bridge_submit_create_project(
     let create_app_tx = &pars.txs[0];
     let escrow_funding_txs = &pars.txs[1..5];
     let xfer_shares_to_invest_escrow = &pars.txs[5];
+
+    let project_creator = pars.pt.creator.parse().map_err(Error::msg)?;
 
     log::debug!("Submitting the project..");
 
@@ -73,16 +75,16 @@ async fn _bridge_submit_create_project(
 
     log::debug!("Submit project res: {:?}", submit_project_res);
 
-    let save_project_res = api.save_project(&submit_project_res.project).await?;
+    // let save_project_res = api.save_project(&submit_project_res.project).await?;
 
-    Ok(project_for_users_to_view_data(
-        &save_project_res,
-        // project was just created: share supply is what was entered as share count
-        // (in the future share count can change with dilution)
-        submit_project_res.project.specs.shares.count,
-        // same here: freshly created, so the name is what was just entered
-        submit_project_res.project.specs.shares.token_name,
-    ))
+    let to_sign = save_project(&algod, &project_creator, &submit_project_res.project).await?;
+
+    Ok(SubmitCreateProjectResJs {
+        to_sign: to_my_algo_tx1(&to_sign.tx)?,
+        pt: SubmitSaveProjectPassthroughParJs {
+            project_msg_pack: rmp_serde::to_vec_named(&to_sign.project)?,
+        },
+    })
 }
 
 /// The assets creation signed transactions and the specs to create the project
@@ -105,13 +107,15 @@ pub struct SubmitCreateProjectPassthroughParJs {
     // Note: multiple transactions: the tx vector is serialized into a single u8 vector
     pub escrow_optin_signed_txs_msg_pack: Vec<u8>,
     pub shares_asset_id: u64,
-    pub invest_escrow: ContractAccountJson,
-    pub staking_escrow: ContractAccountJson,
-    pub central_escrow: ContractAccountJson,
-    pub customer_escrow: ContractAccountJson,
+    pub invest_escrow: ContractAccountJs,
+    pub staking_escrow: ContractAccountJs,
+    pub central_escrow: ContractAccountJs,
+    pub customer_escrow: ContractAccountJs,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SubmitCreateProjectResJs {
-    pub project: Project,
+    // next step tx: save the project
+    pub to_sign: Value,
+    pub pt: SubmitSaveProjectPassthroughParJs,
 }

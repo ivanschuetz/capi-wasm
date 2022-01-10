@@ -1,7 +1,8 @@
-use crate::dependencies::api;
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
+use crate::teal::programs;
 use anyhow::{Error, Result};
-use core::dependencies::algod;
+use core::dependencies::{algod, indexer};
+use core::flows::create_project::storage::load_project::load_project;
 use core::flows::drain::drain::drain_customer_escrow;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -18,9 +19,15 @@ pub async fn bridge_drain(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
     let algod = algod();
-    let api = api();
+    let indexer = indexer();
 
-    let project = api.load_project(&pars.project_id).await?;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.project_id.parse()?,
+        &programs().escrows,
+    )
+    .await?;
 
     let to_sign = drain_customer_escrow(
         &algod,
@@ -43,7 +50,7 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
 }
 
 // TODO this can be optimized passing the already loaded project from JS
-// to not call the api again to load the project
+// to not load the project again
 // (we'd have to use the complete project instance - drain needs lsig)
 #[derive(Debug, Clone, Deserialize)]
 pub struct DrainParJs {

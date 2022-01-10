@@ -1,13 +1,14 @@
-use crate::dependencies::api;
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
+use crate::model::project_for_users::project_to_project_for_users;
+use crate::model::project_for_users_view_data::ProjectForUsersViewData;
 use crate::service::available_funds::available_funds;
-use crate::service::load_project_view_data::asset_supply;
 use crate::service::str_to_algos::microalgos_to_algos;
+use crate::teal::programs;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
-use core::api::json_workaround::ProjectForUsersJson;
-use core::dependencies::algod;
+use core::dependencies::{algod, env, indexer};
+use core::flows::create_project::storage::load_project::load_project;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
@@ -20,35 +21,43 @@ pub async fn bridge_view_project(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectResJs> {
     let algod = algod();
-    let api = api();
+    let indexer = indexer();
+    let env = env();
 
-    let project = api.load_project_user_view(&pars.project_id).await?;
-
-    let shares_supply = asset_supply(&algod, project.shares_asset_id).await?;
-
-    let shares_available = algod
-        .account_information(&project.invest_escrow_address)
-        .await?
-        .assets
-        .iter()
-        .find(|a| a.asset_id == project.shares_asset_id)
-        .ok_or({
-            anyhow!("Invalid app state: Investor escrow doesn't have shares asset, Please contact support.")})?.amount;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.project_id.parse()?,
+        &programs().escrows,
+    )
+    .await?;
 
     // TODO investor count: get all holders of asset (indexer?)
 
     let customer_payment_deeplink =
-        LinkableTransactionBuilder::payment(project.customer_escrow_address, MicroAlgos(0))
+        LinkableTransactionBuilder::payment(*project.customer_escrow.address(), MicroAlgos(0))
             .build()
             .as_url();
 
     let available_funds = available_funds(&algod, &project).await?;
 
-    let investos_share_formatted = format!("{} %", project.investors_share.to_string());
+    let shares_available = algod
+        .account_information(project.invest_escrow.address())
+        .await?
+        .assets
+        .iter()
+        .find(|a| a.asset_id == project.shares_asset_id)
+        .ok_or({
+            anyhow!("Invalid app state: Investor escrow doesn't have shares asset, Please contact support.")
+        })?.amount;
+
+    let investos_share_formatted = format!("{} %", project.specs.investors_share.to_string());
+
+    let project_view_data = project_to_project_for_users(&env, &project)?.into();
 
     Ok(ViewProjectResJs {
-        project: project.into(),
-        shares_supply: shares_supply.to_string(),
+        project: project_view_data,
+        // shares_supply: shares_supply.to_string(),
         shares_available: shares_available.to_string(),
         investors_share: investos_share_formatted,
         available_funds: microalgos_to_algos(available_funds).to_string(),
@@ -63,8 +72,8 @@ pub struct ViewProjectParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ViewProjectResJs {
-    pub project: ProjectForUsersJson,
-    pub shares_supply: String,
+    pub project: ProjectForUsersViewData,
+    // pub shares_supply: String,
     pub shares_available: String,
     pub investors_share: String,
     pub available_funds: String,

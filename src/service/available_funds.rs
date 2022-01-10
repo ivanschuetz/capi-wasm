@@ -1,18 +1,18 @@
 use algonaut::{algod::v2::Algod, core::MicroAlgos};
 use anyhow::Result;
-use core::{
-    api::model::ProjectForUsers,
-    flows::withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
+use core::flows::{
+    create_project::model::Project,
+    withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
 };
 
-pub async fn available_funds(algod: &Algod, project: &ProjectForUsers) -> Result<MicroAlgos> {
+pub async fn available_funds(algod: &Algod, project: &Project) -> Result<MicroAlgos> {
     let customer_escrow_balance = algod
-        .account_information(&project.customer_escrow_address)
+        .account_information(project.customer_escrow.address())
         .await?
         .amount;
 
     let central_escrow_balance = algod
-        .account_information(&project.central_escrow_address)
+        .account_information(project.central_escrow.address())
         .await?
         .amount;
 

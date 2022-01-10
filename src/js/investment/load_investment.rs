@@ -1,13 +1,14 @@
 use crate::{
-    dependencies::api,
     js::common::{parse_bridge_pars, to_bridge_res},
     service::{constants::PRECISION, str_to_algos::microalgos_to_algos_str},
+    teal::programs,
 };
 use anyhow::{anyhow, Error, Result};
 use core::{
     decimal_util::{AsDecimal, DecimalExt},
-    dependencies::algod,
+    dependencies::{algod, indexer},
     flows::{
+        create_project::storage::load_project::load_project,
         harvest::harvest::investor_can_harvest_amount_calc,
         withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
     },
@@ -27,9 +28,15 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     log::debug!("bridge_load_investment, pars: {:?}", pars);
 
     let algod = algod();
-    let api = api();
+    let indexer = indexer();
 
-    let project = api.load_project(&pars.project_id).await?;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.project_id.parse()?,
+        &programs().escrows,
+    )
+    .await?;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 

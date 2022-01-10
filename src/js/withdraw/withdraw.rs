@@ -1,16 +1,18 @@
 use super::submit_withdraw::SubmitWithdrawPassthroughParJs;
 use crate::{
-    dependencies::api,
     js::{
         common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
         withdraw::submit_withdraw::{validate_withdrawal_inputs, WithdrawInputsPassthroughJs},
     },
-    service::drain_if_needed::drain_if_needed_txs,
+    service::drain_if_needed::drain_if_needed_txs, teal::programs,
 };
 use anyhow::{Error, Result};
 use core::{
-    dependencies::algod,
-    flows::withdraw::withdraw::{withdraw, WithdrawalInputs},
+    dependencies::{algod, indexer},
+    flows::{
+        create_project::storage::load_project::load_project,
+        withdraw::withdraw::{withdraw, WithdrawalInputs},
+    },
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -26,7 +28,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
     let algod = algod();
-    let api = api();
+    let indexer = indexer();
 
     let inputs_par = WithdrawInputsPassthroughJs {
         project_uuid: pars.project_uuid.clone(),
@@ -37,7 +39,13 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
     let validated_inputs = validate_withdrawal_inputs(&inputs_par)?;
 
-    let project = api.load_project_with_uuid(&pars.project_uuid).await?;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.project_id.parse()?,
+        &programs().escrows,
+    )
+    .await?;
 
     // TODO we could check balance first (enough to withdraw) but then more requests? depends on which state is more likely, think about this
 
@@ -79,6 +87,8 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct WithdrawParJs {
+    pub project_id: String,
+    // TODO remove? only id
     pub project_uuid: String,
     pub sender: String,
     pub withdrawal_amount: String,

@@ -1,11 +1,14 @@
 use crate::{
-    dependencies::api,
     js::common::{to_js_value, to_my_algo_txs, SignedTxFromJs},
     service::invest_or_stake::submit_apps_optins_from_js,
+    teal::programs,
 };
 use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Result};
-use core::{dependencies::algod, flows::invest::invest::invest_txs};
+use core::{
+    dependencies::{algod, indexer},
+    flows::{create_project::storage::load_project::load_project, invest::invest::invest_txs},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -17,7 +20,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_buy_shares, pars: {:?}", pars);
 
     let algod = algod();
-    let api = api();
+    let indexer = indexer();
 
     let pars = pars.into_serde::<InvestParJs>().map_err(to_js_value)?;
 
@@ -31,10 +34,14 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 
     log::debug!("Loading the project...");
 
-    let project = api
-        .load_project(&pars.project_id)
-        .await
-        .map_err(to_js_value)?;
+    let project = load_project(
+        &algod,
+        &indexer,
+        &pars.project_id.parse().map_err(to_js_value)?,
+        &programs().escrows,
+    )
+    .await
+    .map_err(to_js_value)?;
 
     let to_sign = invest_txs(
         &algod,
@@ -59,7 +66,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     let res: InvestResJs = InvestResJs {
         to_sign: to_my_algo_txs(&to_sign_txs)?,
         pt: SubmitBuySharesPassthroughParJs {
-            project: project.into(),
+            project_msg_pack: rmp_serde::to_vec_named(&project).map_err(to_js_value)?,
             shares_xfer_tx_msg_pack: to_sign.shares_xfer_tx.to_msg_pack().map_err(to_js_value)?,
         },
     };
