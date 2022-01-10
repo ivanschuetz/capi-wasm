@@ -1,16 +1,10 @@
-use crate::{
-    js::{
-        common::{parse_bridge_pars, to_bridge_res},
-        explorer_links::explorer_tx_id_link_env,
-    },
-    teal::programs,
+use crate::js::{
+    common::{parse_bridge_pars, to_bridge_res},
+    explorer_links::explorer_tx_id_link_env,
 };
 use anyhow::{Error, Result};
+use core::dependencies::indexer;
 use core::roadmap::get_roadmap::get_roadmap;
-use core::{
-    dependencies::{algod, indexer},
-    flows::create_project::storage::load_project::load_project,
-};
 use data_encoding::BASE64;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -23,15 +17,12 @@ pub async fn bridge_load_roadmap(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapResJs> {
-    let algod = algod();
     let indexer = indexer();
 
     let project_creator = pars.creator_address.parse().map_err(Error::msg)?;
-    let project_id = pars.project_id.parse()?;
+    let project_hash = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
-
-    let roadmap = get_roadmap(&indexer, &project_creator, &project.uuid).await?;
+    let roadmap = get_roadmap(&indexer, &project_creator, &project_hash).await?;
 
     Ok(GetRoadmapResJs {
         items: roadmap
@@ -40,7 +31,7 @@ pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapRes
             .map(|i| RoadmapItemJs {
                 tx_id: i.tx_id.clone(),
                 tx_link: explorer_tx_id_link_env(&i.tx_id),
-                project_uuid: i.project_uuid.to_string(),
+                project_id: i.project_hash.url_str(),
                 title: i.title.clone(),
                 parent: i.parent.map(|h| BASE64.encode(&h.0)),
                 hash: BASE64.encode(&i.hash.0),
@@ -64,7 +55,7 @@ pub struct GetRoadmapResJs {
 pub struct RoadmapItemJs {
     pub tx_id: String,
     pub tx_link: String,
-    pub project_uuid: String,
+    pub project_id: String,
     pub title: String,
     pub parent: Option<String>,
     pub hash: String,

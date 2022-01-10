@@ -61,7 +61,6 @@ async fn _bridge_submit_create_project(
                 .map_err(Error::msg)?,
             create_app_tx: signed_js_tx_to_signed_tx1(create_app_tx)?,
             xfer_shares_to_invest_escrow: signed_js_tx_to_signed_tx1(xfer_shares_to_invest_escrow)?,
-            uuid: pars.pt.uuid.parse()?,
             specs: pars.pt.specs,
             creator: pars.pt.creator.parse().map_err(Error::msg)?,
             shares_asset_id: pars.pt.shares_asset_id,
@@ -96,7 +95,6 @@ pub struct SubmitCreateProjectParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitCreateProjectPassthroughParJs {
-    pub uuid: String,
     pub specs: CreateProjectSpecs,
     // not sure how to passthrough, if we use Address, when deserializing, we get:
     // index.js:1 Error("invalid type: sequence, expected a 32 byte array", line: 1, column: 10711)

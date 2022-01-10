@@ -50,7 +50,6 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     // TODO we could check balance first (enough to withdraw) but then more requests? depends on which state is more likely, think about this
 
     let inputs = &WithdrawalInputs {
-        project_uuid: project.uuid,
         amount: validated_inputs.amount,
         description: validated_inputs.description,
     };

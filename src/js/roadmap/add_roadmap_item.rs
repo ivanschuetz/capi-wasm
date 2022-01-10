@@ -1,9 +1,7 @@
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_tx1};
-use crate::teal::programs;
 use algonaut::crypto::HashDigest;
 use anyhow::{anyhow, Error, Result};
-use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::dependencies::algod;
 use core::roadmap::add_roadmap_item::{add_roadmap_item, RoadmapItemInputs};
 use data_encoding::BASE64;
 use serde::{Deserialize, Serialize};
@@ -20,12 +18,9 @@ pub async fn bridge_add_roadmap_item(pars: JsValue) -> Result<JsValue, JsValue> 
 
 pub async fn _bridge_add_roadmap_item(pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs> {
     let algod = algod();
-    let indexer = indexer();
 
     let project_creator = pars.creator_address.parse().map_err(Error::msg)?;
     let project_id = pars.project_id.parse()?;
-
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
 
     let parent_hash = hash_str_option_to_hash_option(pars.parent)?;
 
@@ -33,7 +28,7 @@ pub async fn _bridge_add_roadmap_item(pars: AddRoadmapItemParJs) -> Result<AddRo
         &algod,
         &project_creator,
         &RoadmapItemInputs {
-            project_uuid: project.uuid,
+            project_hash: project_id,
             title: pars.title,
             parent: Box::new(parent_hash),
         },

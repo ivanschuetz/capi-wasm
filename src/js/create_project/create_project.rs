@@ -79,7 +79,6 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     Ok(CreateProjectResJs {
         to_sign: to_my_algo_txs1(txs_to_sign)?,
         pt: SubmitCreateProjectPassthroughParJs {
-            uuid: to_sign.uuid.to_string(),
             specs: project_specs,
             creator: creator_address.to_string(),
             escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)?,

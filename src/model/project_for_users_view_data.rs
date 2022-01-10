@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 pub struct ProjectForUsersViewData {
     pub name: String,
     // TODO remove?
-    pub uuid: String,
     pub share_supply: String,
     pub share_asset_name: String,
     pub share_price: String,
@@ -25,7 +24,6 @@ impl From<ProjectForUsers> for ProjectForUsersViewData {
     fn from(project: ProjectForUsers) -> Self {
         ProjectForUsersViewData {
             name: project.name.clone(),
-            uuid: project.uuid.to_string(),
             share_supply: project.asset_supply.to_string(),
             share_asset_name: project.asset_name,
             share_price: format!(

@@ -2,12 +2,10 @@ use algonaut::core::{Address, MicroAlgos};
 use anyhow::Result;
 use core::{dependencies::Env, flows::create_project::model::Project};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectForUsers {
     pub id: String,
-    pub uuid: Uuid,
     pub name: String,
     pub asset_price: MicroAlgos,
     pub asset_name: String,
@@ -29,7 +27,6 @@ pub fn project_to_project_for_users(env: &Env, project: &Project) -> Result<Proj
     let project_hash_str = project.hash()?.url_str();
     Ok(ProjectForUsers {
         id: project_hash_str.clone(),
-        uuid: project.uuid,
         name: project.specs.name.clone(),
         asset_price: project.specs.asset_price,
         asset_name: project.specs.shares.token_name.clone(),

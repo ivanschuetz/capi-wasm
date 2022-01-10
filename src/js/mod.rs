@@ -5,7 +5,7 @@ pub mod explorer_links;
 pub mod general;
 pub mod invest;
 pub mod investment;
-pub mod load_project_user_view_with_uuid;
+pub mod load_project_user_view_with_id;
 pub mod queries;
 pub mod roadmap;
 pub mod stake;
