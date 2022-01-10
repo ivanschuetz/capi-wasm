@@ -37,7 +37,14 @@ pub async fn _bridge_income_vs_spending(
     log::debug!("Income: {:?}", income);
     income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
-    let mut spending = withdrawals(&indexer, &project.creator, &pars.project_uuid.parse()?).await?;
+    let mut spending = withdrawals(
+        &algod,
+        &indexer,
+        &project.creator,
+        &pars.project_id.parse()?,
+        &programs().escrows,
+    )
+    .await?;
     log::debug!("Spending: {:?}", income);
     spending.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
@@ -67,8 +74,6 @@ pub async fn _bridge_income_vs_spending(
 #[derive(Debug, Clone, Deserialize)]
 pub struct IncomeVsSpendingParJs {
     pub project_id: String,
-    // TODO remove: use only project_id
-    pub project_uuid: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -4,7 +4,8 @@ use crate::{
         common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
         withdraw::submit_withdraw::{validate_withdrawal_inputs, WithdrawInputsPassthroughJs},
     },
-    service::drain_if_needed::drain_if_needed_txs, teal::programs,
+    service::drain_if_needed::drain_if_needed_txs,
+    teal::programs,
 };
 use anyhow::{Error, Result};
 use core::{
@@ -30,15 +31,6 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let algod = algod();
     let indexer = indexer();
 
-    let inputs_par = WithdrawInputsPassthroughJs {
-        project_uuid: pars.project_uuid.clone(),
-        sender: pars.sender.clone(),
-        withdrawal_amount: pars.withdrawal_amount.clone(),
-        description: pars.description.clone(),
-    };
-
-    let validated_inputs = validate_withdrawal_inputs(&inputs_par)?;
-
     let project = load_project(
         &algod,
         &indexer,
@@ -47,10 +39,18 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     )
     .await?;
 
+    let inputs_par = WithdrawInputsPassthroughJs {
+        sender: pars.sender.clone(),
+        withdrawal_amount: pars.withdrawal_amount.clone(),
+        description: pars.description.clone(),
+    };
+
+    let validated_inputs = validate_withdrawal_inputs(&inputs_par)?;
+
     // TODO we could check balance first (enough to withdraw) but then more requests? depends on which state is more likely, think about this
 
     let inputs = &WithdrawalInputs {
-        project_uuid: validated_inputs.project_uuid,
+        project_uuid: project.uuid,
         amount: validated_inputs.amount,
         description: validated_inputs.description,
     };
@@ -88,8 +88,6 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 #[derive(Debug, Clone, Deserialize)]
 pub struct WithdrawParJs {
     pub project_id: String,
-    // TODO remove? only id
-    pub project_uuid: String,
     pub sender: String,
     pub withdrawal_amount: String,
     pub description: String,

@@ -13,7 +13,6 @@ use core::{
     flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned},
 };
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -92,7 +91,6 @@ pub struct SubmitWithdrawPassthroughParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WithdrawInputsPassthroughJs {
-    pub project_uuid: String,
     pub sender: String,
     pub withdrawal_amount: String,
     pub description: String,
@@ -100,7 +98,6 @@ pub struct WithdrawInputsPassthroughJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidatedWithdrawalInputs {
-    pub project_uuid: Uuid,
     pub sender: Address,
     pub amount: MicroAlgos,
     pub description: String,
@@ -115,7 +112,6 @@ pub fn validate_withdrawal_inputs(
     inputs: &WithdrawInputsPassthroughJs,
 ) -> Result<ValidatedWithdrawalInputs> {
     Ok(ValidatedWithdrawalInputs {
-        project_uuid: inputs.project_uuid.parse()?,
         sender: inputs.sender.parse().map_err(Error::msg)?,
         amount: validate_algos_input(&inputs.withdrawal_amount)?,
         description: inputs.description.clone(),

@@ -1,10 +1,16 @@
-use crate::js::{
-    common::{parse_bridge_pars, to_bridge_res},
-    explorer_links::explorer_tx_id_link_env,
+use crate::{
+    js::{
+        common::{parse_bridge_pars, to_bridge_res},
+        explorer_links::explorer_tx_id_link_env,
+    },
+    teal::programs,
 };
 use anyhow::{Error, Result};
-use core::dependencies::indexer;
 use core::roadmap::get_roadmap::get_roadmap;
+use core::{
+    dependencies::{algod, indexer},
+    flows::create_project::storage::load_project::load_project,
+};
 use data_encoding::BASE64;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -17,12 +23,15 @@ pub async fn bridge_load_roadmap(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapResJs> {
+    let algod = algod();
     let indexer = indexer();
 
     let project_creator = pars.creator_address.parse().map_err(Error::msg)?;
-    let project_uuid = pars.project_uuid.parse()?;
+    let project_id = pars.project_id.parse()?;
 
-    let roadmap = get_roadmap(&indexer, &project_creator, &project_uuid).await?;
+    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
+
+    let roadmap = get_roadmap(&indexer, &project_creator, &project.uuid).await?;
 
     Ok(GetRoadmapResJs {
         items: roadmap
@@ -43,7 +52,7 @@ pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapRes
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetRoadmapParJs {
     creator_address: String,
-    project_uuid: String,
+    project_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

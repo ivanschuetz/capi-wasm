@@ -1,7 +1,14 @@
-use crate::js::common::{parse_bridge_pars, to_bridge_res};
-use algonaut::{core::Address, indexer::v2::Indexer};
+use crate::{
+    js::common::{parse_bridge_pars, to_bridge_res},
+    teal::programs,
+};
+use algonaut::{algod::v2::Algod, core::Address, indexer::v2::Indexer};
 use anyhow::{Error, Result};
-use core::{dependencies::indexer, queries::withdrawals::withdrawals};
+use core::{
+    dependencies::{algod, indexer},
+    flows::create_project::storage::load_project::ProjectHash,
+    queries::withdrawals::withdrawals,
+};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -14,21 +21,25 @@ pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> 
 }
 
 pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs> {
+    let algod = algod();
     let indexer = indexer();
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
-    let entries = load_withdrawals(&indexer, &pars.project_uuid, &creator).await?;
+    let project_id = &pars.project_id.parse()?;
+
+    let entries = load_withdrawals(&algod, &indexer, project_id, &creator).await?;
 
     Ok(LoadWithdrawalResJs { entries })
 }
 
 pub async fn load_withdrawals(
+    algod: &Algod,
     indexer: &Indexer,
-    project_uuid: &str,
+    project_id: &ProjectHash,
     creator: &Address,
 ) -> Result<Vec<WithdrawalViewData>> {
-    let entries = withdrawals(indexer, creator, &project_uuid.parse()?).await?;
+    let entries = withdrawals(algod, indexer, creator, project_id, &programs().escrows).await?;
     let mut reqs_view_data = vec![];
     for entry in entries {
         reqs_view_data.push(withdrawal_view_data(
@@ -43,7 +54,7 @@ pub async fn load_withdrawals(
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadWithdrawalParJs {
-    pub project_uuid: String,
+    pub project_id: String,
     pub creator_address: String,
 }
 
