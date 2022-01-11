@@ -48,6 +48,6 @@ pub fn project_to_project_for_users(env: &Env, project: &Project) -> Result<Proj
 fn frontend_host(env: &Env) -> &'static str {
     match env {
         Env::Local => "http://localhost:3000",
-        Env::Test => "http://test.app.capi.money",
+        Env::Test => "http://test.app.capi.finance",
     }
 }
