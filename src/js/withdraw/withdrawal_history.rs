@@ -26,7 +26,7 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
-    let project_id = ProjectId(pars.project_id);
+    let project_id = pars.project_id.parse()?;
 
     let entries = load_withdrawals(&algod, &indexer, &project_id, &creator).await?;
 

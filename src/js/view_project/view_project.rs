@@ -8,7 +8,7 @@ use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use core::dependencies::{algod, env, indexer};
-use core::flows::create_project::storage::load_project::{load_project, ProjectId};
+use core::flows::create_project::storage::load_project::load_project;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
@@ -24,7 +24,7 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
     let indexer = indexer();
     let env = env();
 
-    let project_id = ProjectId(pars.project_id);
+    let project_id = pars.project_id.parse()?;
 
     let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
 

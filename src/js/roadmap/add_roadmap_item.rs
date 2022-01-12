@@ -2,7 +2,6 @@ use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_tx1};
 use algonaut::crypto::HashDigest;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
-use core::flows::create_project::storage::load_project::ProjectId;
 use core::roadmap::add_roadmap_item::{add_roadmap_item, RoadmapItemInputs};
 use data_encoding::BASE64;
 use serde::{Deserialize, Serialize};
@@ -21,7 +20,7 @@ pub async fn _bridge_add_roadmap_item(pars: AddRoadmapItemParJs) -> Result<AddRo
     let algod = algod();
 
     let project_creator = pars.creator_address.parse().map_err(Error::msg)?;
-    let project_id = ProjectId(pars.project_id);
+    let project_id = pars.project_id.parse()?;
 
     let parent_hash = hash_str_option_to_hash_option(pars.parent)?;
 

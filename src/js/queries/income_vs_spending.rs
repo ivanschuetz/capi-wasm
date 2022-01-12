@@ -6,7 +6,7 @@ use crate::{
 use anyhow::Result;
 use core::{
     dependencies::{algod, indexer},
-    flows::create_project::storage::load_project::{load_project, ProjectId},
+    flows::create_project::storage::load_project::load_project,
     queries::{received_payments::received_payments, withdrawals::withdrawals},
 };
 use serde::{Deserialize, Serialize};
@@ -25,7 +25,7 @@ pub async fn _bridge_income_vs_spending(
     let algod = algod();
     let indexer = indexer();
 
-    let project_id = ProjectId(pars.project_id);
+    let project_id = pars.project_id.parse()?;
 
     let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
 

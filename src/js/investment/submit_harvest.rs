@@ -5,7 +5,7 @@ use crate::teal::programs;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::{algod, indexer};
 use core::diagnostics::log_harvest_diagnostics;
-use core::flows::create_project::storage::load_project::{load_project, ProjectId};
+use core::flows::create_project::storage::load_project::load_project;
 use core::flows::harvest::harvest::{submit_harvest, HarvestSigned};
 use core::network_util::wait_for_pending_transaction;
 use serde::{Deserialize, Serialize};
@@ -51,7 +51,7 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
     let project = load_project(
         &algod,
         &indexer,
-        &ProjectId(pars.project_id_for_diagnostics),
+        &pars.project_id_for_diagnostics.parse()?,
         &programs().escrows,
     )
     .await?;

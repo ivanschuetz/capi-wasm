@@ -5,7 +5,7 @@ use crate::{
 use anyhow::{Error, Result};
 use core::{
     dependencies::algod,
-    flows::{create_project::storage::load_project::{load_project, ProjectId}, stake::stake::stake},
+    flows::{create_project::storage::load_project::load_project, stake::stake::stake},
 };
 use core::{dependencies::indexer, state::account_state::asset_holdings};
 use serde::{Deserialize, Serialize};
@@ -25,7 +25,7 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
     let project = load_project(
         &algod,
         &indexer,
-        &ProjectId(pars.project_id),
+        &pars.project_id.parse()?,
         &programs().escrows,
     )
     .await?;

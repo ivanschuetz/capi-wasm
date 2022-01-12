@@ -2,7 +2,7 @@ use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::{load_project, ProjectId};
+use core::flows::create_project::storage::load_project::load_project;
 use core::flows::drain::drain::drain_customer_escrow;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -21,7 +21,7 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
     let algod = algod();
     let indexer = indexer();
 
-    let project_id = ProjectId(pars.project_id);
+    let project_id = pars.project_id.parse()?;
 
     let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
 
@@ -40,7 +40,7 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
         to_sign: to_my_algo_txs1(&vec![to_sign.app_call_tx, to_sign.pay_fee_tx])?,
         pt: SubmitDrainPassthroughParJs {
             drain_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.drain_tx)?,
-            project_id: project_id.0,
+            project_id: project_id.to_string(),
         },
     })
 }
