@@ -1,8 +1,11 @@
-use crate::{js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1}, teal::programs};
+use crate::{
+    js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
+    teal::programs,
+};
 use anyhow::{Error, Result};
 use core::{
     dependencies::algod,
-    flows::{create_project::storage::load_project::load_project, stake::stake::stake},
+    flows::{create_project::storage::load_project::{load_project, ProjectId}, stake::stake::stake},
 };
 use core::{dependencies::indexer, state::account_state::asset_holdings};
 use serde::{Deserialize, Serialize};
@@ -22,7 +25,7 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
     let project = load_project(
         &algod,
         &indexer,
-        &pars.project_id.parse()?,
+        &ProjectId(pars.project_id),
         &programs().escrows,
     )
     .await?;

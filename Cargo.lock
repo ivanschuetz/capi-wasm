@@ -14,7 +14,6 @@ dependencies = [
 [[package]]
 name = "algonaut"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
 dependencies = [
  "algonaut_client",
  "algonaut_core",
@@ -29,7 +28,6 @@ dependencies = [
 [[package]]
 name = "algonaut_client"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
 dependencies = [
  "algonaut_core",
  "algonaut_crypto",
@@ -48,7 +46,6 @@ dependencies = [
 [[package]]
 name = "algonaut_core"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
 dependencies = [
  "algonaut_crypto",
  "algonaut_encoding",
@@ -65,7 +62,6 @@ dependencies = [
 [[package]]
 name = "algonaut_crypto"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
 dependencies = [
  "algonaut_encoding",
  "data-encoding",
@@ -82,7 +78,6 @@ dependencies = [
 [[package]]
 name = "algonaut_encoding"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
 dependencies = [
  "data-encoding",
  "serde",
@@ -91,7 +86,6 @@ dependencies = [
 [[package]]
 name = "algonaut_model"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
 dependencies = [
  "algonaut_core",
  "algonaut_crypto",
@@ -106,7 +100,6 @@ dependencies = [
 [[package]]
 name = "algonaut_transaction"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#b0f5419461d85af36b72a47322900f02869f11d3"
 dependencies = [
  "algonaut_core",
  "algonaut_crypto",
@@ -616,21 +609,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hyper-rustls"
-version = "0.22.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f9f7a97316d44c0af9b0301e65010573a853a9fc97046d7331d7f6bc0fd5a64"
-dependencies = [
- "futures-util",
- "hyper",
- "log",
- "rustls",
- "tokio",
- "tokio-rustls",
- "webpki",
-]
-
-[[package]]
 name = "hyper-tls"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -822,7 +800,6 @@ dependencies = [
 [[package]]
 name = "my-algo"
 version = "0.1.0"
-source = "git+https://github.com/ivanschuetz/my-algo-rust-adapter?branch=main#ddbe61fb41302ce07f779bb38bf1f10caa1c81e8"
 dependencies = [
  "algonaut",
  "anyhow",
@@ -1104,7 +1081,6 @@ dependencies = [
  "http",
  "http-body",
  "hyper",
- "hyper-rustls",
  "hyper-tls",
  "ipnet",
  "js-sys",
@@ -1114,18 +1090,15 @@ dependencies = [
  "native-tls",
  "percent-encoding",
  "pin-project-lite",
- "rustls",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "tokio",
  "tokio-native-tls",
- "tokio-rustls",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "webpki-roots",
  "winreg",
 ]
 
@@ -1186,19 +1159,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustls"
-version = "0.19.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35edb675feee39aec9c99fa5ff985081995a06d594114ae14cbe797ad7b7a6d7"
-dependencies = [
- "base64",
- "log",
- "ring",
- "sct",
- "webpki",
-]
-
-[[package]]
 name = "rustversion"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1225,16 +1185,6 @@ name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
-
-[[package]]
-name = "sct"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b362b83898e0e69f38515b82ee15aa80636befe47c3b6d3d89a911e78fc228ce"
-dependencies = [
- "ring",
- "untrusted",
-]
 
 [[package]]
 name = "security-framework"
@@ -1429,7 +1379,6 @@ dependencies = [
 [[package]]
 name = "tealdbg"
 version = "0.1.0"
-source = "git+https://github.com/ivanschuetz/tealdbg_launcher#a042c97f404344080654f2dd6b64dd4ed230458f"
 dependencies = [
  "algonaut",
 ]
@@ -1537,17 +1486,6 @@ checksum = "f7d995660bd2b7f8c1568414c1126076c13fbb725c40112dc0120b78eb9b717b"
 dependencies = [
  "native-tls",
  "tokio",
-]
-
-[[package]]
-name = "tokio-rustls"
-version = "0.22.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc6844de72e57df1980054b38be3a9f4702aba4858be64dd700181a8a6d0e1b6"
-dependencies = [
- "rustls",
- "tokio",
- "webpki",
 ]
 
 [[package]]
@@ -1807,25 +1745,6 @@ checksum = "38eb105f1c59d9eaa6b5cdc92b859d85b926e82cb2e0945cd0c9259faa6fe9fb"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "webpki"
-version = "0.21.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8e38c0608262c46d4a56202ebabdeb094cef7e560ca7a226c6bf055188aa4ea"
-dependencies = [
- "ring",
- "untrusted",
-]
-
-[[package]]
-name = "webpki-roots"
-version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aabe153544e473b775453675851ecc86863d2a81d786d741f6b76778f2a48940"
-dependencies = [
- "webpki",
 ]
 
 [[package]]

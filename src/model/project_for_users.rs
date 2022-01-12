@@ -1,6 +1,9 @@
 use algonaut::core::{Address, MicroAlgos};
 use anyhow::Result;
-use core::{dependencies::Env, flows::create_project::model::Project};
+use core::{
+    dependencies::Env,
+    flows::create_project::{model::Project, storage::load_project::ProjectId},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -23,10 +26,14 @@ pub struct ProjectForUsers {
     pub creator: Address,
 }
 
-pub fn project_to_project_for_users(env: &Env, project: &Project) -> Result<ProjectForUsers> {
-    let project_hash_str = project.hash()?.url_str();
+pub fn project_to_project_for_users(
+    env: &Env,
+    project: &Project,
+    project_id: &ProjectId,
+) -> Result<ProjectForUsers> {
+    // let project_hash_str = project.hash()?.url_str();
     Ok(ProjectForUsers {
-        id: project_hash_str.clone(),
+        id: project_id.0.to_owned(),
         name: project.specs.name.clone(),
         asset_price: project.specs.asset_price,
         asset_name: project.specs.shares.token_name.clone(),
@@ -38,9 +45,9 @@ pub fn project_to_project_for_users(env: &Env, project: &Project) -> Result<Proj
         staking_escrow_address: *project.staking_escrow.address(),
         central_escrow_address: *project.central_escrow.address(),
         customer_escrow_address: *project.customer_escrow.address(),
-        invest_link: format!("{}/invest/{}", frontend_host(env), project_hash_str),
-        my_investment_link: format!("{}/investment/{}", frontend_host(env), project_hash_str),
-        project_link: format!("{}/project/{}", frontend_host(env), project_hash_str),
+        invest_link: format!("{}/invest/{}", frontend_host(env), project_id.0),
+        my_investment_link: format!("{}/investment/{}", frontend_host(env), project_id.0),
+        project_link: format!("{}/project/{}", frontend_host(env), project_id.0),
         creator: project.creator,
     })
 }

@@ -8,7 +8,7 @@ use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use core::dependencies::{algod, env, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_project::storage::load_project::{load_project, ProjectId};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
@@ -24,13 +24,9 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
     let indexer = indexer();
     let env = env();
 
-    let project = load_project(
-        &algod,
-        &indexer,
-        &pars.project_id.parse()?,
-        &programs().escrows,
-    )
-    .await?;
+    let project_id = ProjectId(pars.project_id);
+
+    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
 
     // TODO investor count: get all holders of asset (indexer?)
 
@@ -53,7 +49,7 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
 
     let investos_share_formatted = format!("{} %", project.specs.investors_share.to_string());
 
-    let project_view_data = project_to_project_for_users(&env, &project)?.into();
+    let project_view_data = project_to_project_for_users(&env, &project, &project_id)?.into();
 
     Ok(ViewProjectResJs {
         project: project_view_data,

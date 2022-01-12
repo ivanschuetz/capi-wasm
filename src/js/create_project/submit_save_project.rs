@@ -4,6 +4,7 @@ use crate::model::project_for_users::project_to_project_for_users;
 use crate::model::project_for_users_view_data::ProjectForUsersViewData;
 use anyhow::Result;
 use core::dependencies::{algod, env};
+use core::flows::create_project::storage::load_project::ProjectId;
 use core::flows::create_project::storage::save_project::{submit_save_project, SaveProjectSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -35,7 +36,8 @@ async fn _bridge_submit_save_project(
 
     log::debug!("Save project tx id: {:?}", tx_id);
 
-    Ok(project_to_project_for_users(&env, &project)?.into())
+    // TODO better typing: if we keep the tx id as project id, we should create a new tx_id type (which would also contain the hash digest conversion)
+    Ok(project_to_project_for_users(&env, &project, &ProjectId(tx_id))?.into())
 }
 
 #[derive(Debug, Clone, Deserialize)]

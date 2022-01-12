@@ -7,7 +7,10 @@ use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Result};
 use core::{
     dependencies::{algod, indexer},
-    flows::{create_project::storage::load_project::load_project, invest::invest::invest_txs},
+    flows::{
+        create_project::storage::load_project::{load_project, ProjectId},
+        invest::invest::invest_txs,
+    },
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -37,7 +40,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     let project = load_project(
         &algod,
         &indexer,
-        &pars.project_id.parse().map_err(to_js_value)?,
+        &ProjectId(pars.project_id),
         &programs().escrows,
     )
     .await

@@ -3,8 +3,8 @@ use crate::js::{
     explorer_links::explorer_tx_id_link_env,
 };
 use anyhow::{Error, Result};
-use core::dependencies::indexer;
 use core::roadmap::get_roadmap::get_roadmap;
+use core::{dependencies::indexer, flows::create_project::storage::load_project::ProjectId};
 use data_encoding::BASE64;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -20,9 +20,9 @@ pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapRes
     let indexer = indexer();
 
     let project_creator = pars.creator_address.parse().map_err(Error::msg)?;
-    let project_hash = pars.project_id.parse()?;
+    let project_id = ProjectId(pars.project_id);
 
-    let roadmap = get_roadmap(&indexer, &project_creator, &project_hash).await?;
+    let roadmap = get_roadmap(&indexer, &project_creator, &project_id).await?;
 
     Ok(GetRoadmapResJs {
         items: roadmap
@@ -31,7 +31,7 @@ pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapRes
             .map(|i| RoadmapItemJs {
                 tx_id: i.tx_id.clone(),
                 tx_link: explorer_tx_id_link_env(&i.tx_id),
-                project_id: i.project_hash.url_str(),
+                project_id: i.project_id.0,
                 title: i.title.clone(),
                 parent: i.parent.map(|h| BASE64.encode(&h.0)),
                 hash: BASE64.encode(&i.hash.0),

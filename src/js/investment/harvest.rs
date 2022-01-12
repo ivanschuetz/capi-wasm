@@ -5,7 +5,7 @@ use crate::teal::programs;
 use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_project::storage::load_project::{load_project, ProjectId};
 use core::flows::harvest::harvest::harvest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -24,7 +24,7 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
     let project = load_project(
         &algod,
         &indexer,
-        &pars.project_id.parse()?,
+        &ProjectId(pars.project_id),
         &programs().escrows,
     )
     .await?;

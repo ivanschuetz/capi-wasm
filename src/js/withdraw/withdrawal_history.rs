@@ -6,7 +6,7 @@ use algonaut::{algod::v2::Algod, core::Address, indexer::v2::Indexer};
 use anyhow::{Error, Result};
 use core::{
     dependencies::{algod, indexer},
-    flows::create_project::storage::load_project::ProjectHash,
+    flows::create_project::storage::load_project::ProjectId,
     queries::withdrawals::withdrawals,
 };
 use serde::{Deserialize, Serialize};
@@ -26,9 +26,9 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
-    let project_id = &pars.project_id.parse()?;
+    let project_id = ProjectId(pars.project_id);
 
-    let entries = load_withdrawals(&algod, &indexer, project_id, &creator).await?;
+    let entries = load_withdrawals(&algod, &indexer, &project_id, &creator).await?;
 
     Ok(LoadWithdrawalResJs { entries })
 }
@@ -36,7 +36,7 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
 pub async fn load_withdrawals(
     algod: &Algod,
     indexer: &Indexer,
-    project_id: &ProjectHash,
+    project_id: &ProjectId,
     creator: &Address,
 ) -> Result<Vec<WithdrawalViewData>> {
     let entries = withdrawals(algod, indexer, creator, project_id, &programs().escrows).await?;

@@ -3,7 +3,7 @@ use crate::js::unstake::submit_unstake::SubmitUnstakePassthroughParJs;
 use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_project::storage::load_project::{load_project, ProjectId};
 use core::flows::unstake::unstake::unstake;
 use core::state::central_app_state::central_investor_state;
 use serde::{Deserialize, Serialize};
@@ -23,7 +23,7 @@ pub async fn _bridge_unstake(pars: UnstakeParJs) -> Result<UnstakeResJs> {
     let project = load_project(
         &algod,
         &indexer,
-        &pars.project_id.parse()?,
+        &ProjectId(pars.project_id),
         &programs().escrows,
     )
     .await?;

@@ -4,7 +4,7 @@ use crate::service::str_to_algos::microalgos_to_algos;
 use crate::teal::programs;
 use anyhow::Result;
 use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_project::storage::load_project::{load_project, ProjectId};
 use core::flows::drain::drain::{submit_drain_customer_escrow, DrainCustomerEscrowSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -40,7 +40,7 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
     let project = load_project(
         &algod,
         &indexer,
-        &pars.pt.project_id.parse()?,
+        &ProjectId(pars.pt.project_id),
         &programs().escrows,
     )
     .await?;

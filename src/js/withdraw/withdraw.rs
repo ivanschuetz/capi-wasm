@@ -11,7 +11,7 @@ use anyhow::{Error, Result};
 use core::{
     dependencies::{algod, indexer},
     flows::{
-        create_project::storage::load_project::load_project,
+        create_project::storage::load_project::{load_project, ProjectId},
         withdraw::withdraw::{withdraw, WithdrawalInputs},
     },
 };
@@ -34,7 +34,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let project = load_project(
         &algod,
         &indexer,
-        &pars.project_id.parse()?,
+        &ProjectId(pars.project_id),
         &programs().escrows,
     )
     .await?;

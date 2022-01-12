@@ -8,7 +8,7 @@ use core::{
     decimal_util::{AsDecimal, DecimalExt},
     dependencies::{algod, indexer},
     flows::{
-        create_project::storage::load_project::load_project,
+        create_project::storage::load_project::{load_project, ProjectId},
         harvest::harvest::investor_can_harvest_amount_calc,
         withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
     },
@@ -33,7 +33,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let project = load_project(
         &algod,
         &indexer,
-        &pars.project_id.parse()?,
+        &ProjectId(pars.project_id),
         &programs().escrows,
     )
     .await?;
