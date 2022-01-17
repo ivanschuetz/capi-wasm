@@ -16,7 +16,7 @@ pub fn withdrawal_view_data(
     tx_id: String,
 ) -> WithdrawalViewData {
     WithdrawalViewData {
-        amount: format!("{} Algo", microalgos_to_algos(amount).to_string()),
+        amount: format!("{} Algo", microalgos_to_algos(amount)),
         description,
         date: date_str,
         tx_id: tx_id.clone(),

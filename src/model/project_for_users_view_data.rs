@@ -26,10 +26,7 @@ impl From<ProjectForUsers> for ProjectForUsersViewData {
             name: project.name.clone(),
             share_supply: project.asset_supply.to_string(),
             share_asset_name: project.asset_name,
-            share_price: format!(
-                "{} Algo",
-                microalgos_to_algos(project.asset_price).to_string()
-            ),
+            share_price: format!("{} Algo", microalgos_to_algos(project.asset_price)),
             share_price_number_algo: microalgos_to_algos(project.asset_price).to_string(),
             shares_asset_id: project.shares_asset_id.to_string(),
             central_app_id: project.central_app_id.to_string(),

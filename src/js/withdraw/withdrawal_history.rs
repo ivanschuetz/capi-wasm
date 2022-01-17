@@ -6,8 +6,7 @@ use algonaut::{algod::v2::Algod, core::Address, indexer::v2::Indexer};
 use anyhow::{Error, Result};
 use core::{
     dependencies::{algod, indexer},
-    flows::create_project::storage::load_project::ProjectId,
-    queries::withdrawals::withdrawals,
+    flows::{create_project::storage::load_project::ProjectId, withdraw::withdrawals::withdrawals},
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;

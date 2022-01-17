@@ -45,12 +45,8 @@ pub fn project_to_project_for_users(
         staking_escrow_address: *project.staking_escrow.address(),
         central_escrow_address: *project.central_escrow.address(),
         customer_escrow_address: *project.customer_escrow.address(),
-        invest_link: format!("{}/invest/{}", frontend_host(env), project_id_str.clone()),
-        my_investment_link: format!(
-            "{}/investment/{}",
-            frontend_host(env),
-            project_id_str.clone()
-        ),
+        invest_link: format!("{}/invest/{}", frontend_host(env), project_id_str),
+        my_investment_link: format!("{}/investment/{}", frontend_host(env), project_id_str),
         project_link: format!("{}/project/{}", frontend_host(env), project_id_str),
         creator: project.creator,
     })
