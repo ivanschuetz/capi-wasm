@@ -37,7 +37,8 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         &pars.project_id.parse()?,
         &programs().escrows,
     )
-    .await?;
+    .await?
+    .project;
 
     let inputs_par = WithdrawInputsPassthroughJs {
         sender: pars.sender.clone(),

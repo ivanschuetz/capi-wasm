@@ -28,7 +28,9 @@ async fn _bridge_load_project_user_view_with_id(
 
     let project_id = project_id_str.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
+    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+        .await?
+        .project;
 
     Ok(project_to_project_for_users(&env, &project, &project_id)?.into())
 }

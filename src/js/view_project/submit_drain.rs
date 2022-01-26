@@ -43,7 +43,8 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
         &pars.pt.project_id.parse()?,
         &programs().escrows,
     )
-    .await?;
+    .await?
+    .project;
 
     // TODO (low prio) Consider just recalculating instead of new fetch
 

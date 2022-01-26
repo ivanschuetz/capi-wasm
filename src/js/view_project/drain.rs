@@ -23,7 +23,9 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
+    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+        .await?
+        .project;
 
     let to_sign = drain_customer_escrow(
         &algod,

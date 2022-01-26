@@ -22,6 +22,7 @@ pub struct ProjectForUsers {
     pub customer_escrow_address: Address,
     pub invest_link: String,
     pub my_investment_link: String,
+    pub my_investment_link_rel: String,
     pub project_link: String,
     pub creator: Address,
 }
@@ -47,6 +48,7 @@ pub fn project_to_project_for_users(
         customer_escrow_address: *project.customer_escrow.address(),
         invest_link: format!("{}/invest/{}", frontend_host(env), project_id_str),
         my_investment_link: format!("{}/investment/{}", frontend_host(env), project_id_str),
+        my_investment_link_rel: format!("investment/{}", project_id_str),
         project_link: format!("{}/project/{}", frontend_host(env), project_id_str),
         creator: project.creator,
     })

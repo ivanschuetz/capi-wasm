@@ -29,7 +29,9 @@ pub async fn _bridge_income_vs_spending(
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
+    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+        .await?
+        .project;
 
     let mut income = received_payments(&indexer, project.customer_escrow.address()).await?;
     log::debug!("Income: {:?}", income);

@@ -16,6 +16,7 @@ pub struct ProjectForUsersViewData {
     pub customer_escrow_address: String,
     pub invest_link: String,
     pub my_investment_link: String,
+    pub my_investment_link_rel: String,
     pub project_link: String,
     pub creator_address: String,
 }
@@ -33,6 +34,7 @@ impl From<ProjectForUsers> for ProjectForUsersViewData {
             customer_escrow_address: project.customer_escrow_address.to_string(),
             invest_link: project.invest_link.clone(),
             my_investment_link: project.my_investment_link.clone(),
+            my_investment_link_rel: project.my_investment_link_rel.clone(),
             project_link: project.project_link.clone(),
             creator_address: project.creator.to_string(),
         }

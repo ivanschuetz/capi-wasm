@@ -32,7 +32,9 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
+    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+        .await?
+        .project;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 

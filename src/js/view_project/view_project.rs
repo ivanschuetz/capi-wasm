@@ -26,7 +26,9 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows).await?;
+    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+        .await?
+        .project;
 
     // TODO investor count: get all holders of asset (indexer?)
 

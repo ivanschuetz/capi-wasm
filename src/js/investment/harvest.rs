@@ -27,7 +27,8 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
         &pars.project_id.parse()?,
         &programs().escrows,
     )
-    .await?;
+    .await?
+    .project;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 

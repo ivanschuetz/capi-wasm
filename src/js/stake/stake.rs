@@ -28,7 +28,8 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
         &pars.project_id.parse()?,
         &programs().escrows,
     )
-    .await?;
+    .await?
+    .project;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 

@@ -38,7 +38,8 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 
     let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
         .await
-        .map_err(to_js_value)?;
+        .map_err(to_js_value)?
+        .project;
 
     let to_sign = invest_txs(
         &algod,
@@ -49,6 +50,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
         project.shares_asset_id,
         validated_share_count,
         project.specs.asset_price,
+        &project_id,
     )
     .await
     .map_err(to_js_value)?;

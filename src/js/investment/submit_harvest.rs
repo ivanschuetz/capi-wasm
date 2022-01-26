@@ -54,7 +54,8 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
         &pars.project_id_for_diagnostics.parse()?,
         &programs().escrows,
     )
-    .await?;
+    .await?
+    .project;
 
     log_harvest_diagnostics(
         &algod,
