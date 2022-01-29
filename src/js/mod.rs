@@ -6,6 +6,7 @@ pub mod general;
 pub mod invest;
 pub mod investment;
 pub mod load_project_user_view_with_id;
+pub mod pay_project;
 pub mod queries;
 pub mod roadmap;
 pub mod stake;

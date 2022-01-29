@@ -8,7 +8,7 @@ use crate::{
 };
 use anyhow::Result;
 use core::{
-    dependencies::{algod, env, indexer},
+    dependencies::{algod, indexer},
     flows::create_project::storage::load_project::load_project,
 };
 use wasm_bindgen::prelude::*;
@@ -22,7 +22,6 @@ pub async fn bridge_load_project_user_view_with_id(pars: JsValue) -> Result<JsVa
 async fn _bridge_load_project_user_view_with_id(
     project_id_str: String,
 ) -> Result<ProjectForUsersViewData> {
-    let env = env();
     let algod = algod();
     let indexer = indexer();
 
@@ -32,5 +31,5 @@ async fn _bridge_load_project_user_view_with_id(
         .await?
         .project;
 
-    Ok(project_to_project_for_users(&env, &project, &project_id)?.into())
+    Ok(project_to_project_for_users(&project, &project_id)?.into())
 }

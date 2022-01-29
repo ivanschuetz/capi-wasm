@@ -7,7 +7,7 @@ use crate::teal::programs;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
-use core::dependencies::{algod, env, indexer};
+use core::dependencies::{algod, indexer};
 use core::flows::create_project::storage::load_project::load_project;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -22,7 +22,6 @@ pub async fn bridge_view_project(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectResJs> {
     let algod = algod();
     let indexer = indexer();
-    let env = env();
 
     let project_id = pars.project_id.parse()?;
 
@@ -51,7 +50,7 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
 
     let investos_share_formatted = format!("{} %", project.specs.investors_share);
 
-    let project_view_data = project_to_project_for_users(&env, &project, &project_id)?.into();
+    let project_view_data = project_to_project_for_users(&project, &project_id)?.into();
 
     Ok(ViewProjectResJs {
         project: project_view_data,

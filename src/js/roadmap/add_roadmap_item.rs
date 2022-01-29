@@ -1,6 +1,7 @@
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_tx1};
 use algonaut::crypto::HashDigest;
 use anyhow::{anyhow, Error, Result};
+use core::date_util::timestamp_seconds_to_date;
 use core::dependencies::algod;
 use core::roadmap::add_roadmap_item::{add_roadmap_item, RoadmapItemInputs};
 use data_encoding::BASE64;
@@ -24,6 +25,8 @@ pub async fn _bridge_add_roadmap_item(pars: AddRoadmapItemParJs) -> Result<AddRo
 
     let parent_hash = hash_str_option_to_hash_option(pars.parent)?;
 
+    let date = timestamp_seconds_to_date(pars.date.parse()?)?;
+
     let to_sign = add_roadmap_item(
         &algod,
         &project_creator,
@@ -31,6 +34,7 @@ pub async fn _bridge_add_roadmap_item(pars: AddRoadmapItemParJs) -> Result<AddRo
             project_id,
             title: pars.title,
             parent: Box::new(parent_hash),
+            date,
         },
     )
     .await?;
@@ -62,6 +66,7 @@ pub struct AddRoadmapItemParJs {
     pub creator_address: String,
     pub project_id: String,
     pub title: String,
+    pub date: String,
     pub parent: Option<String>,
 }
 

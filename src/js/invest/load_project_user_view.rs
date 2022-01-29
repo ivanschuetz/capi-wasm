@@ -8,7 +8,7 @@ use crate::{
 };
 use anyhow::Result;
 use core::{
-    dependencies::{algod, env, indexer},
+    dependencies::{algod, indexer},
     flows::create_project::storage::load_project::load_project,
 };
 use wasm_bindgen::prelude::*;
@@ -25,7 +25,6 @@ async fn _bridge_load_project_user_view(project_id_str: String) -> Result<Projec
 
     let algod = algod();
     let indexer = indexer();
-    let env = env();
 
     let project_id = project_id_str.parse()?;
 
@@ -33,5 +32,5 @@ async fn _bridge_load_project_user_view(project_id_str: String) -> Result<Projec
         .await?
         .project;
 
-    Ok(project_to_project_for_users(&env, &project, &project_id)?.into())
+    Ok(project_to_project_for_users(&project, &project_id)?.into())
 }

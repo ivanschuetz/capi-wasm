@@ -1,9 +1,6 @@
 use algonaut::core::{Address, MicroAlgos};
 use anyhow::Result;
-use core::{
-    dependencies::Env,
-    flows::create_project::{model::Project, storage::load_project::ProjectId},
-};
+use core::flows::create_project::{model::Project, storage::load_project::ProjectId};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -28,7 +25,6 @@ pub struct ProjectForUsers {
 }
 
 pub fn project_to_project_for_users(
-    env: &Env,
     project: &Project,
     project_id: &ProjectId,
 ) -> Result<ProjectForUsers> {
@@ -46,17 +42,10 @@ pub fn project_to_project_for_users(
         staking_escrow_address: *project.staking_escrow.address(),
         central_escrow_address: *project.central_escrow.address(),
         customer_escrow_address: *project.customer_escrow.address(),
-        invest_link: format!("{}/invest/{}", frontend_host(env), project_id_str),
-        my_investment_link: format!("{}/investment/{}", frontend_host(env), project_id_str),
+        invest_link: format!("/{}/invest", project_id_str),
+        my_investment_link: format!("/{}/investment", project_id_str),
         my_investment_link_rel: format!("investment/{}", project_id_str),
-        project_link: format!("{}/project/{}", frontend_host(env), project_id_str),
+        project_link: format!("/{}", project_id_str),
         creator: project.creator,
     })
-}
-
-fn frontend_host(env: &Env) -> &'static str {
-    match env {
-        Env::Local => "http://localhost:3000",
-        Env::Test => "http://test.app.capi.finance",
-    }
 }
