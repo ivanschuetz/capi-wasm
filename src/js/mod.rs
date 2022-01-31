@@ -13,3 +13,4 @@ pub mod stake;
 pub mod unstake;
 pub mod view_project;
 pub mod withdraw;
+pub mod funds_activity;

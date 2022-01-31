@@ -121,7 +121,7 @@ fn to_js_item(item: RoadmapItemView) -> RoadmapItemJs {
     match item {
         RoadmapItemView::Item(item) => RoadmapItemJs {
             item_type: "item".to_owned(),
-            tx_id: Some(item.tx_id.clone()),
+            tx_id: Some(item.tx_id.to_string()),
             tx_link: Some(explorer_tx_id_link_env(&item.tx_id)),
             date: Some(item.date.timestamp().to_string()),
             text: item.title,

@@ -1,3 +1,5 @@
+use core::flows::create_project::storage::load_project::TxId;
+
 use self::withdrawal_history::WithdrawalViewData;
 use crate::service::str_to_algos::microalgos_to_algos;
 use algonaut::core::MicroAlgos;
@@ -13,13 +15,13 @@ pub fn withdrawal_view_data(
     amount: MicroAlgos,
     description: String,
     date_str: String,
-    tx_id: String,
+    tx_id: TxId,
 ) -> WithdrawalViewData {
     WithdrawalViewData {
         amount: format!("{} Algo", microalgos_to_algos(amount)),
         description,
         date: date_str,
-        tx_id: tx_id.clone(),
+        tx_id: tx_id.to_string(),
         tx_link: explorer_tx_id_link_env(&tx_id),
         amount_not_formatted: amount.to_string(), // microalgos
     }
