@@ -29,8 +29,14 @@ pub async fn _bridge_load_funds_activity(pars: LoadFundsActivityParJs) -> Result
         .project;
 
     let mut activity_entries = funds_activity(&algod, &indexer, &creator, &project_id, &project.customer_escrow.address(), &programs().escrows).await?;
-    // sort descendingly by date
+    // sort descendingly by date (most recent activity first)
     activity_entries.sort_by(|p1, p2| p2.date.cmp(&p1.date));
+
+    // TODO limit results already with the queries?
+    if let Some(max_results) = pars.max_results {
+        let max_results = max_results.parse()?;
+        activity_entries = activity_entries.into_iter().take(max_results).collect();
+    }
 
     let mut view_data_entries = vec![];
     for entry in activity_entries {
@@ -54,6 +60,7 @@ pub async fn _bridge_load_funds_activity(pars: LoadFundsActivityParJs) -> Result
 pub struct LoadFundsActivityParJs {
     pub project_id: String,
     pub creator_address: String,
+    pub max_results: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
