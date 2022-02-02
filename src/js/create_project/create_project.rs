@@ -105,6 +105,7 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
         },
         asset_price: inputs.asset_price,
         investors_share: inputs.investors_share,
+        logo_url: inputs.logo_url,
     })
 }
 
@@ -126,6 +127,7 @@ pub fn validate_project_inputs(
     let share_count = validate_share_count(&inputs.share_count)?;
     let asset_price = validate_asset_price(&inputs.asset_price)?;
     let investors_share = validate_investors_share(&inputs.investors_share)?;
+    let logo_url = validate_logo_url(&inputs.logo_url)?;
 
     Ok(ValidatedProjectInputs {
         name: inputs.project_name.clone(),
@@ -134,6 +136,7 @@ pub fn validate_project_inputs(
         share_count,
         asset_price,
         investors_share,
+        logo_url,
     })
 }
 
@@ -193,6 +196,16 @@ fn validate_investors_share(input: &str) -> Result<u64> {
     Ok(count)
 }
 
+fn validate_logo_url(input: &str) -> Result<String> {
+    let count = input.len();
+    if count == 0 || count > 100 {
+        return Err(anyhow!(
+            "Logo URL must not have more than 40 characters. Consider using a URL shortener."
+        ));
+    }
+    Ok(input.to_owned())
+}
+
 pub struct ValidatedProjectInputs {
     pub name: String,
     pub creator: Address,
@@ -200,6 +213,7 @@ pub struct ValidatedProjectInputs {
     pub share_count: u64,
     pub asset_price: MicroAlgos,
     pub investors_share: u64,
+    pub logo_url: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -209,6 +223,7 @@ pub struct CreateProjectFormInputsJs {
     pub share_count: String,
     pub asset_price: String,
     pub investors_share: String,
+    pub logo_url: String,
 }
 
 /// The assets creation signed transactions and the specs to create the project
