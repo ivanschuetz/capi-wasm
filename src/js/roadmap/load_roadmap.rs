@@ -51,7 +51,7 @@ fn group_by_time_range(
         let year = item.date.year();
         let year_quarter = YearQuarter { quarter, year };
 
-        map.entry(year_quarter).or_insert(vec![]).push(item);
+        map.entry(year_quarter).or_insert_with(Vec::new).push(item);
     }
 
     Ok(map)
@@ -114,7 +114,7 @@ fn to_flat_roadmap_items(
 }
 
 fn to_js_items(items: Vec<RoadmapItemView>) -> Vec<RoadmapItemJs> {
-    items.into_iter().map(|i| to_js_item(i)).collect()
+    items.into_iter().map(to_js_item).collect()
 }
 
 fn to_js_item(item: RoadmapItemView) -> RoadmapItemJs {

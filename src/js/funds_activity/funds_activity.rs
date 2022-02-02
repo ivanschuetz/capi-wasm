@@ -1,11 +1,16 @@
 use crate::{
-    js::{common::{parse_bridge_pars, to_bridge_res}, explorer_links::explorer_tx_id_link_env},
-    teal::programs, service::str_to_algos::{microalgos_to_algos_str},
+    js::{
+        common::{parse_bridge_pars, to_bridge_res},
+        explorer_links::explorer_tx_id_link_env,
+    },
+    service::str_to_algos::microalgos_to_algos_str,
+    teal::programs,
 };
 use anyhow::{Error, Result};
 use core::{
-    dependencies::{algod, indexer}, flows::create_project::storage::load_project::load_project, 
-    queries::funds_activity::{funds_activity, FundsActivityEntryType}
+    dependencies::{algod, indexer},
+    flows::create_project::storage::load_project::load_project,
+    queries::funds_activity::{funds_activity, FundsActivityEntryType},
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -16,7 +21,9 @@ pub async fn bridge_load_funds_activity(pars: JsValue) -> Result<JsValue, JsValu
     to_bridge_res(_bridge_load_funds_activity(parse_bridge_pars(pars)?).await)
 }
 
-pub async fn _bridge_load_funds_activity(pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
+pub async fn _bridge_load_funds_activity(
+    pars: LoadFundsActivityParJs,
+) -> Result<LoadFundsActivityResJs> {
     let algod = algod();
     let indexer = indexer();
 
@@ -28,7 +35,15 @@ pub async fn _bridge_load_funds_activity(pars: LoadFundsActivityParJs) -> Result
         .await?
         .project;
 
-    let mut activity_entries = funds_activity(&algod, &indexer, &creator, &project_id, &project.customer_escrow.address(), &programs().escrows).await?;
+    let mut activity_entries = funds_activity(
+        &algod,
+        &indexer,
+        &creator,
+        &project_id,
+        project.customer_escrow.address(),
+        &programs().escrows,
+    )
+    .await?;
     // sort descendingly by date (most recent activity first)
     activity_entries.sort_by(|p1, p2| p2.date.cmp(&p1.date));
 
@@ -45,7 +60,8 @@ pub async fn _bridge_load_funds_activity(pars: LoadFundsActivityParJs) -> Result
             is_income: match entry.type_ {
                 FundsActivityEntryType::Income => "true",
                 FundsActivityEntryType::Spending => "false",
-            }.to_owned(),
+            }
+            .to_owned(),
             description: entry.description,
             date: entry.date.to_rfc2822(),
             tx_id: entry.tx_id.to_string(),
@@ -53,7 +69,9 @@ pub async fn _bridge_load_funds_activity(pars: LoadFundsActivityParJs) -> Result
         });
     }
 
-    Ok(LoadFundsActivityResJs { entries: view_data_entries })
+    Ok(LoadFundsActivityResJs {
+        entries: view_data_entries,
+    })
 }
 
 #[derive(Debug, Clone, Deserialize)]
