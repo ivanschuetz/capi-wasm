@@ -2,7 +2,8 @@ use crate::js::{
     common::{parse_bridge_pars, to_bridge_res},
     explorer_links::explorer_address_link_env,
 };
-use anyhow::Result;
+use algonaut::core::Address;
+use anyhow::{anyhow, Result};
 use core::{
     decimal_util::DecimalExt, dependencies::indexer,
     queries::shares_distribution::shares_holders_distribution,
@@ -27,17 +28,20 @@ pub async fn _bridge_shares_distribution(
 
     let holders = shares_holders_distribution(&indexer, asset_id, asset_supply).await?;
 
+    let mut holders_js = vec![];
+    for h in holders {
+        holders_js.push(ShareHoldingPercentageJs {
+            address: h.address.to_string(),
+            short_address: shorten_address(&h.address)?,
+            address_browser_link: explorer_address_link_env(&h.address),
+            amount: h.amount.to_string(),
+            percentage_formatted: h.percentage.format_percentage(),
+            percentage_number: h.percentage.to_string(),
+        });
+    }
+
     Ok(SharedDistributionResJs {
-        holders: holders
-            .into_iter()
-            .map(|h| ShareHoldingPercentageJs {
-                address: h.address.to_string(),
-                address_browser_link: explorer_address_link_env(&h.address),
-                amount: h.amount.to_string(),
-                percentage_formatted: h.percentage.format_percentage(),
-                percentage_number: h.percentage.to_string(),
-            })
-            .collect(),
+        holders: holders_js,
     })
 }
 
@@ -51,6 +55,7 @@ pub struct SharedDistributionParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct ShareHoldingPercentageJs {
     pub address: String,
+    pub short_address: String,
     pub address_browser_link: String,
     pub amount: String,
     pub percentage_formatted: String,
@@ -60,4 +65,20 @@ pub struct ShareHoldingPercentageJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct SharedDistributionResJs {
     pub holders: Vec<ShareHoldingPercentageJs>,
+}
+
+fn shorten_address(address: &Address) -> Result<String> {
+    let address_str = address.to_string();
+
+    let len = address_str.len();
+
+    if len < 6 {
+        return Err(anyhow!("Invalid address (too short): {address}"));
+    }
+
+    Ok(format!(
+        "{}...{}",
+        address_str[0..3].to_owned(),
+        address_str[len - 3..len].to_owned()
+    ))
 }
