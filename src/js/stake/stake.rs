@@ -22,14 +22,15 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
     let algod = algod();
     let indexer = indexer();
 
-    let project = load_project(
+    let stored_project = load_project(
         &algod,
         &indexer,
         &pars.project_id.parse()?,
         &programs().escrows,
     )
-    .await?
-    .project;
+    .await?;
+
+    let project = stored_project.project;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 
@@ -43,6 +44,7 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
         project.shares_asset_id,
         project.central_app_id,
         &project.staking_escrow,
+        &stored_project.id,
     )
     .await?;
 
