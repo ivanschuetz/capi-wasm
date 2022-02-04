@@ -41,6 +41,7 @@ pub async fn _bridge_load_funds_activity(
         &creator,
         &project_id,
         project.customer_escrow.address(),
+        project.central_escrow.address(),
         &programs().escrows,
     )
     .await?;
