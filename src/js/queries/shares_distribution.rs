@@ -3,9 +3,10 @@ use crate::js::{
     explorer_links::explorer_address_link_env,
 };
 use algonaut::core::Address;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Error, Result};
 use core::{
-    decimal_util::DecimalExt, dependencies::indexer,
+    decimal_util::DecimalExt,
+    dependencies::{algod, indexer},
     queries::shares_distribution::shares_holders_distribution,
 };
 use serde::{Deserialize, Serialize};
@@ -21,12 +22,25 @@ pub async fn bridge_shares_distribution(pars: JsValue) -> Result<JsValue, JsValu
 pub async fn _bridge_shares_distribution(
     pars: SharedDistributionParJs,
 ) -> Result<SharedDistributionResJs> {
+    let algod = algod();
     let indexer = indexer();
 
     let asset_id = pars.asset_id.parse()?;
     let asset_supply = pars.asset_supply.parse()?;
+    let app_id = pars.app_id.parse()?;
+    let investing_escrow = pars.investing_escrow_address.parse().map_err(Error::msg)?;
+    let staking_escrow = pars.staking_escrow_address.parse().map_err(Error::msg)?;
 
-    let holders = shares_holders_distribution(&indexer, asset_id, asset_supply).await?;
+    let holders = shares_holders_distribution(
+        &algod,
+        &indexer,
+        asset_id,
+        app_id,
+        asset_supply,
+        &investing_escrow,
+        &staking_escrow,
+    )
+    .await?;
 
     let mut holders_js = vec![];
     for h in holders {
@@ -50,6 +64,10 @@ pub struct SharedDistributionParJs {
     pub asset_id: String,
     /// optimization to not have to fetch the asset: the asset specs are in the project, which the frontend has to fetch first (to get the asset id)
     pub asset_supply: String,
+
+    pub app_id: String,
+    pub investing_escrow_address: String,
+    pub staking_escrow_address: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
