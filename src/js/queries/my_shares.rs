@@ -6,7 +6,10 @@ use anyhow::{Error, Result};
 use core::{
     dependencies::{algod, indexer},
     flows::create_project::storage::load_project::load_project,
-    state::{app_state::ApplicationLocalStateError, central_app_state::central_investor_state},
+    state::{
+        account_state::asset_holdings, app_state::ApplicationLocalStateError,
+        central_app_state::central_investor_state,
+    },
 };
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -32,15 +35,22 @@ pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
 
     let my_address = &pars.my_address.parse().map_err(Error::msg)?;
 
-    let my_shares_str =
+    let staked_shares =
         match central_investor_state(&algod, my_address, project.central_app_id).await {
-            Ok(state) => state.shares.to_string(),
-            Err(ApplicationLocalStateError::NotOptedIn) => "0".to_owned(), // not invested -> 0 shares
+            Ok(state) => state.shares,
+            Err(ApplicationLocalStateError::NotOptedIn) => 0, // not invested -> 0 shares
             Err(e) => return Err(Error::msg(e)),
         };
 
+    let free_shares = match asset_holdings(&algod, my_address, project.shares_asset_id).await {
+        Ok(shares) => shares,
+        Err(e) => return Err(Error::msg(e)),
+    };
+
     Ok(MySharesResJs {
-        shares: my_shares_str,
+        total: (staked_shares + free_shares).to_string(),
+        free: free_shares.to_string(),
+        staked: staked_shares.to_string(),
     })
 }
 
@@ -52,5 +62,7 @@ pub struct MySharesParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct MySharesResJs {
-    pub shares: String,
+    pub total: String,
+    pub free: String,
+    pub staked: String,
 }

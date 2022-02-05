@@ -3,11 +3,11 @@ use crate::{
     teal::programs,
 };
 use anyhow::{Error, Result};
+use core::dependencies::indexer;
 use core::{
     dependencies::algod,
     flows::{create_project::storage::load_project::load_project, stake::stake::stake},
 };
-use core::{dependencies::indexer, state::account_state::asset_holdings};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -22,6 +22,8 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
     let algod = algod();
     let indexer = indexer();
 
+    let share_count = pars.share_count.parse()?;
+
     let stored_project = load_project(
         &algod,
         &indexer,
@@ -34,13 +36,10 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 
-    let investor_shares_count =
-        asset_holdings(&algod, &investor_address, project.shares_asset_id).await?;
-
     let to_sign = stake(
         &algod,
         investor_address,
-        investor_shares_count,
+        share_count,
         project.shares_asset_id,
         project.central_app_id,
         &project.staking_escrow,
@@ -59,6 +58,7 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
 pub struct StakeParJs {
     pub project_id: String,
     pub investor_address: String,
+    pub share_count: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
