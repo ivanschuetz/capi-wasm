@@ -99,6 +99,7 @@ fn inputs_to_project_specs(inputs: &CreateProjectFormInputsJs) -> Result<CreateP
 fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<CreateProjectSpecs> {
     Ok(CreateProjectSpecs {
         name: inputs.name,
+        description: inputs.description,
         shares: CreateSharesSpecs {
             token_name: inputs.token_name,
             count: inputs.share_count,
@@ -106,6 +107,7 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
         asset_price: inputs.asset_price,
         investors_share: inputs.investors_share,
         logo_url: inputs.logo_url,
+        social_media_url: inputs.social_media_url,
     })
 }
 
@@ -122,47 +124,61 @@ pub fn validate_project_inputs(
     inputs: &CreateProjectFormInputsJs,
 ) -> Result<ValidatedProjectInputs> {
     let project_name = validate_project_name(&inputs.project_name)?;
+    let project_description = validate_project_description(&inputs.project_description)?;
     let asset_name = generate_asset_name(&project_name)?;
     let creator_address = inputs.creator.parse().map_err(Error::msg)?;
     let share_count = validate_share_count(&inputs.share_count)?;
     let asset_price = validate_asset_price(&inputs.asset_price)?;
     let investors_share = validate_investors_share(&inputs.investors_share)?;
     let logo_url = validate_logo_url(&inputs.logo_url)?;
+    let social_media_url = validate_social_media_url(&inputs.social_media_url)?;
 
     Ok(ValidatedProjectInputs {
-        name: inputs.project_name.clone(),
+        name: project_name,
+        description: project_description,
         creator: creator_address,
         token_name: asset_name,
         share_count,
         asset_price,
         investors_share,
         logo_url,
+        social_media_url,
     })
 }
 
 fn validate_project_name(name: &str) -> Result<String> {
-    let name = name.trim();
+    validate_text_min_max_length(name, 2, 40, "Project name")
+}
 
-    let min_length = 2;
-    let max_length = 40;
+fn validate_project_description(descr: &str) -> Result<String> {
+    validate_text_min_max_length(descr, 0, 200, "Project description")
+}
 
-    let project_name_len = name.len();
-    if project_name_len < min_length {
+fn validate_text_min_max_length(
+    text: &str,
+    min: usize,
+    max: usize,
+    field_name: &str,
+) -> Result<String> {
+    let text = text.trim();
+
+    let project_name_len = text.len();
+    if project_name_len < min {
         return Err(anyhow!(
-            "Project name must have at least {} characters. Current: {}",
-            min_length,
-            name.len()
+            "{field_name} must have at least {} characters. Current: {}",
+            min,
+            text.len()
         ));
     }
-    if project_name_len > max_length {
+    if project_name_len > max {
         return Err(anyhow!(
-            "Project name must not have more than {} characters. Current: {}",
-            max_length,
-            name.len()
+            "{field_name} must not have more than {} characters. Current: {}",
+            max,
+            text.len()
         ));
     }
 
-    Ok(name.to_owned())
+    Ok(text.to_owned())
 }
 
 fn generate_asset_name(validated_project_name: &str) -> Result<String> {
@@ -198,9 +214,21 @@ fn validate_investors_share(input: &str) -> Result<u64> {
 
 fn validate_logo_url(input: &str) -> Result<String> {
     let count = input.len();
-    if count == 0 || count > 100 {
+    let max_chars = 100;
+    if count == 0 || count > max_chars {
         return Err(anyhow!(
-            "Logo URL must not have more than 40 characters. Consider using a URL shortener."
+            "Logo URL must not have more than {max_chars} characters. Consider using a URL shortener."
+        ));
+    }
+    Ok(input.to_owned())
+}
+
+fn validate_social_media_url(input: &str) -> Result<String> {
+    let count = input.len();
+    let max_chars = 100;
+    if count == 0 || count > max_chars {
+        return Err(anyhow!(
+            "Social media URL must not have more than {max_chars} characters. Consider using a URL shortener."
         ));
     }
     Ok(input.to_owned())
@@ -208,22 +236,26 @@ fn validate_logo_url(input: &str) -> Result<String> {
 
 pub struct ValidatedProjectInputs {
     pub name: String,
+    pub description: String,
     pub creator: Address,
     pub token_name: String,
     pub share_count: u64,
     pub asset_price: MicroAlgos,
     pub investors_share: u64,
     pub logo_url: String,
+    pub social_media_url: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateProjectFormInputsJs {
     pub creator: String, // not strictly a form input ("field"), but for purpose here it can be
     pub project_name: String,
+    pub project_description: String,
     pub share_count: String,
     pub asset_price: String,
     pub investors_share: String,
     pub logo_url: String,
+    pub social_media_url: String,
 }
 
 /// The assets creation signed transactions and the specs to create the project

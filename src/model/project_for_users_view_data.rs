@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectForUsersViewData {
     pub name: String,
+    pub description: String,
     // TODO remove?
     pub share_supply: String,
     pub share_asset_name: String,
@@ -13,6 +14,7 @@ pub struct ProjectForUsersViewData {
     pub share_price_number_algo: String,
     pub shares_asset_id: String,
     pub logo_url: String,
+    pub social_media_url: String,
     pub central_app_id: String,
     pub customer_escrow_address: String,
     pub investing_escrow_address: String,
@@ -28,11 +30,13 @@ impl From<ProjectForUsers> for ProjectForUsersViewData {
     fn from(project: ProjectForUsers) -> Self {
         ProjectForUsersViewData {
             name: project.name.clone(),
+            description: project.description.clone(),
             share_supply: project.asset_supply.to_string(),
             share_asset_name: project.asset_name,
             share_price: format!("{} Algo", microalgos_to_algos(project.asset_price)),
             share_price_number_algo: microalgos_to_algos(project.asset_price).to_string(),
             logo_url: project.logo_url,
+            social_media_url: project.social_media_url,
             shares_asset_id: project.shares_asset_id.to_string(),
             central_app_id: project.central_app_id.to_string(),
             customer_escrow_address: project.customer_escrow_address.to_string(),
