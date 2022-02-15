@@ -3,7 +3,7 @@ use crate::{
     service::{constants::PRECISION, str_to_algos::microalgos_to_algos_str},
     teal::programs,
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use core::{
     decimal_util::{AsDecimal, DecimalExt},
     dependencies::{algod, indexer},
@@ -14,7 +14,6 @@ use core::{
     },
     state::central_app_state::{central_global_state, central_investor_state},
 };
-use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -67,14 +66,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         investor_state.shares,
         project.specs.shares.count,
         PRECISION,
-        project.specs.investors_share,
     );
-
-    let investors_share_normalized: Decimal = Decimal::from(project.specs.investors_share)
-        .checked_div(100.into())
-        .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
-    let investor_percentage_relative_to_total: Decimal =
-        investor_percentage * investors_share_normalized;
 
     log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_state.shares, project.specs.shares.count);
 
@@ -83,10 +75,6 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
         investor_percentage: investor_percentage.format_percentage(),
         investor_percentage_number: investor_percentage.to_string(),
-        investor_percentage_relative_to_total_number: investor_percentage_relative_to_total
-            .to_string(),
-
-        investors_share_number: investors_share_normalized.to_string(),
 
         investor_already_retrieved_amount: microalgos_to_algos_str(investor_state.harvested),
         investor_harvestable_amount: microalgos_to_algos_str(can_harvest),
@@ -108,9 +96,7 @@ pub struct LoadInvestmentParJs {
 pub struct LoadInvestmentResJs {
     investor_shares_count: String,
     investor_percentage: String,
-    investor_percentage_number: String, // relative to investor's share (part reserved to investors)
-    investor_percentage_relative_to_total_number: String, // relative to all the project's income
-    investors_share_number: String, // from Project - copied here just for convenience (to retrieve all the display data from this struct)
+    investor_percentage_number: String,
     investor_already_retrieved_amount: String,
     investor_harvestable_amount: String,
     investor_harvestable_amount_microalgos: String, // passthrough

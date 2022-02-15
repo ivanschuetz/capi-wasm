@@ -93,5 +93,4 @@ int {asset_price} // price (microalgos) per asset
 &&
 
 end_contract:
-
 "#;

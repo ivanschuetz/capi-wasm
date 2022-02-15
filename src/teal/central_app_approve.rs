@@ -282,9 +282,6 @@ entitled_harvest_microalgos_for_shares:
 int {precision}
 *
 
-int {investors_share} // already multiplied with precision
-*
-
 // the asset's total supply
 int {asset_supply} 
 
@@ -298,7 +295,7 @@ app_global_get
 // percentage user is entitled to from received total
 *
 
-int {precision_square} // revert mult
+int {precision} // revert mult
 /
 
 retsub

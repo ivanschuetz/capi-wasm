@@ -48,15 +48,12 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
             anyhow!("Invalid app state: Investor escrow doesn't have shares asset, Please contact support.")
         })?.amount;
 
-    let investos_share_formatted = format!("{} %", project.specs.investors_share);
-
     let project_view_data = project_to_project_for_users(&project, &project_id)?.into();
 
     Ok(ViewProjectResJs {
         project: project_view_data,
         // shares_supply: shares_supply.to_string(),
         shares_available: shares_available.to_string(),
-        investors_share: investos_share_formatted,
         available_funds: microalgos_to_algos(available_funds).to_string(),
         customer_payment_deeplink: customer_payment_deeplink.to_string(),
     })
@@ -72,7 +69,6 @@ pub struct ViewProjectResJs {
     pub project: ProjectForUsersViewData,
     // pub shares_supply: String,
     pub shares_available: String,
-    pub investors_share: String,
     pub available_funds: String,
     pub customer_payment_deeplink: String,
 }

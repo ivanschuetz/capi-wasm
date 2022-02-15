@@ -1,9 +1,10 @@
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
+use core::flows::create_project::create_project_specs::CreateProjectSpecs;
 use core::flows::create_project::storage::save_project::save_project;
 use core::flows::create_project::{
     create_project::submit_create_project,
-    model::{CreateProjectSigned, CreateProjectSpecs},
+    model::CreateProjectSigned,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

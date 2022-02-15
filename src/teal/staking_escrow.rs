@@ -60,5 +60,4 @@ gtxn 2 TypeEnum
 int pay
 ==
 &&
-
 "#;

@@ -1,6 +1,7 @@
 use core::dependencies::algod;
+use core::flows::create_project::create_shares_specs::CreateSharesSpecs;
 use core::flows::create_project::{
-    model::CreateSharesSpecs, setup::create_assets::create_investor_assets_txs,
+    setup::create_assets::create_investor_assets_txs,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
