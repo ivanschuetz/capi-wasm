@@ -1,4 +1,5 @@
 use crate::{
+    dependencies::{funds_asset_specs, FundsAssetSpecs},
     js::common::{parse_bridge_pars, to_bridge_res},
     teal::programs,
 };
@@ -27,7 +28,14 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
 
     let project_id = pars.project_id.parse()?;
 
-    let entries = load_withdrawals(&algod, &indexer, &project_id, &creator).await?;
+    let entries = load_withdrawals(
+        &algod,
+        &indexer,
+        &funds_asset_specs(),
+        &project_id,
+        &creator,
+    )
+    .await?;
 
     Ok(LoadWithdrawalResJs { entries })
 }
@@ -35,6 +43,7 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
 pub async fn load_withdrawals(
     algod: &Algod,
     indexer: &Indexer,
+    funds_asset_specs: &FundsAssetSpecs,
     project_id: &ProjectId,
     creator: &Address,
 ) -> Result<Vec<WithdrawalViewData>> {
@@ -43,6 +52,7 @@ pub async fn load_withdrawals(
     for entry in entries {
         reqs_view_data.push(withdrawal_view_data(
             entry.amount,
+            funds_asset_specs,
             entry.description,
             entry.date.to_rfc2822(),
             entry.tx_id,

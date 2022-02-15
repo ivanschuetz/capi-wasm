@@ -1,5 +1,6 @@
 use super::submit_withdraw::SubmitWithdrawPassthroughParJs;
 use crate::{
+    dependencies::funds_asset_specs,
     js::{
         common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
         withdraw::submit_withdraw::{validate_withdrawal_inputs, WithdrawInputsPassthroughJs},
@@ -30,6 +31,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
     let algod = algod();
     let indexer = indexer();
+    let funds_asset_specs = funds_asset_specs();
 
     let project = load_project(
         &algod,
@@ -46,7 +48,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         description: pars.description.clone(),
     };
 
-    let validated_inputs = validate_withdrawal_inputs(&inputs_par)?;
+    let validated_inputs = validate_withdrawal_inputs(&inputs_par, &funds_asset_specs)?;
 
     // TODO we could check balance first (enough to withdraw) but then more requests? depends on which state is more likely, think about this
 
@@ -58,6 +60,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let to_sign_for_withdrawal = withdraw(
         &algod,
         pars.sender.parse().map_err(Error::msg)?,
+        funds_asset_specs.id,
         inputs,
         &project.central_escrow,
     )

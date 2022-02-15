@@ -11,7 +11,10 @@ use core::{
     network_util::wait_for_pending_transaction,
 };
 
-use crate::js::common::{signed_js_tx_to_signed_tx1, SignedTxFromJs};
+use crate::{
+    dependencies::funds_asset_specs,
+    js::common::{signed_js_tx_to_signed_tx1, SignedTxFromJs},
+};
 
 /// Returns txs if needed to drain, None if not needed.
 pub async fn drain_if_needed_txs(
@@ -32,6 +35,7 @@ pub async fn drain_if_needed_txs(
                 algod,
                 sender,
                 project.central_app_id,
+                funds_asset_specs().id,
                 &project.customer_escrow,
                 &project.central_escrow,
             )

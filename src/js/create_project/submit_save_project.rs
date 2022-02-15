@@ -1,7 +1,10 @@
+use crate::dependencies::funds_asset_specs;
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::model::project_for_users::project_to_project_for_users;
-use crate::model::project_for_users_view_data::ProjectForUsersViewData;
+use crate::model::project_for_users_view_data::{
+    project_for_users_to_view_data, ProjectForUsersViewData,
+};
 use anyhow::Result;
 use core::dependencies::algod;
 use core::flows::create_project::storage::load_project::ProjectId;
@@ -38,7 +41,10 @@ async fn _bridge_submit_save_project(
     let project_id = ProjectId(tx_id);
 
     // TODO better typing: if we keep the tx id as project id, we should create a new tx_id type (which would also contain the hash digest conversion)
-    Ok(project_to_project_for_users(&project, &project_id)?.into())
+    Ok(project_for_users_to_view_data(
+        project_to_project_for_users(&project, &project_id)?,
+        &funds_asset_specs(),
+    ))
 }
 
 #[derive(Debug, Clone, Deserialize)]

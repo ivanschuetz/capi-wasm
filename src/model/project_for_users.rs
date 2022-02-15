@@ -1,6 +1,9 @@
-use algonaut::core::{Address, MicroAlgos};
+use algonaut::core::Address;
 use anyhow::Result;
-use core::flows::create_project::{model::Project, storage::load_project::ProjectId};
+use core::{
+    flows::create_project::{model::Project, storage::load_project::ProjectId},
+    funds::FundsAmount,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8,7 +11,7 @@ pub struct ProjectForUsers {
     pub id: String,
     pub name: String,
     pub description: String,
-    pub asset_price: MicroAlgos,
+    pub share_price: FundsAmount,
     pub asset_name: String,
     pub asset_supply: u64,
     pub investors_share: u64,
@@ -36,7 +39,7 @@ pub fn project_to_project_for_users(
         id: project_id_str.clone(),
         name: project.specs.name.clone(),
         description: project.specs.description.clone(),
-        asset_price: project.specs.asset_price,
+        share_price: project.specs.share_price,
         asset_name: project.specs.shares.token_name.clone(),
         asset_supply: project.specs.shares.count,
         investors_share: project.specs.investors_share,

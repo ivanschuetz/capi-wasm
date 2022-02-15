@@ -1,16 +1,18 @@
 use super::withdrawal_history::WithdrawalViewData;
 use crate::{
+    dependencies::{funds_asset_specs, FundsAssetSpecs},
     js::{
         common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
         withdraw::withdrawal_view_data,
     },
-    service::{drain_if_needed::submit_drain, str_to_algos::validate_algos_input},
+    service::{drain_if_needed::submit_drain, str_to_algos::validate_funds_amount_input},
 };
-use algonaut::core::{Address, MicroAlgos};
+use algonaut::core::Address;
 use anyhow::{anyhow, Error, Result};
 use core::{
     dependencies::algod,
     flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned},
+    funds::FundsAmount,
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -23,8 +25,9 @@ pub async fn bridge_submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs> {
     let algod = algod();
+    let funds_asset_specs = funds_asset_specs();
 
-    let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs)?;
+    let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs, &funds_asset_specs)?;
 
     // 1 tx if only withdrawal, 3 if withdrawal + drain
     if pars.txs.len() != 1 && pars.txs.len() != 3 {
@@ -67,6 +70,7 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
     Ok(SubmitWithdrawResJs {
         saved_withdrawal: withdrawal_view_data(
             withdrawal_inputs.amount,
+            &funds_asset_specs,
             withdrawal_inputs.description,
             "Just now".to_owned(),
             withdraw_tx_id,
@@ -99,7 +103,7 @@ pub struct WithdrawInputsPassthroughJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidatedWithdrawalInputs {
     pub sender: Address,
-    pub amount: MicroAlgos,
+    pub amount: FundsAmount,
     pub description: String,
 }
 
@@ -110,10 +114,11 @@ pub struct SubmitWithdrawResJs {
 
 pub fn validate_withdrawal_inputs(
     inputs: &WithdrawInputsPassthroughJs,
+    asset_specs: &FundsAssetSpecs,
 ) -> Result<ValidatedWithdrawalInputs> {
     Ok(ValidatedWithdrawalInputs {
         sender: inputs.sender.parse().map_err(Error::msg)?,
-        amount: validate_algos_input(&inputs.withdrawal_amount)?,
+        amount: validate_funds_amount_input(&inputs.withdrawal_amount, asset_specs)?,
         description: inputs.description.clone(),
     })
 }

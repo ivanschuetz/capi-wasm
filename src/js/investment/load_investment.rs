@@ -1,6 +1,7 @@
 use crate::{
+    dependencies::funds_asset_specs,
     js::common::{parse_bridge_pars, to_bridge_res},
-    service::{constants::PRECISION, str_to_algos::microalgos_to_algos_str},
+    service::{constants::PRECISION, str_to_algos::base_units_to_display_units_str},
     teal::programs,
 };
 use anyhow::{anyhow, Error, Result};
@@ -10,9 +11,11 @@ use core::{
     flows::{
         create_project::storage::load_project::load_project,
         harvest::harvest::investor_can_harvest_amount_calc,
-        withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
     },
-    state::central_app_state::{central_global_state, central_investor_state},
+    state::{
+        account_state::funds_holdings,
+        central_app_state::{central_global_state, central_investor_state},
+    },
 };
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -29,6 +32,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
     let algod = algod();
     let indexer = indexer();
+    let funds_asset_specs = funds_asset_specs();
 
     let project_id = pars.project_id.parse()?;
 
@@ -42,10 +46,12 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         central_investor_state(&algod, investor_address, project.central_app_id).await?;
     let central_state = central_global_state(&algod, project.central_app_id).await?;
 
-    let customer_escrow_balance = algod
-        .account_information(project.customer_escrow.address())
-        .await?
-        .amount;
+    let customer_escrow_balance = funds_holdings(
+        &algod,
+        project.customer_escrow.address(),
+        funds_asset_specs.id,
+    )
+    .await?;
 
     // TODO review redundancy with backend, as we store the share count in the db too
     // maybe we shouldn't store them in the backend (also meaning: the backend can't deliver Project objects but a reduced view of them),
@@ -54,7 +60,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let investor_percentage =
         investor_state.shares.as_decimal() / project.specs.shares.count.as_decimal();
 
-    let withdrawable_customer_escrow_amount = customer_escrow_balance - (MIN_BALANCE + FIXED_FEE);
+    let withdrawable_customer_escrow_amount = customer_escrow_balance;
     // This is basically "simulate that the customer escrow was already drained"
     // we use this value, as harvesting will drain the customer escrow if it has a balance (> MIN_BALANCE + FIXED_FEE)
     // and the draining step is invisible to the user (aside of adding more txs to the harvesting txs to sign)
@@ -71,7 +77,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     );
 
     let investors_share_normalized: Decimal = Decimal::from(project.specs.investors_share)
-        .checked_div(100.into())
+        .checked_div(100u8.into())
         .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
     let investor_percentage_relative_to_total: Decimal =
         investor_percentage * investors_share_normalized;
@@ -88,8 +94,14 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
         investors_share_number: investors_share_normalized.to_string(),
 
-        investor_already_retrieved_amount: microalgos_to_algos_str(investor_state.harvested),
-        investor_harvestable_amount: microalgos_to_algos_str(can_harvest),
+        investor_already_retrieved_amount: base_units_to_display_units_str(
+            investor_state.harvested,
+            &funds_asset_specs,
+        ),
+        investor_harvestable_amount: base_units_to_display_units_str(
+            can_harvest,
+            &funds_asset_specs,
+        ),
         investor_harvestable_amount_microalgos: can_harvest.to_string(),
     })
 }

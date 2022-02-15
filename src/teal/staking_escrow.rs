@@ -1,8 +1,10 @@
 pub const SRC: &str = r#"
 #pragma version 4
+// int 1
+
 // asset opt-ins on project creation
 global GroupSize
-int 8
+int 10
 ==
 bz branch_after_group_access
 gtxn 5 XferAsset

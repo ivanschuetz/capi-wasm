@@ -1,21 +1,21 @@
-use algonaut::{algod::v2::Algod, core::MicroAlgos};
+use algonaut::algod::v2::Algod;
 use anyhow::Result;
-use core::flows::{
-    create_project::model::Project,
-    withdraw::withdraw::{FIXED_FEE, MIN_BALANCE},
+use core::{
+    flows::create_project::model::Project,
+    funds::{FundsAmount, FundsAssetId},
+    state::account_state::funds_holdings,
 };
 
-pub async fn available_funds(algod: &Algod, project: &Project) -> Result<MicroAlgos> {
-    let customer_escrow_balance = algod
-        .account_information(project.customer_escrow.address())
-        .await?
-        .amount;
+pub async fn available_funds(
+    algod: &Algod,
+    project: &Project,
+    funds_asset_id: FundsAssetId,
+) -> Result<FundsAmount> {
+    let customer_escrow_amount =
+        funds_holdings(algod, project.customer_escrow.address(), funds_asset_id).await?;
 
-    let central_escrow_balance = algod
-        .account_information(project.central_escrow.address())
-        .await?
-        .amount;
+    let central_escrow_amount =
+        funds_holdings(algod, project.central_escrow.address(), funds_asset_id).await?;
 
-    // TODO dynamic MIN_BALANCE? (and fee)
-    Ok(customer_escrow_balance + central_escrow_balance - (MIN_BALANCE + FIXED_FEE) * 2)
+    Ok(customer_escrow_amount + central_escrow_amount)
 }

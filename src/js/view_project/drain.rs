@@ -1,3 +1,4 @@
+use crate::dependencies::funds_asset_specs;
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::teal::programs;
 use anyhow::{Error, Result};
@@ -31,6 +32,7 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
         &algod,
         &pars.drainer_address.parse().map_err(Error::msg)?,
         project.central_app_id,
+        funds_asset_specs().id,
         &project.customer_escrow,
         &project.central_escrow,
     )

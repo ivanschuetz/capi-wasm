@@ -1,10 +1,9 @@
-use core::flows::create_project::storage::load_project::TxId;
-
 use self::withdrawal_history::WithdrawalViewData;
-use crate::service::str_to_algos::microalgos_to_algos;
-use algonaut::core::MicroAlgos;
-
 use super::explorer_links::explorer_tx_id_link_env;
+use crate::{
+    dependencies::FundsAssetSpecs, service::str_to_algos::base_units_to_display_units_str,
+};
+use core::{flows::create_project::storage::load_project::TxId, funds::FundsAmount};
 
 pub mod submit_withdraw;
 #[allow(clippy::module_inception)]
@@ -12,13 +11,17 @@ pub mod withdraw;
 pub mod withdrawal_history;
 
 pub fn withdrawal_view_data(
-    amount: MicroAlgos,
+    amount: FundsAmount,
+    funds_asset_specs: &FundsAssetSpecs,
     description: String,
     date_str: String,
     tx_id: TxId,
 ) -> WithdrawalViewData {
     WithdrawalViewData {
-        amount: format!("{} Algo", microalgos_to_algos(amount)),
+        amount: format!(
+            "{}",
+            base_units_to_display_units_str(amount, funds_asset_specs)
+        ),
         description,
         date: date_str,
         tx_id: tx_id.to_string(),

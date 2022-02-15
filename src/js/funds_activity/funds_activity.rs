@@ -1,9 +1,10 @@
 use crate::{
+    dependencies::funds_asset_specs,
     js::{
         common::{parse_bridge_pars, to_bridge_res},
         explorer_links::explorer_tx_id_link_env,
     },
-    service::str_to_algos::microalgos_to_algos_str,
+    service::str_to_algos::base_units_to_display_units_str,
     teal::programs,
 };
 use anyhow::{Error, Result};
@@ -57,7 +58,7 @@ pub async fn _bridge_load_funds_activity(
     let mut view_data_entries = vec![];
     for entry in activity_entries {
         view_data_entries.push(FundsActivityViewData {
-            amount: microalgos_to_algos_str(entry.amount),
+            amount: base_units_to_display_units_str(entry.amount, &funds_asset_specs()),
             is_income: match entry.type_ {
                 FundsActivityEntryType::Income => "true",
                 FundsActivityEntryType::Spending => "false",

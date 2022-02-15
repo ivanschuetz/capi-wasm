@@ -1,8 +1,9 @@
 use crate::{
+    dependencies::funds_asset_specs,
     js::common::{parse_bridge_pars, to_bridge_res},
     model::{
         project_for_users::project_to_project_for_users,
-        project_for_users_view_data::ProjectForUsersViewData,
+        project_for_users_view_data::{project_for_users_to_view_data, ProjectForUsersViewData},
     },
     teal::programs,
 };
@@ -32,5 +33,8 @@ async fn _bridge_load_project_user_view(project_id_str: String) -> Result<Projec
         .await?
         .project;
 
-    Ok(project_to_project_for_users(&project, &project_id)?.into())
+    Ok(project_for_users_to_view_data(
+        project_to_project_for_users(&project, &project_id)?,
+        &funds_asset_specs(),
+    ))
 }

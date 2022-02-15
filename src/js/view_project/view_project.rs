@@ -1,8 +1,11 @@
+use crate::dependencies::funds_asset_specs;
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use crate::model::project_for_users::project_to_project_for_users;
-use crate::model::project_for_users_view_data::ProjectForUsersViewData;
+use crate::model::project_for_users_view_data::{
+    project_for_users_to_view_data, ProjectForUsersViewData,
+};
 use crate::service::available_funds::available_funds;
-use crate::service::str_to_algos::microalgos_to_algos;
+use crate::service::str_to_algos::base_units_to_display_units;
 use crate::teal::programs;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
@@ -22,6 +25,7 @@ pub async fn bridge_view_project(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectResJs> {
     let algod = algod();
     let indexer = indexer();
+    let funds_asset_specs = funds_asset_specs();
 
     let project_id = pars.project_id.parse()?;
 
@@ -36,7 +40,7 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
             .build()
             .as_url();
 
-    let available_funds = available_funds(&algod, &project).await?;
+    let available_funds = available_funds(&algod, &project, funds_asset_specs.id).await?;
 
     let shares_available = algod
         .account_information(project.invest_escrow.address())
@@ -50,14 +54,18 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
 
     let investos_share_formatted = format!("{} %", project.specs.investors_share);
 
-    let project_view_data = project_to_project_for_users(&project, &project_id)?.into();
+    let project_view_data = project_for_users_to_view_data(
+        project_to_project_for_users(&project, &project_id)?,
+        &funds_asset_specs,
+    );
 
     Ok(ViewProjectResJs {
         project: project_view_data,
         // shares_supply: shares_supply.to_string(),
         shares_available: shares_available.to_string(),
         investors_share: investos_share_formatted,
-        available_funds: microalgos_to_algos(available_funds).to_string(),
+        available_funds: base_units_to_display_units(available_funds, &funds_asset_specs)
+            .to_string(),
         customer_payment_deeplink: customer_payment_deeplink.to_string(),
     })
 }

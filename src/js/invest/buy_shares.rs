@@ -1,4 +1,5 @@
 use crate::{
+    dependencies::funds_asset_specs,
     js::common::{to_js_value, to_my_algo_txs, SignedTxFromJs},
     service::invest_or_stake::submit_apps_optins_from_js,
     teal::programs,
@@ -49,7 +50,8 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
         project.central_app_id,
         project.shares_asset_id,
         validated_share_count,
-        project.specs.asset_price,
+        funds_asset_specs().id,
+        project.specs.share_price,
         &project_id,
     )
     .await

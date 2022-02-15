@@ -1,6 +1,7 @@
 use crate::{
+    dependencies::funds_asset_specs,
     js::common::{parse_bridge_pars, to_bridge_res},
-    service::str_to_algos::microalgos_to_algos_str,
+    service::str_to_algos::base_units_to_display_units_str,
     teal::programs,
 };
 use anyhow::Result;
@@ -26,6 +27,7 @@ pub async fn _bridge_income_vs_spending(
 ) -> Result<IncomeVsSpendingResJs> {
     let algod = algod();
     let indexer = indexer();
+    let funds_asset_specs = funds_asset_specs();
 
     let project_id = pars.project_id.parse()?;
 
@@ -50,12 +52,12 @@ pub async fn _bridge_income_vs_spending(
 
     let income_data_points = income.into_iter().map(|payment| ChartDataPoint {
         date: payment.date.timestamp().to_string(),
-        value: microalgos_to_algos_str(payment.amount),
+        value: base_units_to_display_units_str(payment.amount, &funds_asset_specs),
     });
 
     let spending_data_points = spending.into_iter().map(|withdrawal| ChartDataPoint {
         date: withdrawal.date.timestamp().to_string(),
-        value: microalgos_to_algos_str(withdrawal.amount),
+        value: base_units_to_display_units_str(withdrawal.amount, &funds_asset_specs),
     });
 
     let flattened = income_data_points

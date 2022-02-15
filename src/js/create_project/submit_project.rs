@@ -11,6 +11,7 @@ use std::convert::TryInto;
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
+use crate::dependencies::funds_asset_specs;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, signed_js_txs_to_signed_tx1, to_bridge_res,
 };
@@ -68,6 +69,7 @@ async fn _bridge_submit_create_project(
             staking_escrow: pars.pt.staking_escrow.try_into().map_err(Error::msg)?,
             central_escrow: pars.pt.central_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
+            funds_asset_id: funds_asset_specs().id,
         },
     )
     .await?;

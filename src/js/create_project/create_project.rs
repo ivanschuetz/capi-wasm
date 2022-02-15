@@ -1,12 +1,13 @@
 use super::submit_project::SubmitCreateProjectPassthroughParJs;
+use crate::dependencies::{funds_asset_specs, FundsAssetSpecs};
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, to_my_algo_txs1,
 };
 use crate::service::constants::PRECISION;
-use crate::service::str_to_algos::validate_algos_input;
+use crate::service::str_to_algos::validate_funds_amount_input;
 use crate::teal;
-use algonaut::core::{Address, MicroAlgos};
+use algonaut::core::Address;
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
@@ -15,6 +16,7 @@ use core::flows::create_project::{
     model::{CreateProjectSpecs, CreateProjectToSign, CreateSharesSpecs},
     setup::create_assets::submit_create_assets,
 };
+use core::funds::FundsAmount;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;
@@ -30,6 +32,7 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreateProjectResJs> {
     let algod = algod();
+    let funds_asset_specs = funds_asset_specs();
 
     // we assume order: js has as little logic as possible:
     // we send txs to be signed, as an array, and get the signed txs array back
@@ -44,13 +47,14 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     .await?;
 
     let creator_address = pars.pt.inputs.creator.parse().map_err(Error::msg)?;
-    let project_specs = inputs_to_project_specs(&pars.pt.inputs)?;
+    let project_specs = inputs_to_project_specs(&pars.pt.inputs, &funds_asset_specs)?;
 
     let to_sign = create_project_txs(
         &algod,
         &project_specs,
         creator_address,
         submit_assets_res.shares_id,
+        funds_asset_specs.id,
         teal::programs(),
         PRECISION,
     )
@@ -91,8 +95,11 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     })
 }
 
-fn inputs_to_project_specs(inputs: &CreateProjectFormInputsJs) -> Result<CreateProjectSpecs> {
-    let validated_inputs = validate_project_inputs(inputs)?;
+fn inputs_to_project_specs(
+    inputs: &CreateProjectFormInputsJs,
+    funds_asset_specs: &FundsAssetSpecs,
+) -> Result<CreateProjectSpecs> {
+    let validated_inputs = validate_project_inputs(inputs, funds_asset_specs)?;
     validated_inputs_to_project_specs(validated_inputs)
 }
 
@@ -104,7 +111,7 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
             token_name: inputs.token_name,
             count: inputs.share_count,
         },
-        asset_price: inputs.asset_price,
+        share_price: inputs.share_price,
         investors_share: inputs.investors_share,
         logo_url: inputs.logo_url,
         social_media_url: inputs.social_media_url,
@@ -122,13 +129,14 @@ fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
 
 pub fn validate_project_inputs(
     inputs: &CreateProjectFormInputsJs,
+    funds_asset_specs: &FundsAssetSpecs,
 ) -> Result<ValidatedProjectInputs> {
     let project_name = validate_project_name(&inputs.project_name)?;
     let project_description = validate_project_description(&inputs.project_description)?;
     let asset_name = generate_asset_name(&project_name)?;
     let creator_address = inputs.creator.parse().map_err(Error::msg)?;
     let share_count = validate_share_count(&inputs.share_count)?;
-    let asset_price = validate_asset_price(&inputs.asset_price)?;
+    let share_price = validate_share_price(&inputs.share_price, funds_asset_specs)?;
     let investors_share = validate_investors_share(&inputs.investors_share)?;
     let logo_url = validate_logo_url(&inputs.logo_url)?;
     let social_media_url = validate_social_media_url(&inputs.social_media_url)?;
@@ -139,7 +147,7 @@ pub fn validate_project_inputs(
         creator: creator_address,
         token_name: asset_name,
         share_count,
-        asset_price,
+        share_price,
         investors_share,
         logo_url,
         social_media_url,
@@ -198,8 +206,8 @@ fn validate_share_count(input: &str) -> Result<u64> {
     Ok(share_count)
 }
 
-fn validate_asset_price(input: &str) -> Result<MicroAlgos> {
-    validate_algos_input(input)
+fn validate_share_price(input: &str, funds_asset_specs: &FundsAssetSpecs) -> Result<FundsAmount> {
+    validate_funds_amount_input(input, funds_asset_specs)
 }
 
 fn validate_investors_share(input: &str) -> Result<u64> {
@@ -240,7 +248,7 @@ pub struct ValidatedProjectInputs {
     pub creator: Address,
     pub token_name: String,
     pub share_count: u64,
-    pub asset_price: MicroAlgos,
+    pub share_price: FundsAmount,
     pub investors_share: u64,
     pub logo_url: String,
     pub social_media_url: String,
@@ -252,7 +260,7 @@ pub struct CreateProjectFormInputsJs {
     pub project_name: String,
     pub project_description: String,
     pub share_count: String,
-    pub asset_price: String,
+    pub share_price: String,
     pub investors_share: String,
     pub logo_url: String,
     pub social_media_url: String,

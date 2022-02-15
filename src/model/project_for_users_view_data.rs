@@ -1,5 +1,6 @@
 use crate::{
-    model::project_for_users::ProjectForUsers, service::str_to_algos::microalgos_to_algos,
+    dependencies::FundsAssetSpecs, model::project_for_users::ProjectForUsers,
+    service::str_to_algos::base_units_to_display_units_str,
 };
 use serde::{Deserialize, Serialize};
 
@@ -26,27 +27,35 @@ pub struct ProjectForUsersViewData {
     pub creator_address: String,
 }
 
-impl From<ProjectForUsers> for ProjectForUsersViewData {
-    fn from(project: ProjectForUsers) -> Self {
-        ProjectForUsersViewData {
-            name: project.name.clone(),
-            description: project.description.clone(),
-            share_supply: project.asset_supply.to_string(),
-            share_asset_name: project.asset_name,
-            share_price: format!("{} Algo", microalgos_to_algos(project.asset_price)),
-            share_price_number_algo: microalgos_to_algos(project.asset_price).to_string(),
-            logo_url: project.logo_url,
-            social_media_url: project.social_media_url,
-            shares_asset_id: project.shares_asset_id.to_string(),
-            central_app_id: project.central_app_id.to_string(),
-            customer_escrow_address: project.customer_escrow_address.to_string(),
-            investing_escrow_address: project.invest_escrow_address.to_string(),
-            staking_escrow_address: project.staking_escrow_address.to_string(),
-            invest_link: project.invest_link.clone(),
-            my_investment_link: project.my_investment_link.clone(),
-            my_investment_link_rel: project.my_investment_link_rel.clone(),
-            project_link: project.project_link.clone(),
-            creator_address: project.creator.to_string(),
-        }
+pub fn project_for_users_to_view_data(
+    project: ProjectForUsers,
+    funds_asset_specs: &FundsAssetSpecs,
+) -> ProjectForUsersViewData {
+    ProjectForUsersViewData {
+        name: project.name.clone(),
+        description: project.description.clone(),
+        share_supply: project.asset_supply.to_string(),
+        share_asset_name: project.asset_name,
+        share_price: format!(
+            "{}",
+            base_units_to_display_units_str(project.share_price, funds_asset_specs)
+        ),
+        share_price_number_algo: base_units_to_display_units_str(
+            project.share_price,
+            funds_asset_specs,
+        )
+        .to_string(),
+        logo_url: project.logo_url,
+        social_media_url: project.social_media_url,
+        shares_asset_id: project.shares_asset_id.to_string(),
+        central_app_id: project.central_app_id.to_string(),
+        customer_escrow_address: project.customer_escrow_address.to_string(),
+        investing_escrow_address: project.invest_escrow_address.to_string(),
+        staking_escrow_address: project.staking_escrow_address.to_string(),
+        invest_link: project.invest_link.clone(),
+        my_investment_link: project.my_investment_link.clone(),
+        my_investment_link_rel: project.my_investment_link_rel.clone(),
+        project_link: project.project_link.clone(),
+        creator_address: project.creator.to_string(),
     }
 }

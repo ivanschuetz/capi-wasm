@@ -1,12 +1,13 @@
+use crate::dependencies::funds_asset_specs;
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::js::investment::submit_harvest::SubmitHarvestPassthroughParJs;
 use crate::service::drain_if_needed::drain_if_needed_txs;
 use crate::teal::programs;
-use algonaut::core::MicroAlgos;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
 use core::flows::create_project::storage::load_project::load_project;
 use core::flows::harvest::harvest::harvest;
+use core::funds::FundsAmount;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -36,7 +37,8 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
         &algod,
         investor_address,
         project.central_app_id,
-        MicroAlgos(pars.amount.parse()?),
+        funds_asset_specs().id,
+        FundsAmount(pars.amount.parse()?),
         &project.central_escrow,
     )
     .await?;
