@@ -223,7 +223,7 @@ fn validate_investors_share(input: &str) -> Result<u64> {
 fn validate_logo_url(input: &str) -> Result<String> {
     let count = input.len();
     let max_chars = 100;
-    if count == 0 || count > max_chars {
+    if count > max_chars {
         return Err(anyhow!(
             "Logo URL must not have more than {max_chars} characters. Consider using a URL shortener."
         ));
@@ -234,7 +234,7 @@ fn validate_logo_url(input: &str) -> Result<String> {
 fn validate_social_media_url(input: &str) -> Result<String> {
     let count = input.len();
     let max_chars = 100;
-    if count == 0 || count > max_chars {
+    if count > max_chars {
         return Err(anyhow!(
             "Social media URL must not have more than {max_chars} characters. Consider using a URL shortener."
         ));
