@@ -73,10 +73,10 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         investor_state.shares,
         project.specs.shares.count,
         PRECISION,
-        project.specs.investors_share,
+        project.specs.investors_part(),
     );
 
-    let investors_share_normalized: Decimal = Decimal::from(project.specs.investors_share)
+    let investors_share_normalized: Decimal = Decimal::from(project.specs.investors_part())
         .checked_div(100u8.into())
         .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
     let investor_percentage_relative_to_total: Decimal =

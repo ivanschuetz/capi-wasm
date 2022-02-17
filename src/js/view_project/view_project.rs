@@ -52,7 +52,7 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
             anyhow!("Invalid app state: Investor escrow doesn't have shares asset, Please contact support.")
         })?.amount;
 
-    let investos_share_formatted = format!("{} %", project.specs.investors_share);
+    let investos_share_formatted = format!("{} %", project.specs.investors_part());
 
     let project_view_data = project_for_users_to_view_data(
         project_to_project_for_users(&project, &project_id)?,

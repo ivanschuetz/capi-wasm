@@ -42,7 +42,7 @@ pub fn project_to_project_for_users(
         share_price: project.specs.share_price,
         asset_name: project.specs.shares.token_name.clone(),
         asset_supply: project.specs.shares.count,
-        investors_share: project.specs.investors_share,
+        investors_share: project.specs.investors_part(),
         logo_url: project.specs.logo_url.clone(),
         social_media_url: project.specs.social_media_url.clone(),
         shares_asset_id: project.shares_asset_id,

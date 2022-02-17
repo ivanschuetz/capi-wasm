@@ -11,14 +11,19 @@ use algonaut::core::Address;
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
+use core::flows::create_project::create_project_specs::CreateProjectSpecs;
+use core::flows::create_project::shares_percentage::SharesPercentage;
+use core::flows::create_project::shares_specs::SharesDistributionSpecs;
 use core::flows::create_project::{
     create_project::create_project_txs,
-    model::{CreateProjectSpecs, CreateProjectToSign, CreateSharesSpecs},
+    model::{CreateProjectToSign, CreateSharesSpecs},
     setup::create_assets::submit_create_assets,
 };
 use core::funds::FundsAmount;
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::convert::TryInto;
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
@@ -104,18 +109,18 @@ fn inputs_to_project_specs(
 }
 
 fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<CreateProjectSpecs> {
-    Ok(CreateProjectSpecs {
-        name: inputs.name,
-        description: inputs.description,
-        shares: CreateSharesSpecs {
+    Ok(CreateProjectSpecs::new(
+        inputs.name,
+        inputs.description,
+        CreateSharesSpecs {
             token_name: inputs.token_name,
             count: inputs.share_count,
         },
-        share_price: inputs.share_price,
-        investors_share: inputs.investors_share,
-        logo_url: inputs.logo_url,
-        social_media_url: inputs.social_media_url,
-    })
+        inputs.investors_part,
+        inputs.share_price,
+        inputs.logo_url,
+        inputs.social_media_url,
+    )?)
 }
 
 fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
@@ -137,9 +142,11 @@ pub fn validate_project_inputs(
     let creator_address = inputs.creator.parse().map_err(Error::msg)?;
     let share_count = validate_share_count(&inputs.share_count)?;
     let share_price = validate_share_price(&inputs.share_price, funds_asset_specs)?;
-    let investors_share = validate_investors_share(&inputs.investors_share)?;
     let logo_url = validate_logo_url(&inputs.logo_url)?;
     let social_media_url = validate_social_media_url(&inputs.social_media_url)?;
+
+    let investors_share = validate_investors_share(&inputs.investors_share)?;
+    let investors_part = validate_investors_part(&investors_share, share_count)?;
 
     Ok(ValidatedProjectInputs {
         name: project_name,
@@ -148,7 +155,7 @@ pub fn validate_project_inputs(
         token_name: asset_name,
         share_count,
         share_price,
-        investors_share,
+        investors_part,
         logo_url,
         social_media_url,
     })
@@ -210,14 +217,29 @@ fn validate_share_price(input: &str, funds_asset_specs: &FundsAssetSpecs) -> Res
     validate_funds_amount_input(input, funds_asset_specs)
 }
 
-fn validate_investors_share(input: &str) -> Result<u64> {
-    let count = input.parse()?;
-    if count == 0 || count > 100 {
-        return Err(anyhow!(
-            "Investor's share must be a number between 1 and 100"
-        ));
+fn validate_investors_share(input: &str) -> Result<SharesPercentage> {
+    let value = input.parse::<Decimal>()?;
+    let min = 0u8.into();
+    let max = 100u8.into();
+    if value >= min && value <= max {
+        // from here we use (0..1) percentage - 100 based is just for user friendliness
+        (value / Decimal::from(100u8)).try_into()
+    } else {
+        Err(anyhow!(
+            "Invalid percentage value: {value}. Must be [{min}..{max}]"
+        ))
     }
-    Ok(count)
+}
+
+fn validate_investors_part(
+    investors_percentage: &SharesPercentage,
+    shares_supply: u64,
+) -> Result<u64> {
+    Ok(
+        // the creator's part is derived (supply - investor's part)
+        SharesDistributionSpecs::from_investors_percentage(investors_percentage, shares_supply)?
+            .investors(),
+    )
 }
 
 fn validate_logo_url(input: &str) -> Result<String> {
@@ -249,7 +271,7 @@ pub struct ValidatedProjectInputs {
     pub token_name: String,
     pub share_count: u64,
     pub share_price: FundsAmount,
-    pub investors_share: u64,
+    pub investors_part: u64,
     pub logo_url: String,
     pub social_media_url: String,
 }
@@ -261,7 +283,7 @@ pub struct CreateProjectFormInputsJs {
     pub project_description: String,
     pub share_count: String,
     pub share_price: String,
-    pub investors_share: String,
+    pub investors_share: String, // percentage
     pub logo_url: String,
     pub social_media_url: String,
 }
