@@ -26,7 +26,7 @@ pub async fn _bridge_shares_distribution(
     let indexer = indexer();
 
     let asset_id = pars.asset_id.parse()?;
-    let asset_supply = pars.asset_supply.parse()?;
+    let share_supply = pars.share_supply.parse()?;
     let app_id = pars.app_id.parse()?;
     let investing_escrow = pars.investing_escrow_address.parse().map_err(Error::msg)?;
     let locking_escrow = pars.locking_escrow_address.parse().map_err(Error::msg)?;
@@ -36,7 +36,7 @@ pub async fn _bridge_shares_distribution(
         &indexer,
         asset_id,
         app_id,
-        asset_supply,
+        share_supply,
         &investing_escrow,
         &locking_escrow,
     )
@@ -63,7 +63,7 @@ pub async fn _bridge_shares_distribution(
 pub struct SharedDistributionParJs {
     pub asset_id: String,
     /// optimization to not have to fetch the asset: the asset specs are in the project, which the frontend has to fetch first (to get the asset id)
-    pub asset_supply: String,
+    pub share_supply: String,
 
     pub app_id: String,
     pub investing_escrow_address: String,

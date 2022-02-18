@@ -34,7 +34,7 @@ pub fn project_for_users_to_view_data(
     ProjectForUsersViewData {
         name: project.name.clone(),
         description: project.description.clone(),
-        share_supply: project.asset_supply.to_string(),
+        share_supply: project.share_supply.to_string(),
         share_asset_name: project.asset_name,
         share_price: base_units_to_display_units_str(project.share_price, funds_asset_specs),
         share_price_number_algo: base_units_to_display_units_str(
