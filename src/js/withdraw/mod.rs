@@ -18,10 +18,7 @@ pub fn withdrawal_view_data(
     tx_id: TxId,
 ) -> WithdrawalViewData {
     WithdrawalViewData {
-        amount: format!(
-            "{}",
-            base_units_to_display_units_str(amount, funds_asset_specs)
-        ),
+        amount: base_units_to_display_units_str(amount, funds_asset_specs),
         description,
         date: date_str,
         tx_id: tx_id.to_string(),

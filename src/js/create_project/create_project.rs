@@ -110,7 +110,7 @@ fn inputs_to_project_specs(
 }
 
 fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<CreateProjectSpecs> {
-    Ok(CreateProjectSpecs::new(
+    CreateProjectSpecs::new(
         inputs.name,
         inputs.description,
         CreateSharesSpecs {
@@ -121,7 +121,7 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
         inputs.share_price,
         inputs.logo_url,
         inputs.social_media_url,
-    )?)
+    )
 }
 
 fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
