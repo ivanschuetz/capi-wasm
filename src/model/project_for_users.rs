@@ -1,7 +1,7 @@
 use algonaut::core::Address;
 use anyhow::Result;
 use core::{
-    flows::create_project::{model::Project, storage::load_project::ProjectId},
+    flows::create_project::{model::Project, storage::load_project::ProjectId, share_amount::ShareAmount},
     funds::FundsAmount,
 };
 use serde::{Deserialize, Serialize};
@@ -13,8 +13,8 @@ pub struct ProjectForUsers {
     pub description: String,
     pub share_price: FundsAmount,
     pub asset_name: String,
-    pub asset_supply: u64,
-    pub investors_share: u64,
+    pub asset_supply: ShareAmount,
+    pub investors_share: ShareAmount,
     pub logo_url: String,
     pub social_media_url: String,
     pub shares_asset_id: u64,
@@ -41,7 +41,7 @@ pub fn project_to_project_for_users(
         description: project.specs.description.clone(),
         share_price: project.specs.share_price,
         asset_name: project.specs.shares.token_name.clone(),
-        asset_supply: project.specs.shares.count,
+        asset_supply: project.specs.shares.supply,
         investors_share: project.specs.investors_part(),
         logo_url: project.specs.logo_url.clone(),
         social_media_url: project.specs.social_media_url.clone(),

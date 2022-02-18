@@ -3,11 +3,11 @@ use crate::{
     teal::programs,
 };
 use anyhow::{Error, Result};
-use core::dependencies::indexer;
 use core::{
     dependencies::algod,
     flows::{create_project::storage::load_project::load_project, stake::stake::stake},
 };
+use core::{dependencies::indexer, flows::create_project::share_amount::ShareAmount};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -22,7 +22,7 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
     let algod = algod();
     let indexer = indexer();
 
-    let share_count = pars.share_count.parse()?;
+    let share_amount = ShareAmount(pars.share_count.parse()?);
 
     let stored_project = load_project(
         &algod,
@@ -39,7 +39,7 @@ pub async fn _bridge_stake(pars: StakeParJs) -> Result<StakeResJs> {
     let to_sign = stake(
         &algod,
         investor_address,
-        share_count,
+        share_amount,
         project.shares_asset_id,
         project.central_app_id,
         &project.staking_escrow,

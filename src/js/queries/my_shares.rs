@@ -2,10 +2,10 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res},
     teal::programs,
 };
-use anyhow::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use core::{
     dependencies::{algod, indexer},
-    flows::create_project::storage::load_project::load_project,
+    flows::create_project::{share_amount::ShareAmount, storage::load_project::load_project},
     state::{
         account_state::asset_holdings, app_state::ApplicationLocalStateError,
         central_app_state::central_investor_state,
@@ -38,17 +38,24 @@ pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
     let staked_shares =
         match central_investor_state(&algod, my_address, project.central_app_id).await {
             Ok(state) => state.shares,
-            Err(ApplicationLocalStateError::NotOptedIn) => 0, // not invested -> 0 shares
+            Err(ApplicationLocalStateError::NotOptedIn) => ShareAmount(0), // not invested -> 0 shares
             Err(e) => return Err(Error::msg(e)),
         };
 
     let free_shares = match asset_holdings(&algod, my_address, project.shares_asset_id).await {
-        Ok(shares) => shares,
+        Ok(shares) => ShareAmount(shares),
         Err(e) => return Err(Error::msg(e)),
     };
 
+    let total_shares = ShareAmount(
+        staked_shares
+            .0
+            .checked_add(free_shares.0)
+            .ok_or(anyhow!("Invalid state: staked shares: {staked_shares} + fee_shares: {free_shares} caused an overflow. This is expected to be <= asset supply, which is an u64"))?,
+    );
+
     Ok(MySharesResJs {
-        total: (staked_shares + free_shares).to_string(),
+        total: total_shares.0.to_string(),
         free: free_shares.to_string(),
         staked: staked_shares.to_string(),
     })

@@ -8,7 +8,10 @@ use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Result};
 use core::{
     dependencies::{algod, indexer},
-    flows::{create_project::storage::load_project::load_project, invest::invest::invest_txs},
+    flows::{
+        create_project::{share_amount::ShareAmount, storage::load_project::load_project},
+        invest::invest::invest_txs,
+    },
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -25,7 +28,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 
     let pars = pars.into_serde::<InvestParJs>().map_err(to_js_value)?;
 
-    let validated_share_count = validate_share_count(&pars.share_count).map_err(to_js_value)?;
+    let validated_share_amount = validate_share_count(&pars.share_count).map_err(to_js_value)?;
 
     if let Some(app_opt_ins) = pars.app_opt_ins {
         submit_apps_optins_from_js(&algod, &app_opt_ins)
@@ -49,7 +52,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
         &project.staking_escrow,
         project.central_app_id,
         project.shares_asset_id,
-        validated_share_count,
+        validated_share_amount,
         funds_asset_specs().id,
         project.specs.share_price,
         &project_id,
@@ -74,14 +77,14 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     Ok(JsValue::from_serde(&res).map_err(to_js_value)?)
 }
 
-fn validate_share_count(input: &str) -> Result<u64> {
+fn validate_share_count(input: &str) -> Result<ShareAmount> {
     // TODO < available shares (asset count in investing escrow).
     // maybe we can allow investor to enter only a valid amount, e.g. with stepper or graphically
     let share_count = input.parse()?;
     if share_count == 0 {
         return Err(anyhow!("Please enter a valid share count"));
     }
-    Ok(share_count)
+    Ok(ShareAmount(share_count))
 }
 
 // TODO rename structs in BuyShares*

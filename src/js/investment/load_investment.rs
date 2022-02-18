@@ -58,7 +58,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     // as it may get out of sync when shares are diluted
     // also use Decimal for everything involving fractions
     let investor_percentage =
-        investor_state.shares.as_decimal() / project.specs.shares.count.as_decimal();
+        investor_state.shares.0.as_decimal() / project.specs.shares.supply.0.as_decimal();
 
     let withdrawable_customer_escrow_amount = customer_escrow_balance;
     // This is basically "simulate that the customer escrow was already drained"
@@ -71,18 +71,18 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         received_total_including_customer_escrow_balance,
         investor_state.harvested,
         investor_state.shares,
-        project.specs.shares.count,
+        project.specs.shares.supply,
         PRECISION,
         project.specs.investors_part(),
     );
 
-    let investors_share_normalized: Decimal = Decimal::from(project.specs.investors_part())
+    let investors_share_normalized: Decimal = Decimal::from(project.specs.investors_part().0)
         .checked_div(100u8.into())
         .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
     let investor_percentage_relative_to_total: Decimal =
         investor_percentage * investors_share_normalized;
 
-    log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_state.shares, project.specs.shares.count);
+    log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_state.shares, project.specs.shares.supply);
 
     Ok(LoadInvestmentResJs {
         investor_shares_count: investor_state.shares.to_string(),

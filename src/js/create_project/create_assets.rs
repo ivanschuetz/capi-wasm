@@ -28,7 +28,7 @@ pub async fn bridge_create_project_assets_txs(pars: JsValue) -> Result<JsValue, 
         &validated_inputs.creator,
         &CreateSharesSpecs {
             token_name: validated_inputs.token_name,
-            count: validated_inputs.share_count,
+            supply: validated_inputs.share_supply,
         },
     )
     .await

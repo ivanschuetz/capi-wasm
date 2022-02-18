@@ -12,6 +12,7 @@ use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
 use core::flows::create_project::create_project_specs::CreateProjectSpecs;
+use core::flows::create_project::share_amount::ShareAmount;
 use core::flows::create_project::shares_percentage::SharesPercentage;
 use core::flows::create_project::shares_specs::SharesDistributionSpecs;
 use core::flows::create_project::{
@@ -114,7 +115,7 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
         inputs.description,
         CreateSharesSpecs {
             token_name: inputs.token_name,
-            count: inputs.share_count,
+            supply: inputs.share_supply,
         },
         inputs.investors_part,
         inputs.share_price,
@@ -140,20 +141,20 @@ pub fn validate_project_inputs(
     let project_description = validate_project_description(&inputs.project_description)?;
     let asset_name = generate_asset_name(&project_name)?;
     let creator_address = inputs.creator.parse().map_err(Error::msg)?;
-    let share_count = validate_share_count(&inputs.share_count)?;
+    let share_supply = validate_share_supply(&inputs.share_count)?;
     let share_price = validate_share_price(&inputs.share_price, funds_asset_specs)?;
     let logo_url = validate_logo_url(&inputs.logo_url)?;
     let social_media_url = validate_social_media_url(&inputs.social_media_url)?;
 
     let investors_share = validate_investors_share(&inputs.investors_share)?;
-    let investors_part = validate_investors_part(&investors_share, share_count)?;
+    let investors_part = validate_investors_part(&investors_share, share_supply)?;
 
     Ok(ValidatedProjectInputs {
         name: project_name,
         description: project_description,
         creator: creator_address,
         token_name: asset_name,
-        share_count,
+        share_supply,
         share_price,
         investors_part,
         logo_url,
@@ -205,12 +206,12 @@ fn generate_asset_name(validated_project_name: &str) -> Result<String> {
     Ok(asset_name.to_owned())
 }
 
-fn validate_share_count(input: &str) -> Result<u64> {
+fn validate_share_supply(input: &str) -> Result<ShareAmount> {
     let share_count = input.parse()?;
     if share_count == 0 {
         return Err(anyhow!("Please enter a valid share count"));
     }
-    Ok(share_count)
+    Ok(ShareAmount(share_count))
 }
 
 fn validate_share_price(input: &str, funds_asset_specs: &FundsAssetSpecs) -> Result<FundsAmount> {
@@ -233,8 +234,8 @@ fn validate_investors_share(input: &str) -> Result<SharesPercentage> {
 
 fn validate_investors_part(
     investors_percentage: &SharesPercentage,
-    shares_supply: u64,
-) -> Result<u64> {
+    shares_supply: ShareAmount,
+) -> Result<ShareAmount> {
     Ok(
         // the creator's part is derived (supply - investor's part)
         SharesDistributionSpecs::from_investors_percentage(investors_percentage, shares_supply)?
@@ -269,9 +270,9 @@ pub struct ValidatedProjectInputs {
     pub description: String,
     pub creator: Address,
     pub token_name: String,
-    pub share_count: u64,
+    pub share_supply: ShareAmount,
     pub share_price: FundsAmount,
-    pub investors_part: u64,
+    pub investors_part: ShareAmount,
     pub logo_url: String,
     pub social_media_url: String,
 }
