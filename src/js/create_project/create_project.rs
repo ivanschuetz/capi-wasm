@@ -94,7 +94,7 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
             escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)?,
             shares_asset_id: submit_assets_res.shares_id,
             invest_escrow: to_sign.invest_escrow.into(),
-            staking_escrow: to_sign.staking_escrow.into(),
+            locking_escrow: to_sign.locking_escrow.into(),
             central_escrow: to_sign.central_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
         },

@@ -17,7 +17,7 @@ branch_after_group_access:
 global GroupSize
 int 3
 ==
-bnz branch_unstake
+bnz branch_unlock
 
 int 0
 return
@@ -50,7 +50,7 @@ global ZeroAddress
 
 return
 
-branch_unstake:
+branch_unlock:
 gtxn 0 TypeEnum
 int appl
 ==

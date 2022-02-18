@@ -1,7 +1,9 @@
 use algonaut::core::Address;
 use anyhow::Result;
 use core::{
-    flows::create_project::{model::Project, storage::load_project::ProjectId, share_amount::ShareAmount},
+    flows::create_project::{
+        model::Project, share_amount::ShareAmount, storage::load_project::ProjectId,
+    },
     funds::FundsAmount,
 };
 use serde::{Deserialize, Serialize};
@@ -20,7 +22,7 @@ pub struct ProjectForUsers {
     pub shares_asset_id: u64,
     pub central_app_id: u64,
     pub invest_escrow_address: Address,
-    pub staking_escrow_address: Address,
+    pub locking_escrow_address: Address,
     pub central_escrow_address: Address,
     pub customer_escrow_address: Address,
     pub invest_link: String,
@@ -48,7 +50,7 @@ pub fn project_to_project_for_users(
         shares_asset_id: project.shares_asset_id,
         central_app_id: project.central_app_id,
         invest_escrow_address: *project.invest_escrow.address(),
-        staking_escrow_address: *project.staking_escrow.address(),
+        locking_escrow_address: *project.locking_escrow.address(),
         central_escrow_address: *project.central_escrow.address(),
         customer_escrow_address: *project.customer_escrow.address(),
         invest_link: format!("/{}/invest", project_id_str),

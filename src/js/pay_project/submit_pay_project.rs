@@ -15,7 +15,7 @@ pub async fn bridge_submit_pay_project(pars: JsValue) -> Result<JsValue, JsValue
     to_bridge_res(_bridge_submit_pay_project(parse_bridge_pars(pars)?).await)
 }
 
-pub async fn _bridge_submit_pay_project(pars: SubmitPayProjectParJs) -> Result<SubmitStakeResJs> {
+pub async fn _bridge_submit_pay_project(pars: SubmitPayProjectParJs) -> Result<SubmitLockResJs> {
     let algod = algod();
 
     let res = submit_pay_project(
@@ -26,9 +26,9 @@ pub async fn _bridge_submit_pay_project(pars: SubmitPayProjectParJs) -> Result<S
     )
     .await?;
 
-    log::debug!("Submit stake res: {:?}", res);
+    log::debug!("Submit lock res: {:?}", res);
 
-    Ok(SubmitStakeResJs {})
+    Ok(SubmitLockResJs {})
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -37,4 +37,4 @@ pub struct SubmitPayProjectParJs {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct SubmitStakeResJs {}
+pub struct SubmitLockResJs {}

@@ -66,7 +66,7 @@ async fn _bridge_submit_create_project(
             creator: pars.pt.creator.parse().map_err(Error::msg)?,
             shares_asset_id: pars.pt.shares_asset_id,
             invest_escrow: pars.pt.invest_escrow.try_into().map_err(Error::msg)?,
-            staking_escrow: pars.pt.staking_escrow.try_into().map_err(Error::msg)?,
+            locking_escrow: pars.pt.locking_escrow.try_into().map_err(Error::msg)?,
             central_escrow: pars.pt.central_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
             funds_asset_id: funds_asset_specs().id,
@@ -108,7 +108,7 @@ pub struct SubmitCreateProjectPassthroughParJs {
     pub escrow_optin_signed_txs_msg_pack: Vec<u8>,
     pub shares_asset_id: u64,
     pub invest_escrow: ContractAccountJs,
-    pub staking_escrow: ContractAccountJs,
+    pub locking_escrow: ContractAccountJs,
     pub central_escrow: ContractAccountJs,
     pub customer_escrow: ContractAccountJs,
 }

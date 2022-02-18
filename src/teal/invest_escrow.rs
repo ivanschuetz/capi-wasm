@@ -66,7 +66,7 @@ int {shares_asset_id}
 ==
 &&
 gtxn 3 AssetReceiver
-addr {staking_escrow_address}
+addr {locking_escrow_address}
 ==
 &&
 

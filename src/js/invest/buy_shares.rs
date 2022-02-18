@@ -1,7 +1,7 @@
 use crate::{
     dependencies::funds_asset_specs,
     js::common::{to_js_value, to_my_algo_txs, SignedTxFromJs},
-    service::invest_or_stake::submit_apps_optins_from_js,
+    service::invest_or_lock::submit_apps_optins_from_js,
     teal::programs,
 };
 use algonaut::core::ToMsgPack;
@@ -49,7 +49,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
         &algod,
         &project,
         &pars.investor_address.parse()?,
-        &project.staking_escrow,
+        &project.locking_escrow,
         project.central_app_id,
         project.shares_asset_id,
         validated_share_amount,
