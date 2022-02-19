@@ -3,9 +3,7 @@ use crate::dependencies::funds_asset_specs;
 use crate::js::common::{to_js_value, to_my_algo_tx};
 use crate::js::create_project::create_project::validate_project_inputs;
 use core::dependencies::algod;
-use core::flows::create_project::{
-    model::CreateSharesSpecs, setup::create_assets::create_investor_assets_txs,
-};
+use core::flows::create_project::{model::CreateSharesSpecs, setup::create_shares::create_shares};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;
@@ -23,7 +21,7 @@ pub async fn bridge_create_project_assets_txs(pars: JsValue) -> Result<JsValue, 
     let validated_inputs =
         validate_project_inputs(&pars.inputs, &funds_asset_specs()).map_err(to_js_value)?;
 
-    let create_assets_txs = create_investor_assets_txs(
+    let create_assets_txs = create_shares(
         &algod,
         &validated_inputs.creator,
         &CreateSharesSpecs {

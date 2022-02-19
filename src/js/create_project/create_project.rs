@@ -18,7 +18,7 @@ use core::flows::create_project::shares_specs::SharesDistributionSpecs;
 use core::flows::create_project::{
     create_project::create_project_txs,
     model::{CreateProjectToSign, CreateSharesSpecs},
-    setup::create_assets::submit_create_assets,
+    setup::create_shares::submit_create_shares,
 };
 use core::funds::FundsAmount;
 use rust_decimal::Decimal;
@@ -46,7 +46,7 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     // so this is the order in which we sent the txs to be signed, from the previously called rust fn.
     let create_shares_signed_tx = &pars.create_assets_signed_txs[0];
 
-    let submit_assets_res = submit_create_assets(
+    let submit_assets_res = submit_create_shares(
         &algod,
         &signed_js_tx_to_signed_tx1(create_shares_signed_tx)?,
     )
@@ -59,7 +59,7 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
         &algod,
         &project_specs,
         creator_address,
-        submit_assets_res.shares_id,
+        submit_assets_res.shares_asset_id,
         funds_asset_specs.id,
         teal::programs(),
         PRECISION,
@@ -92,7 +92,7 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
             specs: project_specs,
             creator: creator_address.to_string(),
             escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)?,
-            shares_asset_id: submit_assets_res.shares_id,
+            shares_asset_id: submit_assets_res.shares_asset_id,
             invest_escrow: to_sign.invest_escrow.into(),
             locking_escrow: to_sign.locking_escrow.into(),
             central_escrow: to_sign.central_escrow.into(),
