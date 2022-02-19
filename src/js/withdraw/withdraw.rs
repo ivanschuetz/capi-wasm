@@ -68,8 +68,13 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
     let mut to_sign = vec![to_sign_for_withdrawal.pay_withdraw_fee_tx];
 
-    let maybe_to_sign_for_drain =
-        drain_if_needed_txs(&algod, &project, &pars.sender.parse().map_err(Error::msg)?).await?;
+    let maybe_to_sign_for_drain = drain_if_needed_txs(
+        &algod,
+        &project,
+        &pars.sender.parse().map_err(Error::msg)?,
+        funds_asset_specs.id,
+    )
+    .await?;
     // we append drain at the end since it's optional, so the indices of the non optional txs are fixed
     let mut maybe_drain_tx_msg_pack = None;
     if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {

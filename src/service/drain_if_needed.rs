@@ -5,10 +5,12 @@ use core::{
         create_project::model::Project,
         drain::drain::{
             drain_customer_escrow, submit_drain_customer_escrow, DrainCustomerEscrowSigned,
-            DrainCustomerEscrowToSign, FIXED_FEE, MIN_BALANCE,
+            DrainCustomerEscrowToSign,
         },
     },
+    funds::FundsAssetId,
     network_util::wait_for_pending_transaction,
+    state::account_state::funds_holdings,
 };
 
 use crate::{
@@ -21,15 +23,13 @@ pub async fn drain_if_needed_txs(
     algod: &Algod,
     project: &Project,
     sender: &Address,
+    funds_asset_id: FundsAssetId,
 ) -> Result<Option<DrainCustomerEscrowToSign>> {
-    let customer_escrow_balance = algod
-        .account_information(project.customer_escrow.address())
-        .await?
-        .amount;
+    let customer_escrow_amount =
+        funds_holdings(algod, project.customer_escrow.address(), funds_asset_id).await?;
 
-    // TODO dynamic min balance? (and fee)
-    if customer_escrow_balance > (MIN_BALANCE + FIXED_FEE) {
-        log::debug!("There's an amount to drain: {}", customer_escrow_balance);
+    if customer_escrow_amount.0 > 0 {
+        log::debug!("There's an amount to drain: {}", customer_escrow_amount);
         Ok(Some(
             drain_customer_escrow(
                 algod,

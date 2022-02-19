@@ -21,6 +21,7 @@ pub async fn bridge_harvest(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> {
     let algod = algod();
     let indexer = indexer();
+    let funds_asset_id = funds_asset_specs().id;
 
     let project = load_project(
         &algod,
@@ -37,7 +38,7 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
         &algod,
         investor_address,
         project.central_app_id,
-        funds_asset_specs().id,
+        funds_asset_id,
         FundsAmount(pars.amount.parse()?),
         &project.central_escrow,
     )
@@ -48,7 +49,8 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
         to_sign_for_harvest.pay_fee_tx,
     ];
 
-    let maybe_to_sign_for_drain = drain_if_needed_txs(&algod, &project, investor_address).await?;
+    let maybe_to_sign_for_drain =
+        drain_if_needed_txs(&algod, &project, investor_address, funds_asset_id).await?;
     // we append drain at the end since it's optional, so the indices of the non optional txs are fixed
     let mut maybe_drain_tx_msg_pack = None;
     if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {
