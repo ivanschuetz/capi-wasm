@@ -38,7 +38,7 @@ pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
     let locked_shares =
         match central_investor_state(&algod, my_address, project.central_app_id).await {
             Ok(state) => state.shares,
-            Err(ApplicationLocalStateError::NotOptedIn) => ShareAmount(0), // not invested -> 0 shares
+            Err(ApplicationLocalStateError::NotOptedIn) => ShareAmount::new(0), // not invested -> 0 shares
             Err(e) => return Err(Error::msg(e)),
         };
 
@@ -47,10 +47,10 @@ pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
         Err(e) => return Err(Error::msg(e)),
     };
 
-    let total_shares = ShareAmount(
+    let total_shares = ShareAmount::new(
         locked_shares
-            .0
-            .checked_add(free_shares.0)
+            .val()
+            .checked_add(free_shares.val())
             .ok_or(anyhow!("Invalid state: locked shares: {locked_shares} + fee_shares: {free_shares} caused an overflow. This is expected to be <= asset supply, which is an u64"))?,
     );
 

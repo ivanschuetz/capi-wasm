@@ -16,18 +16,16 @@ pub async fn bridge_submit_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_submit_unlock(pars: SubmitUnlockParJs) -> Result<SubmitUnlockResJs> {
     let algod = algod();
 
-    if pars.txs.len() != 2 {
+    if pars.txs.len() != 1 {
         return Err(anyhow!("Invalid unlock txs count: {}", pars.txs.len()));
     }
     let app_call_tx = &pars.txs[0];
-    let pay_fee_tx = &pars.txs[1];
 
     let res = submit_unlock(
         &algod,
         UnlockSigned {
             central_app_optout_tx: signed_js_tx_to_signed_tx1(app_call_tx)?,
             shares_xfer_tx_signed: rmp_serde::from_slice(&pars.pt.shares_xfer_tx_msg_pack)?,
-            pay_shares_xfer_fee_tx: signed_js_tx_to_signed_tx1(pay_fee_tx)?,
         },
     )
     .await?;

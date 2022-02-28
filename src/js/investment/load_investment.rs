@@ -6,7 +6,7 @@ use crate::{
 };
 use anyhow::{anyhow, Error, Result};
 use core::{
-    decimal_util::{AsDecimal, DecimalExt},
+    decimal_util::DecimalExt,
     dependencies::{algod, indexer},
     flows::{
         create_project::storage::load_project::load_project,
@@ -17,7 +17,6 @@ use core::{
         central_app_state::{central_global_state, central_investor_state},
     },
 };
-use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -58,7 +57,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     // as it may get out of sync when shares are diluted
     // also use Decimal for everything involving fractions
     let investor_percentage =
-        investor_state.shares.0.as_decimal() / project.specs.shares.supply.0.as_decimal();
+        investor_state.shares.as_decimal() / project.specs.shares.supply.as_decimal();
 
     let withdrawable_customer_escrow_amount = customer_escrow_balance;
     // This is basically "simulate that the customer escrow was already drained"
@@ -76,11 +75,13 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         project.specs.investors_part(),
     );
 
-    let investors_share_normalized: Decimal = Decimal::from(project.specs.investors_part().0)
+    let investors_share_normalized = project
+        .specs
+        .investors_part()
+        .as_decimal()
         .checked_div(100u8.into())
         .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
-    let investor_percentage_relative_to_total: Decimal =
-        investor_percentage * investors_share_normalized;
+    let investor_percentage_relative_to_total = investor_percentage * investors_share_normalized;
 
     log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_state.shares, project.specs.shares.supply);
 

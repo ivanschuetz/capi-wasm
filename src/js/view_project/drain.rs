@@ -1,10 +1,10 @@
-use crate::dependencies::funds_asset_specs;
+use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
 use core::flows::create_project::storage::load_project::load_project;
-use core::flows::drain::drain::drain_customer_escrow;
+use core::flows::drain::drain::fetch_drain_amount_and_drain;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;
@@ -21,6 +21,7 @@ pub async fn bridge_drain(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
 
     let project_id = pars.project_id.parse()?;
 
@@ -28,22 +29,22 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
         .await?
         .project;
 
-    let to_sign = drain_customer_escrow(
+    let to_sign = fetch_drain_amount_and_drain(
         &algod,
         &pars.drainer_address.parse().map_err(Error::msg)?,
         project.central_app_id,
         funds_asset_specs().id,
+        &capi_deps,
         &project.customer_escrow,
         &project.central_escrow,
     )
     .await?;
 
-    log::debug!("Amount to drain: {:?}", to_sign.amount_to_drain);
-
     Ok(DrainResJs {
-        to_sign: to_my_algo_txs1(&vec![to_sign.app_call_tx, to_sign.pay_fee_tx])?,
+        to_sign: to_my_algo_txs1(&vec![to_sign.app_call_tx, to_sign.capi_app_call_tx])?,
         pt: SubmitDrainPassthroughParJs {
             drain_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.drain_tx)?,
+            capi_share_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.capi_share_tx)?,
             project_id: project_id.to_string(),
         },
     })

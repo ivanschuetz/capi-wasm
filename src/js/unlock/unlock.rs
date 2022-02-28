@@ -46,10 +46,7 @@ pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
     )
     .await?;
 
-    let to_sign_txs = vec![
-        to_sign.central_app_optout_tx,
-        to_sign.pay_shares_xfer_fee_tx,
-    ];
+    let to_sign_txs = vec![to_sign.central_app_optout_tx];
 
     Ok(UnlockResJs {
         to_sign: to_my_algo_txs1(&to_sign_txs)?,

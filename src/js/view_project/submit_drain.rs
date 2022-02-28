@@ -21,13 +21,13 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
     let indexer = indexer();
 
     let app_call_tx = &pars.txs[0];
-    let pay_fee_tx = &pars.txs[1];
 
     let res = submit_drain_customer_escrow(
         &algod,
         &DrainCustomerEscrowSigned {
             drain_tx: rmp_serde::from_slice(&pars.pt.drain_tx_msg_pack)?,
-            pay_fee_tx: signed_js_tx_to_signed_tx1(pay_fee_tx)?,
+            capi_share_tx: rmp_serde::from_slice(&pars.pt.capi_share_tx_msg_pack)?,
+            capi_app_call_tx_signed: signed_js_tx_to_signed_tx1(app_call_tx)?,
             app_call_tx_signed: signed_js_tx_to_signed_tx1(app_call_tx)?,
         },
     )
@@ -74,6 +74,7 @@ pub struct SubmitDrainParJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitDrainPassthroughParJs {
     pub drain_tx_msg_pack: Vec<u8>,
+    pub capi_share_tx_msg_pack: Vec<u8>,
     pub project_id: String,
 }
 

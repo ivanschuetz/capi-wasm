@@ -1,10 +1,11 @@
 use algonaut::{algod::v2::Algod, core::Address};
 use anyhow::Result;
 use core::{
+    capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     flows::{
         create_project::model::Project,
         drain::drain::{
-            drain_customer_escrow, submit_drain_customer_escrow, DrainCustomerEscrowSigned,
+            fetch_drain_amount_and_drain, submit_drain_customer_escrow, DrainCustomerEscrowSigned,
             DrainCustomerEscrowToSign,
         },
     },
@@ -24,18 +25,21 @@ pub async fn drain_if_needed_txs(
     project: &Project,
     sender: &Address,
     funds_asset_id: FundsAssetId,
+    capi_deps: &CapiAssetDaoDeps,
 ) -> Result<Option<DrainCustomerEscrowToSign>> {
     let customer_escrow_amount =
         funds_holdings(algod, project.customer_escrow.address(), funds_asset_id).await?;
 
     if customer_escrow_amount.0 > 0 {
         log::debug!("There's an amount to drain: {}", customer_escrow_amount);
+
         Ok(Some(
-            drain_customer_escrow(
+            fetch_drain_amount_and_drain(
                 algod,
                 sender,
                 project.central_app_id,
                 funds_asset_specs().id,
+                capi_deps,
                 &project.customer_escrow,
                 &project.central_escrow,
             )
@@ -49,22 +53,24 @@ pub async fn drain_if_needed_txs(
 pub async fn submit_drain(
     algod: &Algod,
     drain_passthrough_tx: &[u8],
-    pay_drain_fee_tx: &SignedTxFromJs,
     drain_app_call_tx: &SignedTxFromJs,
+    capi_share_tx: &[u8],
+    capi_app_call_tx_signed: &SignedTxFromJs,
 ) -> Result<()> {
     log::debug!("Submit drain txs..");
 
     let drain_tx = rmp_serde::from_slice(drain_passthrough_tx)?;
-
-    let drain_pay_drain_tx_fee_tx = signed_js_tx_to_signed_tx1(pay_drain_fee_tx)?;
     let drain_app_call_tx = signed_js_tx_to_signed_tx1(drain_app_call_tx)?;
+    let capi_share_tx = rmp_serde::from_slice(capi_share_tx)?;
+    let capi_app_call_tx_signed = signed_js_tx_to_signed_tx1(capi_app_call_tx_signed)?;
 
     let drain_tx_id = submit_drain_customer_escrow(
         algod,
         &DrainCustomerEscrowSigned {
             drain_tx,
-            pay_fee_tx: drain_pay_drain_tx_fee_tx,
             app_call_tx_signed: drain_app_call_tx,
+            capi_share_tx,
+            capi_app_call_tx_signed,
         },
     )
     .await?;

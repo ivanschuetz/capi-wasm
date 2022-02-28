@@ -20,7 +20,8 @@ async fn _bridge_get_user_shares_count(pars: GetUserSharesCountParJs) -> Result<
         &pars.address.parse().map_err(Error::msg)?,
         pars.shares_asset_id.parse()?,
     )
-    .await?)
+    .await?
+    .0)
 }
 
 #[derive(Debug, Clone, Deserialize)]

@@ -29,7 +29,7 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
 
     let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs, &funds_asset_specs)?;
 
-    // 1 tx if only withdrawal, 3 if withdrawal + drain
+    // 1 tx if only withdrawal, 3 if withdrawal + 2 drain
     if pars.txs.len() != 1 && pars.txs.len() != 3 {
         return Err(anyhow!(
             "Unexpected withdraw txs length: {}",
@@ -44,11 +44,17 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
     }
 
     if pars.txs.len() == 3 {
+        let drain_tx = &pars.pt.maybe_drain_tx_msg_pack
+            .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?;
+
+        let capi_share_tx = &pars.pt.maybe_capi_share_tx_msg_pack
+            .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed capi share tx"))?;
+
         submit_drain(
             &algod,
-            &pars.pt.maybe_drain_tx_msg_pack
-                .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?,
+            &drain_tx,
             &pars.txs[1],
+            &capi_share_tx,
             &pars.txs[2],
         )
         .await?;
@@ -88,6 +94,8 @@ pub struct SubmitWithdrawParJs {
 pub struct SubmitWithdrawPassthroughParJs {
     // set if a drain tx is necessary
     pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
+    pub maybe_capi_share_tx_msg_pack: Option<Vec<u8>>,
+
     pub withdraw_tx_msg_pack: Vec<u8>,
 
     pub inputs: WithdrawInputsPassthroughJs,

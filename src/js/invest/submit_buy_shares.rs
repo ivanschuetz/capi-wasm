@@ -17,7 +17,7 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
         .into_serde::<SubmitBuySharesParJs>()
         .map_err(to_js_value)?;
 
-    if pars.txs.len() != 4 {
+    if pars.txs.len() != 3 {
         return Err(JsValue::from_str(&format!(
             "Unexpected signed invest txs length: {}",
             pars.txs.len()
@@ -27,7 +27,6 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
     let central_app_setup_tx = signed_js_tx_to_signed_tx(&pars.txs[0])?;
     let payment_tx = signed_js_tx_to_signed_tx(&pars.txs[1])?;
     let shares_asset_optin_tx = signed_js_tx_to_signed_tx(&pars.txs[2])?;
-    let pay_escrow_fee_tx = signed_js_tx_to_signed_tx(&pars.txs[3])?;
 
     let project = rmp_serde::from_slice(&pars.pt.project_msg_pack).map_err(to_js_value)?;
 
@@ -38,7 +37,6 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
             central_app_setup_tx,
             shares_asset_optin_tx,
             payment_tx,
-            pay_escrow_fee_tx,
             shares_xfer_tx: rmp_serde::from_slice(&pars.pt.shares_xfer_tx_msg_pack)
                 .map_err(to_js_value)?,
         },

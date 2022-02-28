@@ -211,7 +211,7 @@ fn validate_share_supply(input: &str) -> Result<ShareAmount> {
     if share_count == 0 {
         return Err(anyhow!("Please enter a valid share count"));
     }
-    Ok(ShareAmount(share_count))
+    Ok(ShareAmount::new(share_count))
 }
 
 fn validate_share_price(input: &str, funds_asset_specs: &FundsAssetSpecs) -> Result<FundsAmount> {

@@ -1,12 +1,20 @@
 pub const SRC: &str = r#"
 #pragma version 4
+// int 1
 
 // TODO verify app calls etc.
 
 global GroupSize
-int 3
+int 2 
 ==
-
+gtxn 0 TypeEnum 
+int appl
+==
+&&
+gtxn 1 TypeEnum
+int axfer
+==
+&&
 bnz branch_harvest
 
 global GroupSize

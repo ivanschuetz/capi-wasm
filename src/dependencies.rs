@@ -1,7 +1,11 @@
+use anyhow::{Error, Result};
 use core::{
+    capi_asset::{capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps},
     dependencies::{network, Network},
     funds::FundsAssetId,
 };
+use rust_decimal::Decimal;
+use std::{convert::TryInto, str::FromStr};
 
 /// URL determined by environment variable
 pub fn explorer_base_url<'a>() -> &'a str {
@@ -38,6 +42,32 @@ pub fn funds_asset_specs_for_net(net: &Network) -> FundsAssetSpecs {
             decimals: 6,
         },
     }
+}
+
+pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
+    capi_deps_for_net(&network())
+}
+
+/// Run reset_and_fund_network in core and copy paste the values here
+/// TODO environment variables
+pub fn capi_deps_for_net(net: &Network) -> Result<CapiAssetDaoDeps> {
+    Ok(match net {
+        Network::Private | Network::SandboxPrivate => CapiAssetDaoDeps {
+            escrow: "LUH2EXHI7VQPFH7L2BEWYNS3VWCLQPJTVXJE52R3KW2RLXOU4MGR2TVZLM"
+                .parse()
+                .map_err(Error::msg)?,
+            escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
+            app_id: CapiAppId(16),
+        },
+
+        Network::Test => CapiAssetDaoDeps {
+            escrow: "LUH2EXHI7VQPFH7L2BEWYNS3VWCLQPJTVXJE52R3KW2RLXOU4MGR2TVZLM"
+                .parse()
+                .map_err(Error::msg)?,
+            escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
+            app_id: CapiAppId(1),
+        },
+    })
 }
 
 /// This is WASM-only as the decimals are needed only for formatting - we don't need this in core.

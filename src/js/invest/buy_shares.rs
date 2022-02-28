@@ -64,7 +64,6 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
         to_sign.central_app_setup_tx,
         to_sign.payment_tx,
         to_sign.shares_asset_optin_tx,
-        to_sign.pay_escrow_fee_tx,
     ];
 
     let res: InvestResJs = InvestResJs {
@@ -84,7 +83,7 @@ fn validate_share_count(input: &str) -> Result<ShareAmount> {
     if share_count == 0 {
         return Err(anyhow!("Please enter a valid share count"));
     }
-    Ok(ShareAmount(share_count))
+    Ok(ShareAmount::new(share_count))
 }
 
 // TODO rename structs in BuyShares*

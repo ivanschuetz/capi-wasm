@@ -32,7 +32,7 @@ pub fn base_units_to_display_units_str(
 }
 
 pub fn base_units_to_display_units(funds: FundsAmount, asset_specs: &FundsAssetSpecs) -> Decimal {
-    Decimal::from_i128_with_scale(funds.0 as i128, asset_specs.decimals).normalize()
+    Decimal::from_i128_with_scale(funds.val() as i128, asset_specs.decimals).normalize()
 }
 
 fn validate_algos(amount: Decimal) -> Result<MicroAlgos> {
@@ -52,7 +52,10 @@ fn validate_funds_amount(amount: Decimal, asset_specs: &FundsAssetSpecs) -> Resu
         return Err(anyhow!("{} amount must be positive (>0)", amount));
     };
 
-    Ok(FundsAmount(to_base_units(amount, asset_specs.decimals)?))
+    Ok(FundsAmount::new(to_base_units(
+        amount,
+        asset_specs.decimals,
+    )?))
 }
 
 fn to_base_units(decimal: Decimal, base_10_exp: u32) -> Result<u64> {

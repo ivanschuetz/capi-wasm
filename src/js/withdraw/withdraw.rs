@@ -1,6 +1,6 @@
 use super::submit_withdraw::SubmitWithdrawPassthroughParJs;
 use crate::{
-    dependencies::funds_asset_specs,
+    dependencies::{capi_deps, funds_asset_specs},
     js::{
         common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
         withdraw::submit_withdraw::{validate_withdrawal_inputs, WithdrawInputsPassthroughJs},
@@ -32,6 +32,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let algod = algod();
     let indexer = indexer();
     let funds_asset_specs = funds_asset_specs();
+    let capi_deps = capi_deps()?;
 
     let project = load_project(
         &algod,
@@ -73,20 +74,25 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         &project,
         &pars.sender.parse().map_err(Error::msg)?,
         funds_asset_specs.id,
+        &capi_deps,
     )
     .await?;
     // we append drain at the end since it's optional, so the indices of the non optional txs are fixed
     let mut maybe_drain_tx_msg_pack = None;
+    let mut maybe_capi_share_tx_msg_pack = None;
     if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {
-        to_sign.push(to_sign_for_drain.pay_fee_tx);
         to_sign.push(to_sign_for_drain.app_call_tx);
+        to_sign.push(to_sign_for_drain.capi_app_call_tx);
         maybe_drain_tx_msg_pack = Some(rmp_serde::to_vec_named(&to_sign_for_drain.drain_tx)?);
+        maybe_capi_share_tx_msg_pack =
+            Some(rmp_serde::to_vec_named(&to_sign_for_drain.capi_share_tx)?);
     }
 
     Ok(WithdrawResJs {
         to_sign: to_my_algo_txs1(&to_sign).map_err(Error::msg)?,
         pt: SubmitWithdrawPassthroughParJs {
             maybe_drain_tx_msg_pack,
+            maybe_capi_share_tx_msg_pack,
             withdraw_tx_msg_pack: rmp_serde::to_vec_named(&to_sign_for_withdrawal.withdraw_tx)?,
             inputs: inputs_par.clone(),
         },

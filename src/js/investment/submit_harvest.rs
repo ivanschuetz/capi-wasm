@@ -22,30 +22,28 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
     let algod = algod();
     let indexer = indexer();
 
-    // 2 txs if only harvest, 4 if withdrawal + drain
-    if pars.txs.len() != 2 && pars.txs.len() != 4 {
+    // 1 tx if only harvest, 5 if harvest + 2 drain
+    if pars.txs.len() != 1 && pars.txs.len() != 3 {
         return Err(anyhow!("Unexpected harvest txs length: {}", pars.txs.len()));
     }
     // sanity check
-    if pars.txs.len() == 2 && pars.pt.maybe_drain_tx_msg_pack.is_some() {
+    if pars.txs.len() == 1 && pars.pt.maybe_drain_tx_msg_pack.is_some() {
         return Err(anyhow!(
             "Invalid state: 2 txs with a passthrough draining tx",
         ));
     }
 
-    if pars.txs.len() == 4 {
-        submit_drain(
-            &algod,
-            &pars.pt.maybe_drain_tx_msg_pack
-                .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?,
-            &pars.txs[2],
-            &pars.txs[3],
-        )
-        .await?;
+    if pars.txs.len() == 3 {
+        let drain_tx = &pars.pt.maybe_drain_tx_msg_pack
+            .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?;
+
+        let capi_share_tx = &pars.pt.maybe_capi_share_tx_msg_pack
+            .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed capi share tx"))?;
+
+        submit_drain(&algod, drain_tx, &pars.txs[1], &capi_share_tx, &pars.txs[2]).await?;
     }
 
     let app_call_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
-    let pay_fee_tx = signed_js_tx_to_signed_tx1(&pars.txs[1])?;
 
     ///////////////////////////
     let project = load_project(
@@ -73,7 +71,6 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
         &HarvestSigned {
             harvest_tx: rmp_serde::from_slice(&pars.pt.harvest_tx_msg_pack)?,
             app_call_tx_signed: app_call_tx,
-            pay_fee_tx,
         },
     )
     .await?;
@@ -98,6 +95,7 @@ pub struct SubmitHarvestParJs {
 pub struct SubmitHarvestPassthroughParJs {
     // set if a drain tx is necessary
     pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
+    pub maybe_capi_share_tx_msg_pack: Option<Vec<u8>>,
     pub harvest_tx_msg_pack: Vec<u8>,
 }
 

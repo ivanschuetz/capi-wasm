@@ -22,7 +22,7 @@ pub async fn _bridge_lock(pars: LockParJs) -> Result<LockResJs> {
     let algod = algod();
     let indexer = indexer();
 
-    let share_amount = ShareAmount(pars.share_count.parse()?);
+    let share_amount = ShareAmount::new(pars.share_count.parse()?);
 
     let stored_project = load_project(
         &algod,

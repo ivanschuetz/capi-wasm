@@ -1,5 +1,6 @@
 pub const SRC: &str = r#"
 #pragma version 4
+// int 1
 
 txn ApplicationID
 int 0
@@ -17,42 +18,9 @@ int 1 // central opt in - TODO what is this? who's opting in?
 ==
 bnz branch_opt_in
 
-after_args_access2:
-
-global GroupSize
-int 2
-==
-// basically also an investor setup, but when asset was acquired externally (instead of buying in the "ico")
-bnz branch_locking_setup
-
-global GroupSize
-int 5
-==
-bnz branch_investor_setup
-
-global GroupSize
-int 3
-==
-gtxn 2 Sender // drain tx
-addr {customer_escrow_address}
-==
-&&
-
-bnz branch_drain
-
-global GroupSize
-int 3 
-==
-gtxn 2 Sender // harvest tx
-addr {central_escrow_address}
-==
-&&
-
-bnz branch_harvest
-
 // opt out tx group
 global GroupSize
-int 3 // central optout + unlock shares  + pay fee for unlock shares
+int 2 // central optout + unlock shares
 ==
 bz after_tx_group_access
 gtxn 0 TypeEnum // unlock shares
@@ -67,8 +35,36 @@ gtxn 1 TypeEnum // unlock shares
 int axfer
 ==
 bnz branch_opt_out
-
 after_tx_group_access:
+
+global GroupSize
+int 2 
+==
+gtxn 1 Sender // harvest tx
+addr {central_escrow_address}
+==
+&&
+bnz branch_harvest
+
+global GroupSize
+int 2
+==
+// basically also an investor setup, but when asset was acquired externally (instead of buying in the "ico")
+bnz branch_locking_setup
+
+global GroupSize
+int 4
+==
+gtxn 2 Sender // drain tx
+addr {customer_escrow_address}
+==
+&&
+bnz branch_drain
+
+global GroupSize
+int 4
+==
+bnz branch_investor_setup
 
 int 0
 return
@@ -177,12 +173,17 @@ gtxn 0 TypeEnum // app call
 int appl
 ==
 
-gtxn 1 TypeEnum // pay fee
-int pay
+gtxn 1 TypeEnum // capi app call
+int appl
 ==
 &&
 
 gtxn 2 TypeEnum // drain
+int axfer
+==
+&&
+
+gtxn 3 TypeEnum // capi share
 int axfer
 ==
 &&
@@ -202,12 +203,7 @@ gtxn 0 TypeEnum // app call
 int appl
 ==
 
-gtxn 1 TypeEnum // pay fee
-int pay
-==
-&&
-
-gtxn 2 TypeEnum // harvest
+gtxn 1 TypeEnum // harvest
 int axfer
 ==
 &&
@@ -226,7 +222,7 @@ app_local_get // if local state doesn't exist yet, this puts a 0 on the stack
 // how much user is entitled to harvest now
 -
 
-gtxn 2 AssetAmount
+gtxn 1 AssetAmount
 >=
 
 &&
@@ -241,7 +237,7 @@ byte "HarvestedTotal"
 int 0
 byte "HarvestedTotal"
 app_local_get
-gtxn 2 AssetAmount // harvest tx amount
+gtxn 1 AssetAmount // harvest tx amount
 +
 app_local_put
 
