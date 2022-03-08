@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::funds_asset_specs,
+    dependencies::{funds_asset_specs, capi_deps},
     js::common::{parse_bridge_pars, to_bridge_res},
     service::{constants::PRECISION, str_to_algos::base_units_to_display_units_str},
     teal::programs,
@@ -32,10 +32,12 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let algod = algod();
     let indexer = indexer();
     let funds_asset_specs = funds_asset_specs();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
         .await?
         .project;
 

@@ -1,4 +1,5 @@
 use crate::{
+    dependencies::capi_deps,
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
     teal::programs,
 };
@@ -21,6 +22,8 @@ pub async fn bridge_lock(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_lock(pars: LockParJs) -> Result<LockResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let share_amount = ShareAmount::new(pars.share_count.parse()?);
 
@@ -28,7 +31,8 @@ pub async fn _bridge_lock(pars: LockParJs) -> Result<LockResJs> {
         &algod,
         &indexer,
         &pars.project_id.parse()?,
-        &programs().escrows,
+        &programs.escrows,
+        &capi_deps,
     )
     .await?;
 

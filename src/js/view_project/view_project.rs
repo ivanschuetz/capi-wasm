@@ -1,4 +1,4 @@
-use crate::dependencies::funds_asset_specs;
+use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use crate::model::project_for_users::project_to_project_for_users;
 use crate::model::project_for_users_view_data::{
@@ -26,10 +26,12 @@ pub async fn _bridge_view_project(pars: ViewProjectParJs) -> Result<ViewProjectR
     let algod = algod();
     let indexer = indexer();
     let funds_asset_specs = funds_asset_specs();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
         .await?
         .project;
 

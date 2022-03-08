@@ -1,5 +1,5 @@
 use super::submit_project::SubmitCreateProjectPassthroughParJs;
-use crate::dependencies::{funds_asset_specs, FundsAssetSpecs};
+use crate::dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, to_my_algo_txs1,
@@ -12,13 +12,15 @@ use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
 use core::flows::create_project::create_project_specs::CreateProjectSpecs;
+use core::flows::create_project::setup::create_shares::{
+    submit_create_assets, CrateDaoAssetsSigned,
+};
 use core::flows::create_project::share_amount::ShareAmount;
 use core::flows::create_project::shares_percentage::SharesPercentage;
 use core::flows::create_project::shares_specs::SharesDistributionSpecs;
 use core::flows::create_project::{
     create_project::create_project_txs,
     model::{CreateProjectToSign, CreateSharesSpecs},
-    setup::create_shares::submit_create_shares,
 };
 use core::funds::FundsAmount;
 use rust_decimal::Decimal;
@@ -39,21 +41,26 @@ pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreateProjectResJs> {
     let algod = algod();
     let funds_asset_specs = funds_asset_specs();
+    let capi_deps = capi_deps()?;
 
     // we assume order: js has as little logic as possible:
     // we send txs to be signed, as an array, and get the signed txs array back
     // js doesn't access the individual array txs, just passes the array to myalgo and gets signed array back
     // so this is the order in which we sent the txs to be signed, from the previously called rust fn.
     let create_shares_signed_tx = &pars.create_assets_signed_txs[0];
+    let create_app_signed_tx = &pars.create_assets_signed_txs[1];
 
-    let submit_assets_res = submit_create_shares(
+    let submit_assets_res = submit_create_assets(
         &algod,
-        &signed_js_tx_to_signed_tx1(create_shares_signed_tx)?,
+        &CrateDaoAssetsSigned {
+            create_shares: signed_js_tx_to_signed_tx1(create_shares_signed_tx)?,
+            create_app: signed_js_tx_to_signed_tx1(create_app_signed_tx)?,
+        },
     )
     .await?;
 
     let creator_address = pars.pt.inputs.creator.parse().map_err(Error::msg)?;
-    let project_specs = inputs_to_project_specs(&pars.pt.inputs, &funds_asset_specs)?;
+    let project_specs = pars.pt.inputs.to_project_specs(&funds_asset_specs)?;
 
     let to_sign = create_project_txs(
         &algod,
@@ -61,8 +68,10 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
         creator_address,
         submit_assets_res.shares_asset_id,
         funds_asset_specs.id,
-        teal::programs(),
+        &teal::programs(),
         PRECISION,
+        submit_assets_res.app_id,
+        &capi_deps,
     )
     .await?;
 
@@ -97,16 +106,9 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
             locking_escrow: to_sign.locking_escrow.into(),
             central_escrow: to_sign.central_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
+            central_app_id: submit_assets_res.app_id,
         },
     })
-}
-
-fn inputs_to_project_specs(
-    inputs: &CreateProjectFormInputsJs,
-    funds_asset_specs: &FundsAssetSpecs,
-) -> Result<CreateProjectSpecs> {
-    let validated_inputs = validate_project_inputs(inputs, funds_asset_specs)?;
-    validated_inputs_to_project_specs(validated_inputs)
 }
 
 fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<CreateProjectSpecs> {
@@ -125,7 +127,7 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
 }
 
 fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
-    let mut txs = vec![res.create_app_tx.clone()];
+    let mut txs = vec![res.setup_app_tx.clone()];
     for tx in &res.escrow_funding_txs {
         txs.push(tx.to_owned());
     }
@@ -287,6 +289,16 @@ pub struct CreateProjectFormInputsJs {
     pub investors_share: String, // percentage
     pub logo_url: String,
     pub social_media_url: String,
+}
+
+impl CreateProjectFormInputsJs {
+    pub fn to_project_specs(
+        &self,
+        funds_asset_specs: &FundsAssetSpecs,
+    ) -> Result<CreateProjectSpecs> {
+        let validated_inputs = validate_project_inputs(self, funds_asset_specs)?;
+        validated_inputs_to_project_specs(validated_inputs)
+    }
 }
 
 /// The assets creation signed transactions and the specs to create the project

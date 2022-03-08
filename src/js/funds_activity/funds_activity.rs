@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::funds_asset_specs,
+    dependencies::{capi_deps, funds_asset_specs},
     js::{
         common::{parse_bridge_pars, to_bridge_res},
         explorer_links::explorer_tx_id_link_env,
@@ -27,12 +27,14 @@ pub async fn _bridge_load_funds_activity(
 ) -> Result<LoadFundsActivityResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
         .await?
         .project;
 
@@ -43,7 +45,8 @@ pub async fn _bridge_load_funds_activity(
         &project_id,
         project.customer_escrow.address(),
         project.central_escrow.address(),
-        &programs().escrows,
+        &programs.escrows,
+        &capi_deps,
     )
     .await?;
     // sort descendingly by date (most recent activity first)

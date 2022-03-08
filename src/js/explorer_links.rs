@@ -10,7 +10,7 @@ pub fn explorer_tx_id_link_env(tx_id: &TxId) -> String {
 }
 
 pub fn explorer_tx_id_link(base_url: &str, tx_id: &TxId) -> String {
-    format!("{}/tx/{}", base_url, tx_id.to_string())
+    format!("{}tx/{}", base_url, tx_id.to_string())
 }
 
 /// Base URL determined by environment variable
@@ -19,5 +19,5 @@ pub fn explorer_address_link_env(address: &Address) -> String {
 }
 
 pub fn explorer_address_link(base_url: &str, address: &Address) -> String {
-    format!("{}/address/{}", base_url, address)
+    format!("{}address/{}", base_url, address)
 }

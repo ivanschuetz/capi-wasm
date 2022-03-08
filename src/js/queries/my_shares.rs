@@ -1,4 +1,5 @@
 use crate::{
+    dependencies::capi_deps,
     js::common::{parse_bridge_pars, to_bridge_res},
     teal::programs,
 };
@@ -24,10 +25,12 @@ pub async fn bridge_my_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
         .await?
         .project;
 

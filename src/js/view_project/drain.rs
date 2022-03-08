@@ -22,10 +22,11 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
     let algod = algod();
     let indexer = indexer();
     let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let project_id = pars.project_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
         .await?
         .project;
 

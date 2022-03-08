@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::funds_asset_specs,
+    dependencies::{capi_deps, funds_asset_specs},
     js::common::{parse_bridge_pars, to_bridge_res},
     model::{
         project_for_users::project_to_project_for_users,
@@ -26,10 +26,12 @@ async fn _bridge_load_project_user_view(project_id_str: String) -> Result<Projec
 
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let project_id = project_id_str.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs().escrows)
+    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
         .await?
         .project;
 

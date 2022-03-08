@@ -33,12 +33,14 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let indexer = indexer();
     let funds_asset_specs = funds_asset_specs();
     let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let project = load_project(
         &algod,
         &indexer,
         &pars.project_id.parse()?,
-        &programs().escrows,
+        &programs.escrows,
+        &capi_deps,
     )
     .await?
     .project;

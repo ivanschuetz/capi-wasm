@@ -1,3 +1,4 @@
+use crate::dependencies::capi_deps;
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::service::drain_if_needed::submit_drain;
@@ -21,6 +22,8 @@ pub async fn bridge_submit_harvest(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHarvestResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     // 1 tx if only harvest, 5 if harvest + 2 drain
     if pars.txs.len() != 1 && pars.txs.len() != 3 {
@@ -50,7 +53,8 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
         &algod,
         &indexer,
         &pars.project_id_for_diagnostics.parse()?,
-        &programs().escrows,
+        &programs.escrows,
+        &capi_deps,
     )
     .await?
     .project;

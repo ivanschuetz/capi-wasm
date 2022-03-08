@@ -46,7 +46,7 @@ async fn _bridge_submit_create_project(
     // and assign the txs to incorrect variables, which may cause subtle bugs
     // maybe refactor writing/reading into a helper struct or function
     // (written in create_project::txs_to_sign)
-    let create_app_tx = &pars.txs[0];
+    let setup_app_tx = &pars.txs[0];
     let escrow_funding_txs = &pars.txs[1..5];
     let xfer_shares_to_invest_escrow = &pars.txs[5];
 
@@ -60,7 +60,7 @@ async fn _bridge_submit_create_project(
             escrow_funding_txs: signed_js_txs_to_signed_tx1(escrow_funding_txs)?,
             optin_txs: rmp_serde::from_slice(&pars.pt.escrow_optin_signed_txs_msg_pack)
                 .map_err(Error::msg)?,
-            create_app_tx: signed_js_tx_to_signed_tx1(create_app_tx)?,
+            setup_app_tx: signed_js_tx_to_signed_tx1(setup_app_tx)?,
             xfer_shares_to_invest_escrow: signed_js_tx_to_signed_tx1(xfer_shares_to_invest_escrow)?,
             specs: pars.pt.specs,
             creator: pars.pt.creator.parse().map_err(Error::msg)?,
@@ -70,6 +70,7 @@ async fn _bridge_submit_create_project(
             central_escrow: pars.pt.central_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
             funds_asset_id: funds_asset_specs().id,
+            central_app_id: pars.pt.central_app_id,
         },
     )
     .await?;
@@ -111,6 +112,7 @@ pub struct SubmitCreateProjectPassthroughParJs {
     pub locking_escrow: ContractAccountJs,
     pub central_escrow: ContractAccountJs,
     pub customer_escrow: ContractAccountJs,
+    pub central_app_id: u64,
 }
 
 #[derive(Debug, Clone, Serialize)]

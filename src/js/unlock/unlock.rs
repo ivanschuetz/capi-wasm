@@ -1,3 +1,4 @@
+use crate::dependencies::capi_deps;
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::js::unlock::submit_unlock::SubmitUnlockPassthroughParJs;
 use crate::teal::programs;
@@ -19,12 +20,15 @@ pub async fn bridge_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let project = load_project(
         &algod,
         &indexer,
         &pars.project_id.parse()?,
-        &programs().escrows,
+        &programs.escrows,
+        &capi_deps,
     )
     .await?
     .project;

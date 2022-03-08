@@ -1,3 +1,4 @@
+use crate::dependencies::capi_deps;
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use crate::teal::programs;
 use anyhow::{Error, Result};
@@ -15,10 +16,12 @@ pub async fn bridge_my_projects(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_my_projects(pars: MyProjectsParJs) -> Result<MyProjectsResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let address = pars.address.parse().map_err(Error::msg)?;
 
-    let projects = my_projects(&algod, &indexer, &address, &programs().escrows).await?;
+    let projects = my_projects(&algod, &indexer, &address, &programs.escrows, &capi_deps).await?;
 
     Ok(MyProjectsResJs {
         projects: projects.into_iter().map(|p| p.into()).collect(),

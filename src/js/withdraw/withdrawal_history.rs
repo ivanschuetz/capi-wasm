@@ -1,13 +1,17 @@
 use crate::{
-    dependencies::{funds_asset_specs, FundsAssetSpecs},
+    dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs},
     js::common::{parse_bridge_pars, to_bridge_res},
     teal::programs,
 };
 use algonaut::{algod::v2::Algod, core::Address, indexer::v2::Indexer};
 use anyhow::{Error, Result};
 use core::{
+    capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     dependencies::{algod, indexer},
-    flows::{create_project::storage::load_project::ProjectId, withdraw::withdrawals::withdrawals},
+    flows::{
+        create_project::{create_project::Programs, storage::load_project::ProjectId},
+        withdraw::withdrawals::withdrawals,
+    },
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -23,6 +27,8 @@ pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> 
 pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
@@ -34,6 +40,8 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
         &funds_asset_specs(),
         &project_id,
         &creator,
+        &programs,
+        &capi_deps,
     )
     .await?;
 
@@ -46,8 +54,18 @@ pub async fn load_withdrawals(
     funds_asset_specs: &FundsAssetSpecs,
     project_id: &ProjectId,
     creator: &Address,
+    programs: &Programs,
+    capi_deps: &CapiAssetDaoDeps,
 ) -> Result<Vec<WithdrawalViewData>> {
-    let entries = withdrawals(algod, indexer, creator, project_id, &programs().escrows).await?;
+    let entries = withdrawals(
+        algod,
+        indexer,
+        creator,
+        project_id,
+        &programs.escrows,
+        capi_deps,
+    )
+    .await?;
     let mut reqs_view_data = vec![];
     for entry in entries {
         reqs_view_data.push(withdrawal_view_data(

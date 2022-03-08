@@ -1,6 +1,8 @@
 use anyhow::{Error, Result};
 use core::{
-    capi_asset::{capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps},
+    capi_asset::{
+        capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps, capi_asset_id::CapiAssetId,
+    },
     dependencies::{network, Network},
     funds::FundsAssetId,
 };
@@ -33,12 +35,12 @@ pub fn funds_asset_specs_for_net(net: &Network) -> FundsAssetSpecs {
         // but then function needs to be async / converted to sync.. (later case might need additional deps / also check WASM)
         // might do later.
         Network::Private | Network::SandboxPrivate => FundsAssetSpecs {
-            id: FundsAssetId(6),
+            id: FundsAssetId(7),
             decimals: 6,
         },
         // USDC (testnet)
         Network::Test => FundsAssetSpecs {
-            id: FundsAssetId(10458941),
+            id: FundsAssetId(75503403),
             decimals: 6,
         },
     }
@@ -53,19 +55,21 @@ pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
 pub fn capi_deps_for_net(net: &Network) -> Result<CapiAssetDaoDeps> {
     Ok(match net {
         Network::Private | Network::SandboxPrivate => CapiAssetDaoDeps {
-            escrow: "LUH2EXHI7VQPFH7L2BEWYNS3VWCLQPJTVXJE52R3KW2RLXOU4MGR2TVZLM"
+            escrow: "OLNNIIPDW4GCLZPVYVFMX6SPLBONMGMZB2GFOWHFGGOBJ37INH5DJQYZDE"
                 .parse()
                 .map_err(Error::msg)?,
             escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
-            app_id: CapiAppId(16),
+            app_id: CapiAppId(17),
+            asset_id: CapiAssetId(16),
         },
 
         Network::Test => CapiAssetDaoDeps {
-            escrow: "LUH2EXHI7VQPFH7L2BEWYNS3VWCLQPJTVXJE52R3KW2RLXOU4MGR2TVZLM"
+            escrow: "OLNNIIPDW4GCLZPVYVFMX6SPLBONMGMZB2GFOWHFGGOBJ37INH5DJQYZDE"
                 .parse()
                 .map_err(Error::msg)?,
             escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
-            app_id: CapiAppId(1),
+            app_id: CapiAppId(75503537),
+            asset_id: CapiAssetId(123),
         },
     })
 }

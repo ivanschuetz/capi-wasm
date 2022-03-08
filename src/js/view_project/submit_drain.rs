@@ -1,3 +1,4 @@
+use crate::dependencies::capi_deps;
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::service::str_to_algos::microalgos_to_algos;
@@ -19,6 +20,8 @@ pub async fn bridge_submit_drain(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainResJs> {
     let algod = algod();
     let indexer = indexer();
+    let capi_deps = capi_deps()?;
+    let programs = programs();
 
     let app_call_tx = &pars.txs[0];
 
@@ -41,7 +44,8 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
         &algod,
         &indexer,
         &pars.pt.project_id.parse()?,
-        &programs().escrows,
+        &programs.escrows,
+        &capi_deps,
     )
     .await?
     .project;
