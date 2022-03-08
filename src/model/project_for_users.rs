@@ -53,7 +53,9 @@ pub fn project_to_project_for_users(
         locking_escrow_address: *project.locking_escrow.address(),
         central_escrow_address: *project.central_escrow.address(),
         customer_escrow_address: *project.customer_escrow.address(),
-        invest_link: format!("/{}/invest", project_id_str),
+        // invest_link: format!("/{}/invest", project_id_str),
+        // for now just the project, because we don't have a dedicated investing view anymore and the embedded view is not linked
+        invest_link: format!("/{}", project_id_str),
         my_investment_link: format!("/{}/investment", project_id_str),
         my_investment_link_rel: format!("investment/{}", project_id_str),
         project_link: format!("/{}", project_id_str),
