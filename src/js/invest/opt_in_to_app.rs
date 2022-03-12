@@ -64,11 +64,9 @@ async fn optin_to_all_apps(
     central_app_id: u64,
 ) -> Result<Vec<Transaction>> {
     let params = algod.suggested_transaction_params().await?;
-    let mut txs = vec![];
-    txs.push(optin_to_app(&params, central_app_id, *investor_address).await?);
-    TxGroup::assign_group_id(txs.iter_mut().collect())?;
-
-    Ok(txs)
+    let txs = &mut [&mut optin_to_app(&params, central_app_id, *investor_address).await?];
+    TxGroup::assign_group_id(txs)?;
+    Ok(txs.into_iter().map(|t| t.clone()).collect())
 }
 
 async fn is_opted_in(algod: &Algod, address: Address, app_id: u64) -> Result<bool> {
