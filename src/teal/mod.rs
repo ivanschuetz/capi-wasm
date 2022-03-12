@@ -4,6 +4,7 @@ mod central_escrow;
 mod customer_escrow;
 mod invest_escrow;
 mod locking_escrow;
+mod update_teal;
 
 use core::flows::create_project::create_project::{Escrows, Programs};
 use core::teal::{TealSource, TealSourceTemplate};
