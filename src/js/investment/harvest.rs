@@ -60,6 +60,7 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
     let mut maybe_capi_share_tx_msg_pack = None;
     if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {
         to_sign.push(to_sign_for_drain.app_call_tx);
+        to_sign.push(to_sign_for_drain.capi_app_call_tx);
         maybe_drain_tx_msg_pack = Some(rmp_serde::to_vec_named(&to_sign_for_drain.drain_tx)?);
         maybe_capi_share_tx_msg_pack =
             Some(rmp_serde::to_vec_named(&to_sign_for_drain.capi_share_tx)?);

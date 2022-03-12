@@ -25,14 +25,14 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    // 1 tx if only harvest, 5 if harvest + 2 drain
+    // 1 tx if only harvest, 3 if harvest + 2 drain
     if pars.txs.len() != 1 && pars.txs.len() != 3 {
         return Err(anyhow!("Unexpected harvest txs length: {}", pars.txs.len()));
     }
     // sanity check
     if pars.txs.len() == 1 && pars.pt.maybe_drain_tx_msg_pack.is_some() {
         return Err(anyhow!(
-            "Invalid state: 2 txs with a passthrough draining tx",
+            "Invalid state: 1 tx with a passthrough draining tx",
         ));
     }
 

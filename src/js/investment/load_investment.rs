@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::{funds_asset_specs, capi_deps},
+    dependencies::{capi_deps, funds_asset_specs},
     js::common::{parse_bridge_pars, to_bridge_res},
     service::{constants::PRECISION, str_to_algos::base_units_to_display_units_str},
     teal::programs,
@@ -9,13 +9,10 @@ use core::{
     decimal_util::DecimalExt,
     dependencies::{algod, indexer},
     flows::{
-        create_project::storage::load_project::load_project,
+        create_project::storage::load_project::load_project, drain::drain::drain_amounts,
         harvest::harvest::investor_can_harvest_amount_calc,
     },
-    state::{
-        account_state::funds_holdings,
-        central_app_state::{central_global_state, central_investor_state},
-    },
+    state::central_app_state::{central_global_state, central_investor_state},
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -47,13 +44,6 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         central_investor_state(&algod, investor_address, project.central_app_id).await?;
     let central_state = central_global_state(&algod, project.central_app_id).await?;
 
-    let customer_escrow_balance = funds_holdings(
-        &algod,
-        project.customer_escrow.address(),
-        funds_asset_specs.id,
-    )
-    .await?;
-
     // TODO review redundancy with backend, as we store the share count in the db too
     // maybe we shouldn't store them in the backend (also meaning: the backend can't deliver Project objects but a reduced view of them),
     // as it may get out of sync when shares are diluted
@@ -61,7 +51,14 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let investor_percentage =
         investor_state.shares.as_decimal() / project.specs.shares.supply.as_decimal();
 
-    let withdrawable_customer_escrow_amount = customer_escrow_balance;
+    let drain_amounts = drain_amounts(
+        &algod,
+        capi_deps.escrow_percentage,
+        funds_asset_specs.id,
+        project.customer_escrow.address(),
+    )
+    .await?;
+    let withdrawable_customer_escrow_amount = drain_amounts.dao;
     // This is basically "simulate that the customer escrow was already drained"
     // we use this value, as harvesting will drain the customer escrow if it has a balance (> MIN_BALANCE + FIXED_FEE)
     // and the draining step is invisible to the user (aside of adding more txs to the harvesting txs to sign)
