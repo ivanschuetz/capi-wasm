@@ -55,7 +55,7 @@ pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
 pub fn capi_deps_for_net(net: &Network) -> Result<CapiAssetDaoDeps> {
     Ok(match net {
         Network::Private | Network::SandboxPrivate => CapiAssetDaoDeps {
-            escrow: "OLNNIIPDW4GCLZPVYVFMX6SPLBONMGMZB2GFOWHFGGOBJ37INH5DJQYZDE"
+            escrow: "7P3BS733AM6WREJP6PUR6YYFT7VCNIHUAHK43BDOSFG25TQP5LXTKRSMJQ"
                 .parse()
                 .map_err(Error::msg)?,
             escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
@@ -64,7 +64,7 @@ pub fn capi_deps_for_net(net: &Network) -> Result<CapiAssetDaoDeps> {
         },
 
         Network::Test => CapiAssetDaoDeps {
-            escrow: "OLNNIIPDW4GCLZPVYVFMX6SPLBONMGMZB2GFOWHFGGOBJ37INH5DJQYZDE"
+            escrow: "7P3BS733AM6WREJP6PUR6YYFT7VCNIHUAHK43BDOSFG25TQP5LXTKRSMJQ"
                 .parse()
                 .map_err(Error::msg)?,
             escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
