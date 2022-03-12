@@ -11,7 +11,7 @@ use core::{
     flows::{
         create_project::{share_amount::ShareAmount, storage::load_project::load_project},
         drain::drain::drain_amounts,
-        harvest::harvest::investor_can_harvest_amount_calc,
+        harvest::harvest::max_can_harvest_amount,
     },
     funds::FundsAmount,
     state::{
@@ -85,14 +85,14 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let received_total_including_customer_escrow_balance =
         central_state.received + withdrawable_customer_escrow_amount;
 
-    let can_harvest = investor_can_harvest_amount_calc(
+    let can_harvest = max_can_harvest_amount(
         received_total_including_customer_escrow_balance,
         investor_harvested,
-        investor_shares,
         project.specs.shares.supply,
+        investor_shares,
         PRECISION,
         project.specs.investors_part(),
-    );
+    )?;
 
     let investors_share_normalized = project
         .specs
