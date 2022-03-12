@@ -9,10 +9,15 @@ use core::{
     decimal_util::DecimalExt,
     dependencies::{algod, indexer},
     flows::{
-        create_project::storage::load_project::load_project, drain::drain::drain_amounts,
+        create_project::{share_amount::ShareAmount, storage::load_project::load_project},
+        drain::drain::drain_amounts,
         harvest::harvest::investor_can_harvest_amount_calc,
     },
-    state::central_app_state::{central_global_state, central_investor_state},
+    funds::FundsAmount,
+    state::{
+        app_state::ApplicationLocalStateError,
+        central_app_state::{central_global_state, central_investor_state},
+    },
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -40,8 +45,23 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
-    let investor_state =
-        central_investor_state(&algod, investor_address, project.central_app_id).await?;
+    let investor_state_res =
+        central_investor_state(&algod, investor_address, project.central_app_id).await;
+    let (investor_shares, investor_harvested) = match investor_state_res {
+        Ok(state) => (state.shares, state.harvested),
+        Err(e) => {
+            if e == ApplicationLocalStateError::NotOptedIn {
+                // If the investor isn't opted in (unlocked the shares - note that currently it's not possible to unlock only a part of the shares),
+                // we don't show an error, it just means that they've 0 shares and haven't harvested anything.
+                // the later is discussable UX wise (they may have harvested before unlocking the shares),
+                // but the local state is deleted when unlocking (opting out), so 0 is the only meaningful thing we can return here.
+                (ShareAmount::new(0), FundsAmount::new(0))
+            } else {
+                Err(e)?
+            }
+        }
+    };
+
     let central_state = central_global_state(&algod, project.central_app_id).await?;
 
     // TODO review redundancy with backend, as we store the share count in the db too
@@ -49,7 +69,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     // as it may get out of sync when shares are diluted
     // also use Decimal for everything involving fractions
     let investor_percentage =
-        investor_state.shares.as_decimal() / project.specs.shares.supply.as_decimal();
+        investor_shares.as_decimal() / project.specs.shares.supply.as_decimal();
 
     let drain_amounts = drain_amounts(
         &algod,
@@ -67,8 +87,8 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
     let can_harvest = investor_can_harvest_amount_calc(
         received_total_including_customer_escrow_balance,
-        investor_state.harvested,
-        investor_state.shares,
+        investor_harvested,
+        investor_shares,
         project.specs.shares.supply,
         PRECISION,
         project.specs.investors_part(),
@@ -82,10 +102,10 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
     let investor_percentage_relative_to_total = investor_percentage * investors_share_normalized;
 
-    log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_state.shares, project.specs.shares.supply);
+    log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_shares, project.specs.shares.supply);
 
     Ok(LoadInvestmentResJs {
-        investor_shares_count: investor_state.shares.to_string(),
+        investor_shares_count: investor_shares.to_string(),
 
         investor_percentage: investor_percentage.format_percentage(),
         investor_percentage_number: investor_percentage.to_string(),
@@ -95,7 +115,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         investors_share_number: investors_share_normalized.to_string(),
 
         investor_already_retrieved_amount: base_units_to_display_units_str(
-            investor_state.harvested,
+            investor_harvested,
             &funds_asset_specs,
         ),
         investor_harvestable_amount: base_units_to_display_units_str(
