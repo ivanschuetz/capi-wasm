@@ -17,7 +17,7 @@ mod test {
         // Update core's TEAL, to ensure that the copied TEAL is up to date (corresponds to PyTeal)
         update_teal_in_core(core_path)?;
 
-        // Copy the TEAL to this project (as strings in Rust files)
+        // Copy the TEAL to this dao (as strings in Rust files)
         let core_teal_templates_dir = fs::read_dir(core_path.join("teal_template"))?;
         let core_teal_dir = fs::read_dir(core_path.join("teal"))?;
         import_teal_from(core_teal_templates_dir)?;

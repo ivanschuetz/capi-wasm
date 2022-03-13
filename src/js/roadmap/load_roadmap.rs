@@ -17,10 +17,10 @@ pub async fn bridge_load_roadmap(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapResJs> {
     let indexer = indexer();
 
-    let project_creator = pars.creator_address.parse().map_err(Error::msg)?;
-    let project_id = pars.project_id.parse()?;
+    let dao_creator = pars.creator_address.parse().map_err(Error::msg)?;
+    let dao_id = pars.dao_id.parse()?;
 
-    let roadmap = get_roadmap(&indexer, &project_creator, &project_id).await?;
+    let roadmap = get_roadmap(&indexer, &dao_creator, &dao_id).await?;
     let mut items = roadmap.items;
     // sort ascendingly by date
     items.sort_by(|i1, i2| i1.date.cmp(&i2.date));
@@ -145,7 +145,7 @@ enum RoadmapItemView {
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetRoadmapParJs {
     creator_address: String,
-    project_id: String,
+    dao_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

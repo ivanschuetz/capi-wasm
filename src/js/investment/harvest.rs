@@ -5,7 +5,7 @@ use crate::service::drain_if_needed::drain_if_needed_txs;
 use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_dao::storage::load_dao::load_dao;
 use core::flows::harvest::harvest::harvest;
 use core::funds::FundsAmount;
 use serde::{Deserialize, Serialize};
@@ -25,22 +25,22 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let project_id = pars.project_id.parse()?;
+    let dao_id = pars.dao_id.parse()?;
     let amount = FundsAmount::new(pars.amount.parse()?);
 
-    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
+    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
         .await?
-        .project;
+        .dao;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
     let to_sign_for_harvest = harvest(
         &algod,
         investor_address,
-        project.central_app_id,
+        dao.central_app_id,
         funds_asset_id,
         amount,
-        &project.central_escrow,
+        &dao.central_escrow,
     )
     .await?;
 
@@ -48,7 +48,7 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
 
     let maybe_to_sign_for_drain = drain_if_needed_txs(
         &algod,
-        &project,
+        &dao,
         investor_address,
         funds_asset_id,
         &capi_deps,
@@ -78,7 +78,7 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct HarvestParJs {
-    pub project_id: String,
+    pub dao_id: String,
     pub amount: String,
     pub investor_address: String,
 }

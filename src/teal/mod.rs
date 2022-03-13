@@ -6,7 +6,7 @@ mod investing_escrow;
 mod locking_escrow;
 mod update_teal;
 
-use core::flows::create_project::create_project::{Escrows, Programs};
+use core::flows::create_dao::create_dao::{Escrows, Programs};
 use core::teal::{TealSource, TealSourceTemplate};
 
 pub fn programs() -> Programs {

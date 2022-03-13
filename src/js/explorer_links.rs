@@ -1,4 +1,4 @@
-use core::flows::create_project::storage::load_project::TxId;
+use core::flows::create_dao::storage::load_dao::TxId;
 
 use algonaut::core::Address;
 

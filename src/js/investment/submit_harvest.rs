@@ -6,7 +6,7 @@ use crate::teal::programs;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::{algod, indexer};
 use core::diagnostics::log_harvest_diagnostics;
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_dao::storage::load_dao::load_dao;
 use core::flows::harvest::harvest::{submit_harvest, HarvestSigned};
 use core::network_util::wait_for_pending_transaction;
 use serde::{Deserialize, Serialize};
@@ -49,15 +49,15 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
     let app_call_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
 
     ///////////////////////////
-    let project = load_project(
+    let dao = load_dao(
         &algod,
         &indexer,
-        &pars.project_id_for_diagnostics.parse()?,
+        &pars.dao_id_for_diagnostics.parse()?,
         &programs.escrows,
         &capi_deps,
     )
     .await?
-    .project;
+    .dao;
 
     log_harvest_diagnostics(
         &algod,
@@ -65,7 +65,7 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
             .investor_address_for_diagnostics
             .parse()
             .map_err(Error::msg)?,
-        &project,
+        &dao,
     )
     .await?;
     ///////////////////////////
@@ -85,11 +85,11 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
     Ok(SubmitHarvestResJs {})
 }
 
-/// The assets creation signed transactions and the specs to create the project
+/// The assets creation signed transactions and the specs to create the dao
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitHarvestParJs {
     pub investor_address_for_diagnostics: String,
-    pub project_id_for_diagnostics: String,
+    pub dao_id_for_diagnostics: String,
 
     pub txs: Vec<SignedTxFromJs>,
     pub pt: SubmitHarvestPassthroughParJs,

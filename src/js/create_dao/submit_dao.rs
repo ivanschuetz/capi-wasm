@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
-use core::flows::create_project::create_project_specs::CreateProjectSpecs;
-use core::flows::create_project::storage::save_project::save_project;
-use core::flows::create_project::{
-    create_project::submit_create_project, model::CreateProjectSigned,
+use core::flows::create_dao::create_dao_specs::CreateDaoSpecs;
+use core::flows::create_dao::storage::save_dao::save_dao;
+use core::flows::create_dao::{
+    create_dao::submit_create_dao, model::CreateDaoSigned,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -18,26 +18,26 @@ use crate::js::common::{
 use crate::js::common::{to_my_algo_tx1, SignedTxFromJs};
 use crate::js::general::js_types_workarounds::ContractAccountJs;
 
-use super::submit_save_project::SubmitSaveProjectPassthroughParJs;
+use super::submit_save_dao::SubmitSaveDaoPassthroughParJs;
 
 #[wasm_bindgen]
-pub async fn bridge_submit_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_submit_create_project, pars: {:?}", pars);
-    to_bridge_res(_bridge_submit_create_project(parse_bridge_pars(pars)?).await)
+pub async fn bridge_submit_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_submit_create_dao, pars: {:?}", pars);
+    to_bridge_res(_bridge_submit_create_dao(parse_bridge_pars(pars)?).await)
 }
 
-/// create projects specs + signed assets txs -> create project result
-/// submits the signed assets, creates rest of project with generated asset ids
-async fn _bridge_submit_create_project(
-    pars: SubmitCreateProjectParJs,
-) -> Result<SubmitCreateProjectResJs> {
-    // log::debug!("in bridge_submit_create_project, pars: {:?}", pars);
+/// create daos specs + signed assets txs -> create dao result
+/// submits the signed assets, creates rest of dao with generated asset ids
+async fn _bridge_submit_create_dao(
+    pars: SubmitCreateDaoParJs,
+) -> Result<SubmitCreateDaoResJs> {
+    // log::debug!("in bridge_submit_create_dao, pars: {:?}", pars);
 
     let algod = algod();
 
     if pars.txs.len() != 6 {
         return Err(anyhow!(
-            "Unexpected signed project txs length: {}",
+            "Unexpected signed dao txs length: {}",
             pars.txs.len()
         ));
     }
@@ -45,18 +45,18 @@ async fn _bridge_submit_create_project(
     // TODO (low prio) improve this access, it's easy for the indices to get out of sync
     // and assign the txs to incorrect variables, which may cause subtle bugs
     // maybe refactor writing/reading into a helper struct or function
-    // (written in create_project::txs_to_sign)
+    // (written in create_dao::txs_to_sign)
     let setup_app_tx = &pars.txs[0];
     let escrow_funding_txs = &pars.txs[1..5];
     let xfer_shares_to_invest_escrow = &pars.txs[5];
 
-    let project_creator = pars.pt.creator.parse().map_err(Error::msg)?;
+    let dao_creator = pars.pt.creator.parse().map_err(Error::msg)?;
 
-    log::debug!("Submitting the project..");
+    log::debug!("Submitting the dao..");
 
-    let submit_project_res = submit_create_project(
+    let submit_dao_res = submit_create_dao(
         &algod,
-        CreateProjectSigned {
+        CreateDaoSigned {
             escrow_funding_txs: signed_js_txs_to_signed_tx1(escrow_funding_txs)?,
             optin_txs: rmp_serde::from_slice(&pars.pt.escrow_optin_signed_txs_msg_pack)
                 .map_err(Error::msg)?,
@@ -75,30 +75,30 @@ async fn _bridge_submit_create_project(
     )
     .await?;
 
-    log::debug!("Submit project res: {:?}", submit_project_res);
+    log::debug!("Submit dao res: {:?}", submit_dao_res);
 
-    // let save_project_res = api.save_project(&submit_project_res.project).await?;
+    // let save_dao_res = api.save_dao(&submit_dao_res.dao).await?;
 
-    let to_sign = save_project(&algod, &project_creator, &submit_project_res.project).await?;
+    let to_sign = save_dao(&algod, &dao_creator, &submit_dao_res.dao).await?;
 
-    Ok(SubmitCreateProjectResJs {
+    Ok(SubmitCreateDaoResJs {
         to_sign: to_my_algo_tx1(&to_sign.tx)?,
-        pt: SubmitSaveProjectPassthroughParJs {
-            project_msg_pack: rmp_serde::to_vec_named(&to_sign.project)?,
+        pt: SubmitSaveDaoPassthroughParJs {
+            dao_msg_pack: rmp_serde::to_vec_named(&to_sign.dao)?,
         },
     })
 }
 
-/// The assets creation signed transactions and the specs to create the project
+/// The assets creation signed transactions and the specs to create the dao
 #[derive(Debug, Clone, Deserialize)]
-pub struct SubmitCreateProjectParJs {
+pub struct SubmitCreateDaoParJs {
     pub txs: Vec<SignedTxFromJs>,
-    pub pt: SubmitCreateProjectPassthroughParJs, // passthrough
+    pub pt: SubmitCreateDaoPassthroughParJs, // passthrough
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SubmitCreateProjectPassthroughParJs {
-    pub specs: CreateProjectSpecs,
+pub struct SubmitCreateDaoPassthroughParJs {
+    pub specs: CreateDaoSpecs,
     // not sure how to passthrough, if we use Address, when deserializing, we get:
     // index.js:1 Error("invalid type: sequence, expected a 32 byte array", line: 1, column: 10711)
     // looking at the logs, the passed JsValue looks like an array ([1, 2...])
@@ -116,8 +116,8 @@ pub struct SubmitCreateProjectPassthroughParJs {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct SubmitCreateProjectResJs {
-    // next step tx: save the project
+pub struct SubmitCreateDaoResJs {
+    // next step tx: save the dao
     pub to_sign: Value,
-    pub pt: SubmitSaveProjectPassthroughParJs,
+    pub pt: SubmitSaveDaoPassthroughParJs,
 }

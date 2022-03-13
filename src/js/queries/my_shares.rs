@@ -6,7 +6,7 @@ use crate::{
 use anyhow::{anyhow, Error, Result};
 use core::{
     dependencies::{algod, indexer},
-    flows::create_project::{share_amount::ShareAmount, storage::load_project::load_project},
+    flows::create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
     state::{
         account_state::asset_holdings, app_state::ApplicationLocalStateError,
         central_app_state::central_investor_state,
@@ -28,24 +28,23 @@ pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let project_id = pars.project_id.parse()?;
+    let dao_id = pars.dao_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
+    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
         .await?
-        .project;
+        .dao;
 
-    log::debug!("Project: {project:?}");
+    log::debug!("Dao: {dao:?}");
 
     let my_address = &pars.my_address.parse().map_err(Error::msg)?;
 
-    let locked_shares =
-        match central_investor_state(&algod, my_address, project.central_app_id).await {
-            Ok(state) => state.shares,
-            Err(ApplicationLocalStateError::NotOptedIn) => ShareAmount::new(0), // not invested -> 0 shares
-            Err(e) => return Err(Error::msg(e)),
-        };
+    let locked_shares = match central_investor_state(&algod, my_address, dao.central_app_id).await {
+        Ok(state) => state.shares,
+        Err(ApplicationLocalStateError::NotOptedIn) => ShareAmount::new(0), // not invested -> 0 shares
+        Err(e) => return Err(Error::msg(e)),
+    };
 
-    let free_shares = match asset_holdings(&algod, my_address, project.shares_asset_id).await {
+    let free_shares = match asset_holdings(&algod, my_address, dao.shares_asset_id).await {
         Ok(shares) => ShareAmount(shares),
         Err(e) => return Err(Error::msg(e)),
     };
@@ -66,7 +65,7 @@ pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct MySharesParJs {
-    pub project_id: String,
+    pub dao_id: String,
     pub my_address: String,
 }
 

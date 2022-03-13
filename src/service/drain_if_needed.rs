@@ -3,7 +3,7 @@ use anyhow::Result;
 use core::{
     capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     flows::{
-        create_project::model::Project,
+        create_dao::model::Dao,
         drain::drain::{
             fetch_drain_amount_and_drain, submit_drain_customer_escrow, DrainCustomerEscrowSigned,
             DrainCustomerEscrowToSign,
@@ -22,13 +22,13 @@ use crate::{
 /// Returns txs if needed to drain, None if not needed.
 pub async fn drain_if_needed_txs(
     algod: &Algod,
-    project: &Project,
+    dao: &Dao,
     sender: &Address,
     funds_asset_id: FundsAssetId,
     capi_deps: &CapiAssetDaoDeps,
 ) -> Result<Option<DrainCustomerEscrowToSign>> {
     let customer_escrow_amount =
-        funds_holdings(algod, project.customer_escrow.address(), funds_asset_id).await?;
+        funds_holdings(algod, dao.customer_escrow.address(), funds_asset_id).await?;
 
     if customer_escrow_amount.0 > 0 {
         log::debug!("There's an amount to drain: {}", customer_escrow_amount);
@@ -37,11 +37,11 @@ pub async fn drain_if_needed_txs(
             fetch_drain_amount_and_drain(
                 algod,
                 sender,
-                project.central_app_id,
+                dao.central_app_id,
                 funds_asset_specs().id,
                 capi_deps,
-                &project.customer_escrow,
-                &project.central_escrow,
+                &dao.customer_escrow,
+                &dao.central_escrow,
             )
             .await?,
         ))

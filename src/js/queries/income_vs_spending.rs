@@ -8,9 +8,7 @@ use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, TimeZone, Timelike, Utc};
 use core::{
     dependencies::{algod, indexer},
-    flows::{
-        create_project::storage::load_project::load_project, withdraw::withdrawals::withdrawals,
-    },
+    flows::{create_dao::storage::load_dao::load_dao, withdraw::withdrawals::withdrawals},
     funds::FundsAmount,
     queries::received_payments::received_payments,
 };
@@ -33,20 +31,20 @@ pub async fn _bridge_income_vs_spending(
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let project_id = pars.project_id.parse()?;
+    let dao_id = pars.dao_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
+    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
         .await?
-        .project;
+        .dao;
 
-    let mut income = received_payments(&indexer, project.customer_escrow.address()).await?;
+    let mut income = received_payments(&indexer, dao.customer_escrow.address()).await?;
     income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
     let mut spending = withdrawals(
         &algod,
         &indexer,
-        &project.creator,
-        &project_id,
+        &dao.creator,
+        &dao_id,
         &programs.escrows,
         &capi_deps,
     )
@@ -275,7 +273,7 @@ fn create_data_point_js(
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct IncomeVsSpendingParJs {
-    pub project_id: String,
+    pub dao_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -28,12 +28,12 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
     let payment_tx = signed_js_tx_to_signed_tx(&pars.txs[1])?;
     let shares_asset_optin_tx = signed_js_tx_to_signed_tx(&pars.txs[2])?;
 
-    let project = rmp_serde::from_slice(&pars.pt.project_msg_pack).map_err(to_js_value)?;
+    let dao = rmp_serde::from_slice(&pars.pt.dao_msg_pack).map_err(to_js_value)?;
 
     let submit_res = submit_invest(
         &algod,
         &InvestSigned {
-            project,
+            dao,
             central_app_setup_tx,
             shares_asset_optin_tx,
             payment_tx,
@@ -64,7 +64,7 @@ pub struct SubmitBuySharesParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitBuySharesPassthroughParJs {
-    pub project_msg_pack: Vec<u8>,
+    pub dao_msg_pack: Vec<u8>,
     pub shares_xfer_tx_msg_pack: Vec<u8>,
 }
 

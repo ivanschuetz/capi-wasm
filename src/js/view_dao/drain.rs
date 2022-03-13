@@ -3,7 +3,7 @@ use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_dao::storage::load_dao::load_dao;
 use core::flows::drain::drain::fetch_drain_amount_and_drain;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -24,20 +24,20 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let project_id = pars.project_id.parse()?;
+    let dao_id = pars.dao_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
+    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
         .await?
-        .project;
+        .dao;
 
     let to_sign = fetch_drain_amount_and_drain(
         &algod,
         &pars.drainer_address.parse().map_err(Error::msg)?,
-        project.central_app_id,
+        dao.central_app_id,
         funds_asset_specs().id,
         &capi_deps,
-        &project.customer_escrow,
-        &project.central_escrow,
+        &dao.customer_escrow,
+        &dao.central_escrow,
     )
     .await?;
 
@@ -46,17 +46,17 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
         pt: SubmitDrainPassthroughParJs {
             drain_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.drain_tx)?,
             capi_share_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.capi_share_tx)?,
-            project_id: project_id.to_string(),
+            dao_id: dao_id.to_string(),
         },
     })
 }
 
-// TODO this can be optimized passing the already loaded project from JS
-// to not load the project again
-// (we'd have to use the complete project instance - drain needs lsig)
+// TODO this can be optimized passing the already loaded dao from JS
+// to not load the dao again
+// (we'd have to use the complete dao instance - drain needs lsig)
 #[derive(Debug, Clone, Deserialize)]
 pub struct DrainParJs {
-    pub project_id: String,
+    pub dao_id: String,
     pub drainer_address: String,
 }
 

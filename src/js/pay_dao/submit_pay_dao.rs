@@ -3,24 +3,24 @@ use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge
 use anyhow::Result;
 use core::{
     dependencies::algod,
-    flows::pay_project::pay_project::{submit_pay_project, PayProjectSigned},
+    flows::pay_dao::pay_dao::{submit_pay_dao, PayDaoSigned},
 };
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub async fn bridge_submit_pay_project(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_submit_pay_project, pars: {:?}", pars);
-    to_bridge_res(_bridge_submit_pay_project(parse_bridge_pars(pars)?).await)
+pub async fn bridge_submit_pay_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_submit_pay_dao, pars: {:?}", pars);
+    to_bridge_res(_bridge_submit_pay_dao(parse_bridge_pars(pars)?).await)
 }
 
-pub async fn _bridge_submit_pay_project(pars: SubmitPayProjectParJs) -> Result<SubmitLockResJs> {
+pub async fn _bridge_submit_pay_dao(pars: SubmitPayDaoParJs) -> Result<SubmitLockResJs> {
     let algod = algod();
 
-    let res = submit_pay_project(
+    let res = submit_pay_dao(
         &algod,
-        PayProjectSigned {
+        PayDaoSigned {
             tx: signed_js_tx_to_signed_tx1(&pars.tx)?,
         },
     )
@@ -32,7 +32,7 @@ pub async fn _bridge_submit_pay_project(pars: SubmitPayProjectParJs) -> Result<S
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct SubmitPayProjectParJs {
+pub struct SubmitPayDaoParJs {
     pub tx: SignedTxFromJs,
 }
 

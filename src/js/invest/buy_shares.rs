@@ -10,7 +10,7 @@ use anyhow::{anyhow, Error, Result};
 use core::{
     dependencies::{algod, indexer},
     flows::{
-        create_project::{share_amount::ShareAmount, storage::load_project::load_project},
+        create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
         invest::invest::invest_txs,
     },
 };
@@ -36,25 +36,25 @@ pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
         submit_apps_optins_from_js(&algod, &app_opt_ins).await?;
     }
 
-    log::debug!("Loading the project...");
+    log::debug!("Loading the dao...");
 
-    let project_id = pars.project_id.parse()?;
+    let dao_id = pars.dao_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
+    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
         .await?
-        .project;
+        .dao;
 
     let to_sign = invest_txs(
         &algod,
-        &project,
+        &dao,
         &pars.investor_address.parse().map_err(Error::msg)?,
-        &project.locking_escrow,
-        project.central_app_id,
-        project.shares_asset_id,
+        &dao.locking_escrow,
+        dao.central_app_id,
+        dao.shares_asset_id,
         validated_share_amount,
         funds_asset_specs().id,
-        project.specs.share_price,
-        &project_id,
+        dao.specs.share_price,
+        &dao_id,
     )
     .await?;
 
@@ -67,7 +67,7 @@ pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
     Ok(InvestResJs {
         to_sign: to_my_algo_txs1(&to_sign_txs).map_err(Error::msg)?,
         pt: SubmitBuySharesPassthroughParJs {
-            project_msg_pack: rmp_serde::to_vec_named(&project)?,
+            dao_msg_pack: rmp_serde::to_vec_named(&dao)?,
             shares_xfer_tx_msg_pack: to_sign.shares_xfer_tx.to_msg_pack()?,
         },
     })
@@ -86,7 +86,7 @@ fn validate_share_count(input: &str) -> Result<ShareAmount> {
 // TODO rename structs in BuyShares*
 #[derive(Debug, Clone, Deserialize)]
 pub struct InvestParJs {
-    pub project_id: String,
+    pub dao_id: String,
     pub share_count: String,
     pub investor_address: String,
     // not set if the user was already opted in (checked in previous step)

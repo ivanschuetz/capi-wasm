@@ -9,7 +9,7 @@ use core::{
     capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     dependencies::{algod, indexer},
     flows::{
-        create_project::{create_project::Programs, storage::load_project::ProjectId},
+        create_dao::{create_dao::Programs, storage::load_dao::DaoId},
         withdraw::withdrawals::withdrawals,
     },
 };
@@ -32,13 +32,13 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
-    let project_id = pars.project_id.parse()?;
+    let dao_id = pars.dao_id.parse()?;
 
     let entries = load_withdrawals(
         &algod,
         &indexer,
         &funds_asset_specs(),
-        &project_id,
+        &dao_id,
         &creator,
         &programs,
         &capi_deps,
@@ -52,7 +52,7 @@ pub async fn load_withdrawals(
     algod: &Algod,
     indexer: &Indexer,
     funds_asset_specs: &FundsAssetSpecs,
-    project_id: &ProjectId,
+    dao_id: &DaoId,
     creator: &Address,
     programs: &Programs,
     capi_deps: &CapiAssetDaoDeps,
@@ -61,7 +61,7 @@ pub async fn load_withdrawals(
         algod,
         indexer,
         creator,
-        project_id,
+        dao_id,
         &programs.escrows,
         capi_deps,
     )
@@ -81,7 +81,7 @@ pub async fn load_withdrawals(
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadWithdrawalParJs {
-    pub project_id: String,
+    pub dao_id: String,
     pub creator_address: String,
 }
 

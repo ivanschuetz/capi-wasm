@@ -10,7 +10,7 @@ use crate::{
 use anyhow::{Error, Result};
 use core::{
     dependencies::{algod, indexer},
-    flows::create_project::storage::load_project::load_project,
+    flows::create_dao::storage::load_dao::load_dao,
     queries::funds_activity::{funds_activity, FundsActivityEntryType},
 };
 use serde::{Deserialize, Serialize};
@@ -32,19 +32,19 @@ pub async fn _bridge_load_funds_activity(
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
-    let project_id = pars.project_id.parse()?;
+    let dao_id = pars.dao_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
+    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
         .await?
-        .project;
+        .dao;
 
     let mut activity_entries = funds_activity(
         &algod,
         &indexer,
         &creator,
-        &project_id,
-        project.customer_escrow.address(),
-        project.central_escrow.address(),
+        &dao_id,
+        dao.customer_escrow.address(),
+        dao.central_escrow.address(),
         &programs.escrows,
         &capi_deps,
     )
@@ -81,7 +81,7 @@ pub async fn _bridge_load_funds_activity(
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadFundsActivityParJs {
-    pub project_id: String,
+    pub dao_id: String,
     pub creator_address: String,
     pub max_results: Option<String>,
 }

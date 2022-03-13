@@ -1,4 +1,4 @@
-use super::submit_project::SubmitCreateProjectPassthroughParJs;
+use super::submit_dao::SubmitCreateDaoPassthroughParJs;
 use crate::dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{
@@ -11,16 +11,16 @@ use algonaut::core::Address;
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
-use core::flows::create_project::create_project_specs::CreateProjectSpecs;
-use core::flows::create_project::setup::create_shares::{
+use core::flows::create_dao::create_dao_specs::CreateDaoSpecs;
+use core::flows::create_dao::setup::create_shares::{
     submit_create_assets, CrateDaoAssetsSigned,
 };
-use core::flows::create_project::share_amount::ShareAmount;
-use core::flows::create_project::shares_percentage::SharesPercentage;
-use core::flows::create_project::shares_specs::SharesDistributionSpecs;
-use core::flows::create_project::{
-    create_project::create_project_txs,
-    model::{CreateProjectToSign, CreateSharesSpecs},
+use core::flows::create_dao::share_amount::ShareAmount;
+use core::flows::create_dao::shares_percentage::SharesPercentage;
+use core::flows::create_dao::shares_specs::SharesDistributionSpecs;
+use core::flows::create_dao::{
+    create_dao::create_dao_txs,
+    model::{CreateDaoToSign, CreateSharesSpecs},
 };
 use core::funds::FundsAmount;
 use rust_decimal::Decimal;
@@ -30,15 +30,15 @@ use std::convert::TryInto;
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
-/// create projects specs + signed assets txs -> create project result
-/// submits the signed assets, creates rest of project with generated asset ids
+/// create daos specs + signed assets txs -> create dao result
+/// submits the signed assets, creates rest of dao with generated asset ids
 #[wasm_bindgen]
-pub async fn bridge_create_project(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_create_project, pars: {:?}", pars);
-    to_bridge_res(_bridge_create_project(parse_bridge_pars(pars)?).await)
+pub async fn bridge_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_create_dao, pars: {:?}", pars);
+    to_bridge_res(_bridge_create_dao(parse_bridge_pars(pars)?).await)
 }
 
-pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreateProjectResJs> {
+pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> {
     let algod = algod();
     let funds_asset_specs = funds_asset_specs();
     let capi_deps = capi_deps()?;
@@ -60,11 +60,11 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     .await?;
 
     let creator_address = pars.pt.inputs.creator.parse().map_err(Error::msg)?;
-    let project_specs = pars.pt.inputs.to_project_specs(&funds_asset_specs)?;
+    let dao_specs = pars.pt.inputs.to_dao_specs(&funds_asset_specs)?;
 
-    let to_sign = create_project_txs(
+    let to_sign = create_dao_txs(
         &algod,
-        &project_specs,
+        &dao_specs,
         creator_address,
         submit_assets_res.shares_asset_id,
         funds_asset_specs.id,
@@ -90,15 +90,15 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     let txs_to_sign = &txs_to_sign(&to_sign);
     if txs_to_sign.len() as u64 != 6 {
         return Err(anyhow!(
-            "Unexpected to sign project txs length: {}",
+            "Unexpected to sign dao txs length: {}",
             txs_to_sign.len()
         ));
     }
 
-    Ok(CreateProjectResJs {
+    Ok(CreateDaoResJs {
         to_sign: to_my_algo_txs1(txs_to_sign)?,
-        pt: SubmitCreateProjectPassthroughParJs {
-            specs: project_specs,
+        pt: SubmitCreateDaoPassthroughParJs {
+            specs: dao_specs,
             creator: creator_address.to_string(),
             escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)?,
             shares_asset_id: submit_assets_res.shares_asset_id,
@@ -111,8 +111,8 @@ pub async fn _bridge_create_project(pars: CreateProjectParJs) -> Result<CreatePr
     })
 }
 
-fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<CreateProjectSpecs> {
-    CreateProjectSpecs::new(
+fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<CreateDaoSpecs> {
+    CreateDaoSpecs::new(
         inputs.name,
         inputs.description,
         CreateSharesSpecs {
@@ -126,7 +126,7 @@ fn validated_inputs_to_project_specs(inputs: ValidatedProjectInputs) -> Result<C
     )
 }
 
-fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
+fn txs_to_sign(res: &CreateDaoToSign) -> Vec<Transaction> {
     let mut txs = vec![res.setup_app_tx.clone()];
     for tx in &res.escrow_funding_txs {
         txs.push(tx.to_owned());
@@ -135,13 +135,13 @@ fn txs_to_sign(res: &CreateProjectToSign) -> Vec<Transaction> {
     txs
 }
 
-pub fn validate_project_inputs(
-    inputs: &CreateProjectFormInputsJs,
+pub fn validate_dao_inputs(
+    inputs: &CreateDaoFormInputsJs,
     funds_asset_specs: &FundsAssetSpecs,
-) -> Result<ValidatedProjectInputs> {
-    let project_name = validate_project_name(&inputs.project_name)?;
-    let project_description = validate_project_description(&inputs.project_description)?;
-    let asset_name = generate_asset_name(&project_name)?;
+) -> Result<ValidatedDaoInputs> {
+    let dao_name = validate_dao_name(&inputs.dao_name)?;
+    let dao_description = validate_dao_description(&inputs.dao_description)?;
+    let asset_name = generate_asset_name(&dao_name)?;
     let creator_address = inputs.creator.parse().map_err(Error::msg)?;
     let share_supply = validate_share_supply(&inputs.share_count)?;
     let share_price = validate_share_price(&inputs.share_price, funds_asset_specs)?;
@@ -151,9 +151,9 @@ pub fn validate_project_inputs(
     let investors_share = validate_investors_share(&inputs.investors_share)?;
     let investors_part = validate_investors_part(&investors_share, share_supply)?;
 
-    Ok(ValidatedProjectInputs {
-        name: project_name,
-        description: project_description,
+    Ok(ValidatedDaoInputs {
+        name: dao_name,
+        description: dao_description,
         creator: creator_address,
         token_name: asset_name,
         share_supply,
@@ -164,12 +164,12 @@ pub fn validate_project_inputs(
     })
 }
 
-fn validate_project_name(name: &str) -> Result<String> {
-    validate_text_min_max_length(name, 2, 40, "Project name")
+fn validate_dao_name(name: &str) -> Result<String> {
+    validate_text_min_max_length(name, 2, 40, "Dao name")
 }
 
-fn validate_project_description(descr: &str) -> Result<String> {
-    validate_text_min_max_length(descr, 0, 200, "Project description")
+fn validate_dao_description(descr: &str) -> Result<String> {
+    validate_text_min_max_length(descr, 0, 200, "Dao description")
 }
 
 fn validate_text_min_max_length(
@@ -180,15 +180,15 @@ fn validate_text_min_max_length(
 ) -> Result<String> {
     let text = text.trim();
 
-    let project_name_len = text.len();
-    if project_name_len < min {
+    let dao_name_len = text.len();
+    if dao_name_len < min {
         return Err(anyhow!(
             "{field_name} must have at least {} characters. Current: {}",
             min,
             text.len()
         ));
     }
-    if project_name_len > max {
+    if dao_name_len > max {
         return Err(anyhow!(
             "{field_name} must not have more than {} characters. Current: {}",
             max,
@@ -199,10 +199,10 @@ fn validate_text_min_max_length(
     Ok(text.to_owned())
 }
 
-fn generate_asset_name(validated_project_name: &str) -> Result<String> {
-    let mut asset_name = validated_project_name;
+fn generate_asset_name(validated_dao_name: &str) -> Result<String> {
+    let mut asset_name = validated_dao_name;
     let asset_name_max_length = 7;
-    if validated_project_name.len() > asset_name_max_length {
+    if validated_dao_name.len() > asset_name_max_length {
         asset_name = &asset_name[0..asset_name_max_length];
     }
     Ok(asset_name.to_owned())
@@ -267,7 +267,7 @@ fn validate_social_media_url(input: &str) -> Result<String> {
     Ok(input.to_owned())
 }
 
-pub struct ValidatedProjectInputs {
+pub struct ValidatedDaoInputs {
     pub name: String,
     pub description: String,
     pub creator: Address,
@@ -280,10 +280,10 @@ pub struct ValidatedProjectInputs {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateProjectFormInputsJs {
+pub struct CreateDaoFormInputsJs {
     pub creator: String, // not strictly a form input ("field"), but for purpose here it can be
-    pub project_name: String,
-    pub project_description: String,
+    pub dao_name: String,
+    pub dao_description: String,
     pub share_count: String,
     pub share_price: String,
     pub investors_share: String, // percentage
@@ -291,31 +291,31 @@ pub struct CreateProjectFormInputsJs {
     pub social_media_url: String,
 }
 
-impl CreateProjectFormInputsJs {
-    pub fn to_project_specs(
+impl CreateDaoFormInputsJs {
+    pub fn to_dao_specs(
         &self,
         funds_asset_specs: &FundsAssetSpecs,
-    ) -> Result<CreateProjectSpecs> {
-        let validated_inputs = validate_project_inputs(self, funds_asset_specs)?;
-        validated_inputs_to_project_specs(validated_inputs)
+    ) -> Result<CreateDaoSpecs> {
+        let validated_inputs = validate_dao_inputs(self, funds_asset_specs)?;
+        validated_inputs_to_dao_specs(validated_inputs)
     }
 }
 
-/// The assets creation signed transactions and the specs to create the project
+/// The assets creation signed transactions and the specs to create the dao
 #[derive(Debug, Clone, Deserialize)]
-pub struct CreateProjectParJs {
-    pub pt: CreateProjectPassthroughParJs,
+pub struct CreateDaoParJs {
+    pub pt: CreateDaoPassthroughParJs,
     // same order as the unsigned txs were sent to JS
     pub create_assets_signed_txs: Vec<SignedTxFromJs>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateProjectPassthroughParJs {
-    pub inputs: CreateProjectFormInputsJs,
+pub struct CreateDaoPassthroughParJs {
+    pub inputs: CreateDaoFormInputsJs,
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct CreateProjectResJs {
+pub struct CreateDaoResJs {
     pub to_sign: Vec<Value>,
-    pub pt: SubmitCreateProjectPassthroughParJs, // passthrough
+    pub pt: SubmitCreateDaoPassthroughParJs, // passthrough
 }

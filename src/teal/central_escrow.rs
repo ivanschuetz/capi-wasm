@@ -33,7 +33,7 @@ int pay
 ==
 assert
 gtxn 0 Sender
-addr TMPL_PROJECT_CREATOR
+addr TMPL_DAO_CREATOR
 ==
 assert
 gtxn 1 TypeEnum
@@ -45,7 +45,7 @@ int TMPL_FUNDS_ASSET_ID
 ==
 assert
 gtxn 1 AssetReceiver
-addr TMPL_PROJECT_CREATOR
+addr TMPL_DAO_CREATOR
 ==
 assert
 int 1

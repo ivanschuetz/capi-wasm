@@ -12,7 +12,7 @@ use anyhow::{Error, Result};
 use core::{
     dependencies::{algod, indexer},
     flows::{
-        create_project::storage::load_project::load_project,
+        create_dao::storage::load_dao::load_dao,
         withdraw::withdraw::{withdraw, WithdrawalInputs},
     },
 };
@@ -35,15 +35,15 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let project = load_project(
+    let dao = load_dao(
         &algod,
         &indexer,
-        &pars.project_id.parse()?,
+        &pars.dao_id.parse()?,
         &programs.escrows,
         &capi_deps,
     )
     .await?
-    .project;
+    .dao;
 
     let inputs_par = WithdrawInputsPassthroughJs {
         sender: pars.sender.clone(),
@@ -65,7 +65,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         pars.sender.parse().map_err(Error::msg)?,
         funds_asset_specs.id,
         inputs,
-        &project.central_escrow,
+        &dao.central_escrow,
     )
     .await?;
 
@@ -73,7 +73,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
     let maybe_to_sign_for_drain = drain_if_needed_txs(
         &algod,
-        &project,
+        &dao,
         &pars.sender.parse().map_err(Error::msg)?,
         funds_asset_specs.id,
         &capi_deps,
@@ -103,7 +103,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct WithdrawParJs {
-    pub project_id: String,
+    pub dao_id: String,
     pub sender: String,
     pub withdrawal_amount: String,
     pub description: String,

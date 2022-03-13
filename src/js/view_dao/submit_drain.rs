@@ -5,7 +5,7 @@ use crate::service::str_to_algos::microalgos_to_algos;
 use crate::teal::programs;
 use anyhow::Result;
 use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_dao::storage::load_dao::load_dao;
 use core::flows::drain::drain::{submit_drain_customer_escrow, DrainCustomerEscrowSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -38,27 +38,27 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
 
     log::debug!("Submit drain res: {:?}", res);
 
-    // TODO pass the project from drain request, no need to fetch again here?
+    // TODO pass the dao from drain request, no need to fetch again here?
 
-    let project = load_project(
+    let dao = load_dao(
         &algod,
         &indexer,
-        &pars.pt.project_id.parse()?,
+        &pars.pt.dao_id.parse()?,
         &programs.escrows,
         &capi_deps,
     )
     .await?
-    .project;
+    .dao;
 
     // TODO (low prio) Consider just recalculating instead of new fetch
 
     let customer_escrow_balance = algod
-        .account_information(project.customer_escrow.address())
+        .account_information(dao.customer_escrow.address())
         .await?
         .amount;
 
     let central_escrow_balance = algod
-        .account_information(project.central_escrow.address())
+        .account_information(dao.central_escrow.address())
         .await?
         .amount;
 
@@ -68,7 +68,7 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
     })
 }
 
-/// The assets creation signed transactions and the specs to create the project
+/// The assets creation signed transactions and the specs to create the dao
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitDrainParJs {
     pub txs: Vec<SignedTxFromJs>,
@@ -79,7 +79,7 @@ pub struct SubmitDrainParJs {
 pub struct SubmitDrainPassthroughParJs {
     pub drain_tx_msg_pack: Vec<u8>,
     pub capi_share_tx_msg_pack: Vec<u8>,
-    pub project_id: String,
+    pub dao_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

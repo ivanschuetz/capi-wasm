@@ -137,7 +137,7 @@ app_local_get
 -
 app_local_put
 gtxn 0 Sender
-byte "Project"
+byte "Dao"
 gtxna 0 ApplicationArgs 0
 app_local_put
 int 1
@@ -301,7 +301,7 @@ app_local_get
 -
 app_local_put
 gtxn 0 Sender
-byte "Project"
+byte "Dao"
 gtxna 0 ApplicationArgs 0
 app_local_put
 int 1

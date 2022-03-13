@@ -20,8 +20,8 @@ pub async fn bridge_add_roadmap_item(pars: JsValue) -> Result<JsValue, JsValue> 
 pub async fn _bridge_add_roadmap_item(pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs> {
     let algod = algod();
 
-    let project_creator = pars.creator_address.parse().map_err(Error::msg)?;
-    let project_id = pars.project_id.parse()?;
+    let dao_creator = pars.creator_address.parse().map_err(Error::msg)?;
+    let dao_id = pars.dao_id.parse()?;
 
     let parent_hash = hash_str_option_to_hash_option(pars.parent)?;
 
@@ -29,9 +29,9 @@ pub async fn _bridge_add_roadmap_item(pars: AddRoadmapItemParJs) -> Result<AddRo
 
     let to_sign = add_roadmap_item(
         &algod,
-        &project_creator,
+        &dao_creator,
         &RoadmapItemInputs {
-            project_id,
+            dao_id,
             title: pars.title,
             parent: Box::new(parent_hash),
             date,
@@ -64,7 +64,7 @@ fn hash_str_option_to_hash_option(hash_str: Option<String>) -> Result<Option<Has
 #[derive(Debug, Clone, Deserialize)]
 pub struct AddRoadmapItemParJs {
     pub creator_address: String,
-    pub project_id: String,
+    pub dao_id: String,
     pub title: String,
     pub date: String,
     pub parent: Option<String>,

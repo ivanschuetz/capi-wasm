@@ -9,7 +9,7 @@ use core::{
     decimal_util::DecimalExt,
     dependencies::{algod, indexer},
     flows::{
-        create_project::{share_amount::ShareAmount, storage::load_project::load_project},
+        create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
         drain::drain::drain_amounts,
         harvest::harvest::max_can_harvest_amount,
     },
@@ -37,16 +37,16 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let project_id = pars.project_id.parse()?;
+    let dao_id = pars.dao_id.parse()?;
 
-    let project = load_project(&algod, &indexer, &project_id, &programs.escrows, &capi_deps)
+    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
         .await?
-        .project;
+        .dao;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
     let investor_state_res =
-        central_investor_state(&algod, investor_address, project.central_app_id).await;
+        central_investor_state(&algod, investor_address, dao.central_app_id).await;
     let (investor_shares, investor_harvested) = match investor_state_res {
         Ok(state) => (state.shares, state.harvested),
         Err(e) => {
@@ -62,20 +62,19 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         }
     };
 
-    let central_state = central_global_state(&algod, project.central_app_id).await?;
+    let central_state = central_global_state(&algod, dao.central_app_id).await?;
 
     // TODO review redundancy with backend, as we store the share count in the db too
-    // maybe we shouldn't store them in the backend (also meaning: the backend can't deliver Project objects but a reduced view of them),
+    // maybe we shouldn't store them in the backend (also meaning: the backend can't deliver Dao objects but a reduced view of them),
     // as it may get out of sync when shares are diluted
     // also use Decimal for everything involving fractions
-    let investor_percentage =
-        investor_shares.as_decimal() / project.specs.shares.supply.as_decimal();
+    let investor_percentage = investor_shares.as_decimal() / dao.specs.shares.supply.as_decimal();
 
     let drain_amounts = drain_amounts(
         &algod,
         capi_deps.escrow_percentage,
         funds_asset_specs.id,
-        project.customer_escrow.address(),
+        dao.customer_escrow.address(),
     )
     .await?;
     let withdrawable_customer_escrow_amount = drain_amounts.dao;
@@ -88,13 +87,13 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let can_harvest = max_can_harvest_amount(
         received_total_including_customer_escrow_balance,
         investor_harvested,
-        project.specs.shares.supply,
+        dao.specs.shares.supply,
         investor_shares,
         PRECISION,
-        project.specs.investors_part(),
+        dao.specs.investors_part(),
     )?;
 
-    let investors_share_normalized = project
+    let investors_share_normalized = dao
         .specs
         .investors_part()
         .as_decimal()
@@ -102,7 +101,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
     let investor_percentage_relative_to_total = investor_percentage * investors_share_normalized;
 
-    log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_shares, project.specs.shares.supply);
+    log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_shares, dao.specs.shares.supply);
 
     Ok(LoadInvestmentResJs {
         investor_shares_count: investor_shares.to_string(),
@@ -129,8 +128,8 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 // TODO rename structs in BuyShares*
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadInvestmentParJs {
-    pub project_id: String,
-    // TODO remove, central id in project (we fetch it here)
+    pub dao_id: String,
+    // TODO remove, central id in dao (we fetch it here)
     pub app_id: String,
     pub shares_asset_id: String,
     pub investor_address: String,
@@ -141,8 +140,8 @@ pub struct LoadInvestmentResJs {
     investor_shares_count: String,
     investor_percentage: String,
     investor_percentage_number: String, // relative to investor's share (part reserved to investors)
-    investor_percentage_relative_to_total_number: String, // relative to all the project's income
-    investors_share_number: String, // from Project - copied here just for convenience (to retrieve all the display data from this struct)
+    investor_percentage_relative_to_total_number: String, // relative to all the dao's income
+    investors_share_number: String, // from Dao - copied here just for convenience (to retrieve all the display data from this struct)
     investor_already_retrieved_amount: String,
     investor_harvestable_amount: String,
     investor_harvestable_amount_microalgos: String, // passthrough

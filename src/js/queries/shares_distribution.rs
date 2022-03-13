@@ -62,7 +62,7 @@ pub async fn _bridge_shares_distribution(
 #[derive(Debug, Clone, Deserialize)]
 pub struct SharedDistributionParJs {
     pub asset_id: String,
-    /// optimization to not have to fetch the asset: the asset specs are in the project, which the frontend has to fetch first (to get the asset id)
+    /// optimization to not have to fetch the asset: the asset specs are in the dao, which the frontend has to fetch first (to get the asset id)
     pub share_supply: String,
 
     pub app_id: String,

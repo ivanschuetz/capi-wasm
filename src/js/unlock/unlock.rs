@@ -4,7 +4,7 @@ use crate::js::unlock::submit_unlock::SubmitUnlockPassthroughParJs;
 use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
-use core::flows::create_project::storage::load_project::load_project;
+use core::flows::create_dao::storage::load_dao::load_dao;
 use core::flows::unlock::unlock::unlock;
 use core::state::central_app_state::central_investor_state;
 use serde::{Deserialize, Serialize};
@@ -23,20 +23,20 @@ pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let project = load_project(
+    let dao = load_dao(
         &algod,
         &indexer,
-        &pars.project_id.parse()?,
+        &pars.dao_id.parse()?,
         &programs.escrows,
         &capi_deps,
     )
     .await?
-    .project;
+    .dao;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 
     let investor_state =
-        central_investor_state(&algod, &investor_address, project.central_app_id).await?;
+        central_investor_state(&algod, &investor_address, dao.central_app_id).await?;
 
     log::debug!("Unlocking shares: {:?}", investor_state.shares);
 
@@ -44,9 +44,9 @@ pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
         &algod,
         investor_address,
         investor_state.shares,
-        project.shares_asset_id,
-        project.central_app_id,
-        &project.locking_escrow,
+        dao.shares_asset_id,
+        dao.central_app_id,
+        &dao.locking_escrow,
     )
     .await?;
 
@@ -62,7 +62,7 @@ pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UnlockParJs {
-    pub project_id: String,
+    pub dao_id: String,
     pub investor_address: String,
 }
 

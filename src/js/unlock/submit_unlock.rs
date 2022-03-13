@@ -35,7 +35,7 @@ pub async fn _bridge_submit_unlock(pars: SubmitUnlockParJs) -> Result<SubmitUnlo
     Ok(SubmitUnlockResJs {})
 }
 
-/// The assets creation signed transactions and the specs to create the project
+/// The assets creation signed transactions and the specs to create the dao
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitUnlockParJs {
     pub txs: Vec<SignedTxFromJs>,
