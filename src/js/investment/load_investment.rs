@@ -129,9 +129,6 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadInvestmentParJs {
     pub dao_id: String,
-    // TODO remove, central id in dao (we fetch it here)
-    pub app_id: String,
-    pub shares_asset_id: String,
     pub investor_address: String,
 }
 
