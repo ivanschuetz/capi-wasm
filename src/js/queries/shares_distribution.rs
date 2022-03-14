@@ -5,9 +5,9 @@ use crate::js::{
 use algonaut::core::Address;
 use anyhow::{anyhow, Error, Result};
 use core::{
-    decimal_util::DecimalExt,
+    decimal_util::{AsDecimal, DecimalExt},
     dependencies::{algod, indexer},
-    queries::shares_distribution::shares_holders_distribution,
+    queries::shares_distribution::{shares_holders_distribution, ShareHoldingPercentage},
 };
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -43,19 +43,47 @@ pub async fn _bridge_shares_distribution(
     .await?;
 
     let mut holders_js = vec![];
-    for h in holders {
+    for h in &holders {
         holders_js.push(ShareHoldingPercentageJs {
             address: h.address.to_string(),
-            short_address: shorten_address(&h.address)?,
+            label: shorten_address(&h.address)?,
             address_browser_link: explorer_address_link_env(&h.address),
             amount: h.amount.to_string(),
             percentage_formatted: h.percentage.format_percentage(),
             percentage_number: h.percentage.to_string(),
+            type_: "holder".to_owned(),
         });
     }
 
+    holders_js.push(not_owned_shares_holdings(&holders, share_supply)?);
+
     Ok(SharedDistributionResJs {
         holders: holders_js,
+    })
+}
+
+fn not_owned_shares_holdings(
+    holders: &[ShareHoldingPercentage],
+    supply: u64,
+) -> Result<ShareHoldingPercentageJs> {
+    let total_holders_amount: u64 = holders.into_iter().map(|h| h.amount.val()).sum();
+
+    let not_owned_amount: u64 = supply - total_holders_amount;
+    let not_owned_percentage = not_owned_amount
+        .as_decimal()
+        .checked_div(supply.as_decimal())
+        .ok_or_else(|| {
+            anyhow!("not_owned_amount: {not_owned_amount:?} / supply: {supply:?} failed")
+        })?;
+
+    Ok(ShareHoldingPercentageJs {
+        address: "".to_owned(),
+        label: "Not owned".to_owned(),
+        address_browser_link: "".to_owned(),
+        amount: not_owned_amount.to_string(),
+        percentage_formatted: not_owned_percentage.format_percentage(),
+        percentage_number: not_owned_percentage.to_string(),
+        type_: "not_owned".to_owned(),
     })
 }
 
@@ -73,11 +101,12 @@ pub struct SharedDistributionParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct ShareHoldingPercentageJs {
     pub address: String,
-    pub short_address: String,
+    pub label: String,
     pub address_browser_link: String,
     pub amount: String,
     pub percentage_formatted: String,
     pub percentage_number: String,
+    pub type_: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
