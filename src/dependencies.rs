@@ -64,12 +64,12 @@ pub fn capi_deps_for_net(net: &Network) -> Result<CapiAssetDaoDeps> {
         },
 
         Network::Test => CapiAssetDaoDeps {
-            escrow: "7P3BS733AM6WREJP6PUR6YYFT7VCNIHUAHK43BDOSFG25TQP5LXTKRSMJQ"
+            escrow: "CLD4ZQ6GOLBPYRJXYBUPITJ356B72K6RHCG3UNDGMPFKK64JYTB5VOO4PU"
                 .parse()
                 .map_err(Error::msg)?,
             escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
             app_id: CapiAppId(75503537),
-            asset_id: CapiAssetId(123),
+            asset_id: CapiAssetId(77428422),
         },
     })
 }
