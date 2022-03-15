@@ -36,6 +36,10 @@ gtxn 1 TypeEnum
 int axfer
 ==
 assert
+gtxn 1 AssetAmount
+int 0
+>
+assert
 gtxn 1 XferAsset
 int TMPL_SHARES_ASSET_ID
 ==
@@ -44,9 +48,25 @@ gtxn 1 AssetReceiver
 addr TMPL_LOCKING_ESCROW_ADDRESS
 ==
 assert
+gtxn 1 Fee
+int 0
+==
+assert
+gtxn 1 AssetCloseTo
+global ZeroAddress
+==
+assert
+gtxn 1 RekeyTo
+global ZeroAddress
+==
+assert
 gtxn 2 TypeEnum
 int axfer
 ==
+assert
+gtxn 2 AssetAmount
+int 0
+>
 assert
 gtxn 2 XferAsset
 int TMPL_FUNDS_ASSET_ID
@@ -143,6 +163,18 @@ int axfer
 assert
 gtxn 6 AssetAmount
 int 0
+==
+assert
+gtxn 6 Fee
+int 0
+==
+assert
+gtxn 6 AssetCloseTo
+global ZeroAddress
+==
+assert
+gtxn 6 RekeyTo
+global ZeroAddress
 ==
 assert
 gtxn 7 TypeEnum

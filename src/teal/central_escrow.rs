@@ -40,12 +40,24 @@ gtxn 1 TypeEnum
 int axfer
 ==
 assert
+gtxn 1 AssetAmount
+int 0
+>
+assert
 gtxn 1 XferAsset
 int TMPL_FUNDS_ASSET_ID
 ==
 assert
 gtxn 1 AssetReceiver
 addr TMPL_DAO_CREATOR
+==
+assert
+gtxn 1 AssetCloseTo
+global ZeroAddress
+==
+assert
+gtxn 1 RekeyTo
+global ZeroAddress
 ==
 assert
 int 1
@@ -55,12 +67,28 @@ gtxn 0 OnCompletion
 int NoOp
 ==
 assert
+gtxn 0 Sender
+gtxn 1 AssetReceiver
+==
+assert
 gtxn 1 XferAsset
 int TMPL_FUNDS_ASSET_ID
 ==
 assert
-gtxn 0 Sender
-gtxn 1 AssetReceiver
+gtxn 1 AssetAmount
+int 0
+>
+assert
+gtxn 1 Fee
+int 0
+==
+assert
+gtxn 1 AssetCloseTo
+global ZeroAddress
+==
+assert
+gtxn 1 RekeyTo
+global ZeroAddress
 ==
 assert
 int 1
@@ -128,6 +156,18 @@ int axfer
 assert
 gtxn 7 AssetAmount
 int 0
+==
+assert
+gtxn 7 Fee
+int 0
+==
+assert
+gtxn 7 AssetCloseTo
+global ZeroAddress
+==
+assert
+gtxn 7 RekeyTo
+global ZeroAddress
 ==
 assert
 gtxn 8 TypeEnum
