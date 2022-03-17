@@ -12,7 +12,7 @@ mod test {
 
     #[test]
     fn update_teal() -> Result<()> {
-        let core_path = Path::new("../../backend/core");
+        let core_path = Path::new("../../core");
 
         // Update core's TEAL, to ensure that the copied TEAL is up to date (corresponds to PyTeal)
         update_teal_in_core(core_path)?;
