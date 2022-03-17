@@ -5,29 +5,29 @@ use crate::service::drain_if_needed::submit_drain;
 use crate::teal::programs;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::{algod, indexer};
-use core::diagnostics::log_harvest_diagnostics;
+use core::diagnostics::log_claim_diagnostics;
+use core::flows::claim::claim::{submit_claim, ClaimSigned};
 use core::flows::create_dao::storage::load_dao::load_dao;
-use core::flows::harvest::harvest::{submit_harvest, HarvestSigned};
 use core::network_util::wait_for_pending_transaction;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub async fn bridge_submit_harvest(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_submit_harvest, pars: {:?}", pars);
-    to_bridge_res(_bridge_submit_harvest(parse_bridge_pars(pars)?).await)
+pub async fn bridge_submit_claim(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_submit_claim, pars: {:?}", pars);
+    to_bridge_res(_bridge_submit_claim(parse_bridge_pars(pars)?).await)
 }
 
-pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHarvestResJs> {
+pub async fn _bridge_submit_claim(pars: SubmitClaimParJs) -> Result<SubmitClaimResJs> {
     let algod = algod();
     let indexer = indexer();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    // 1 tx if only harvest, 3 if harvest + 2 drain
+    // 1 tx if only claim, 3 if claim + 2 drain
     if pars.txs.len() != 1 && pars.txs.len() != 3 {
-        return Err(anyhow!("Unexpected harvest txs length: {}", pars.txs.len()));
+        return Err(anyhow!("Unexpected claim txs length: {}", pars.txs.len()));
     }
     // sanity check
     if pars.txs.len() == 1 && pars.pt.maybe_drain_tx_msg_pack.is_some() {
@@ -59,7 +59,7 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
     .await?
     .dao;
 
-    log_harvest_diagnostics(
+    log_claim_diagnostics(
         &algod,
         &pars
             .investor_address_for_diagnostics
@@ -70,38 +70,38 @@ pub async fn _bridge_submit_harvest(pars: SubmitHarvestParJs) -> Result<SubmitHa
     .await?;
     ///////////////////////////
 
-    let harvest_tx_id = submit_harvest(
+    let claim_tx_id = submit_claim(
         &algod,
-        &HarvestSigned {
-            harvest_tx: rmp_serde::from_slice(&pars.pt.harvest_tx_msg_pack)?,
+        &ClaimSigned {
+            claim_tx: rmp_serde::from_slice(&pars.pt.claim_tx_msg_pack)?,
             app_call_tx_signed: app_call_tx,
         },
     )
     .await?;
 
-    log::warn!("Submit harvest tx id: {:?}", harvest_tx_id);
-    wait_for_pending_transaction(&algod, &harvest_tx_id).await?;
+    log::warn!("Submit claim tx id: {:?}", claim_tx_id);
+    wait_for_pending_transaction(&algod, &claim_tx_id).await?;
 
-    Ok(SubmitHarvestResJs {})
+    Ok(SubmitClaimResJs {})
 }
 
 /// The assets creation signed transactions and the specs to create the dao
 #[derive(Debug, Clone, Deserialize)]
-pub struct SubmitHarvestParJs {
+pub struct SubmitClaimParJs {
     pub investor_address_for_diagnostics: String,
     pub dao_id_for_diagnostics: String,
 
     pub txs: Vec<SignedTxFromJs>,
-    pub pt: SubmitHarvestPassthroughParJs,
+    pub pt: SubmitClaimPassthroughParJs,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SubmitHarvestPassthroughParJs {
+pub struct SubmitClaimPassthroughParJs {
     // set if a drain tx is necessary
     pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
     pub maybe_capi_share_tx_msg_pack: Option<Vec<u8>>,
-    pub harvest_tx_msg_pack: Vec<u8>,
+    pub claim_tx_msg_pack: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct SubmitHarvestResJs {}
+pub struct SubmitClaimResJs {}

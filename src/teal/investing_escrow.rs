@@ -3,9 +3,9 @@ pub const SRC: &str = r#"
 global GroupSize
 int 10
 ==
-bnz main_l6
-global GroupSize
-int 4
+bnz main_l4
+gtxna 0 ApplicationArgs 0
+byte "invest"
 ==
 bnz main_l3
 err
@@ -13,9 +13,7 @@ main_l3:
 global GroupSize
 int 4
 ==
-bnz main_l5
-err
-main_l5:
+assert
 gtxn 0 TypeEnum
 int appl
 ==
@@ -29,7 +27,7 @@ int TMPL_CENTRAL_APP_ID
 ==
 assert
 gtxn 0 NumAppArgs
-int 1
+int 2
 ==
 assert
 gtxn 1 TypeEnum
@@ -108,7 +106,7 @@ int TMPL_SHARE_PRICE
 assert
 int 1
 return
-main_l6:
+main_l4:
 gtxn 0 TypeEnum
 int appl
 ==

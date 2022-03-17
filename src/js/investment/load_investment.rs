@@ -9,9 +9,9 @@ use core::{
     decimal_util::DecimalExt,
     dependencies::{algod, indexer},
     flows::{
+        claim::claim::claimable_dividend,
         create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
         drain::drain::drain_amounts,
-        harvest::harvest::max_can_harvest_amount,
     },
     funds::FundsAmount,
     state::{
@@ -47,13 +47,13 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
     let investor_state_res =
         central_investor_state(&algod, investor_address, dao.central_app_id).await;
-    let (investor_shares, investor_harvested) = match investor_state_res {
-        Ok(state) => (state.shares, state.harvested),
+    let (investor_shares, investor_claimed) = match investor_state_res {
+        Ok(state) => (state.shares, state.claimed),
         Err(e) => {
             if e == ApplicationLocalStateError::NotOptedIn {
                 // If the investor isn't opted in (unlocked the shares - note that currently it's not possible to unlock only a part of the shares),
-                // we don't show an error, it just means that they've 0 shares and haven't harvested anything.
-                // the later is discussable UX wise (they may have harvested before unlocking the shares),
+                // we don't show an error, it just means that they've 0 shares and haven't claimed anything.
+                // the later is discussable UX wise (they may have claimed before unlocking the shares),
                 // but the local state is deleted when unlocking (opting out), so 0 is the only meaningful thing we can return here.
                 (ShareAmount::new(0), FundsAmount::new(0))
             } else {
@@ -80,13 +80,13 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let withdrawable_customer_escrow_amount = drain_amounts.dao;
     // This is basically "simulate that the customer escrow was already drained"
     // we use this value, as harvesting will drain the customer escrow if it has a balance (> MIN_BALANCE + FIXED_FEE)
-    // and the draining step is invisible to the user (aside of adding more txs to the harvesting txs to sign)
+    // and the draining step is invisible to the user (aside of adding more txs to the claiming txs to sign)
     let received_total_including_customer_escrow_balance =
         central_state.received + withdrawable_customer_escrow_amount;
 
-    let can_harvest = max_can_harvest_amount(
+    let can_claim = claimable_dividend(
         received_total_including_customer_escrow_balance,
-        investor_harvested,
+        investor_claimed,
         dao.specs.shares.supply,
         investor_shares,
         PRECISION,
@@ -101,7 +101,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
     let investor_percentage_relative_to_total = investor_percentage * investors_share_normalized;
 
-    log::info!("Determined harvest amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_harvest, central_state.received, withdrawable_customer_escrow_amount, investor_shares, dao.specs.shares.supply);
+    log::info!("Determined claim amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_claim, central_state.received, withdrawable_customer_escrow_amount, investor_shares, dao.specs.shares.supply);
 
     Ok(LoadInvestmentResJs {
         investor_shares_count: investor_shares.to_string(),
@@ -114,14 +114,11 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         investors_share_number: investors_share_normalized.to_string(),
 
         investor_already_retrieved_amount: base_units_to_display_units_str(
-            investor_harvested,
+            investor_claimed,
             &funds_asset_specs,
         ),
-        investor_harvestable_amount: base_units_to_display_units_str(
-            can_harvest,
-            &funds_asset_specs,
-        ),
-        investor_harvestable_amount_microalgos: can_harvest.to_string(),
+        investor_claimable_dividend: base_units_to_display_units_str(can_claim, &funds_asset_specs),
+        investor_claimable_dividend_microalgos: can_claim.to_string(),
     })
 }
 
@@ -140,6 +137,6 @@ pub struct LoadInvestmentResJs {
     investor_percentage_relative_to_total_number: String, // relative to all the dao's income
     investors_share_number: String, // from Dao - copied here just for convenience (to retrieve all the display data from this struct)
     investor_already_retrieved_amount: String,
-    investor_harvestable_amount: String,
-    investor_harvestable_amount_microalgos: String, // passthrough
+    investor_claimable_dividend: String,
+    investor_claimable_dividend_microalgos: String, // passthrough
 }

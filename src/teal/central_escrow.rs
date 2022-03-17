@@ -3,72 +3,43 @@ pub const SRC: &str = r#"
 global GroupSize
 int 10
 ==
-bnz main_l8
+bnz main_l6
+gtxn 0 NumAppArgs
+int 0
+==
 global GroupSize
 int 2
 ==
-bnz main_l3
+&&
+bnz main_l5
+gtxna 0 ApplicationArgs 0
+byte "claim"
+==
+bnz main_l4
 err
-main_l3:
+main_l4:
+global GroupSize
+int 2
+==
+assert
 gtxn 0 TypeEnum
 int appl
 ==
+assert
 gtxn 0 ApplicationID
 int TMPL_CENTRAL_APP_ID
 ==
-&&
-gtxn 1 TypeEnum
-int axfer
-==
-&&
-bnz main_l7
-global GroupSize
-int 2
-==
-bnz main_l6
-err
-main_l6:
-gtxn 0 TypeEnum
-int pay
-==
 assert
-gtxn 0 Sender
-addr TMPL_DAO_CREATOR
-==
-assert
-gtxn 1 TypeEnum
-int axfer
-==
-assert
-gtxn 1 AssetAmount
-int 0
->
-assert
-gtxn 1 XferAsset
-int TMPL_FUNDS_ASSET_ID
-==
-assert
-gtxn 1 AssetReceiver
-addr TMPL_DAO_CREATOR
-==
-assert
-gtxn 1 AssetCloseTo
-global ZeroAddress
-==
-assert
-gtxn 1 RekeyTo
-global ZeroAddress
-==
-assert
-int 1
-return
-main_l7:
 gtxn 0 OnCompletion
 int NoOp
 ==
 assert
 gtxn 0 Sender
 gtxn 1 AssetReceiver
+==
+assert
+gtxn 1 TypeEnum
+int axfer
 ==
 assert
 gtxn 1 XferAsset
@@ -93,7 +64,50 @@ global ZeroAddress
 assert
 int 1
 return
-main_l8:
+main_l5:
+gtxn 0 TypeEnum
+int pay
+==
+assert
+gtxn 0 Sender
+addr TMPL_DAO_CREATOR
+==
+assert
+gtxn 0 Amount
+int 0
+==
+assert
+gtxn 1 TypeEnum
+int axfer
+==
+assert
+gtxn 1 AssetAmount
+int 0
+>
+assert
+gtxn 1 XferAsset
+int TMPL_FUNDS_ASSET_ID
+==
+assert
+gtxn 1 AssetReceiver
+addr TMPL_DAO_CREATOR
+==
+assert
+gtxn 1 Fee
+int 0
+==
+assert
+gtxn 1 AssetCloseTo
+global ZeroAddress
+==
+assert
+gtxn 1 RekeyTo
+global ZeroAddress
+==
+assert
+int 1
+return
+main_l6:
 gtxn 0 TypeEnum
 int appl
 ==

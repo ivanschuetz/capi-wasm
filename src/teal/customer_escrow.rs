@@ -3,9 +3,9 @@ pub const SRC: &str = r#"
 global GroupSize
 int 10
 ==
-bnz main_l6
-global GroupSize
-int 4
+bnz main_l4
+gtxna 0 ApplicationArgs 0
+byte "drain"
 ==
 bnz main_l3
 err
@@ -13,9 +13,7 @@ main_l3:
 global GroupSize
 int 4
 ==
-bnz main_l5
-err
-main_l5:
+assert
 gtxn 0 TypeEnum
 int appl
 ==
@@ -82,7 +80,7 @@ global ZeroAddress
 assert
 int 1
 return
-main_l6:
+main_l4:
 gtxn 0 TypeEnum
 int appl
 ==

@@ -1,24 +1,24 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
-use crate::js::investment::submit_harvest::SubmitHarvestPassthroughParJs;
+use crate::js::investment::submit_harvest::SubmitClaimPassthroughParJs;
 use crate::service::drain_if_needed::drain_if_needed_txs;
 use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
+use core::flows::claim::claim::claim;
 use core::flows::create_dao::storage::load_dao::load_dao;
-use core::flows::harvest::harvest::harvest;
 use core::funds::FundsAmount;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub async fn bridge_harvest(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_harvest, pars: {:?}", pars);
-    to_bridge_res(_bridge_bridge_harvest(parse_bridge_pars(pars)?).await)
+pub async fn bridge_claim(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_claim, pars: {:?}", pars);
+    to_bridge_res(_bridge_bridge_claim(parse_bridge_pars(pars)?).await)
 }
 
-pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> {
+pub async fn _bridge_bridge_claim(pars: ClaimParJs) -> Result<ClaimResJs> {
     let algod = algod();
     let indexer = indexer();
     let funds_asset_id = funds_asset_specs().id;
@@ -34,7 +34,7 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
-    let to_sign_for_harvest = harvest(
+    let to_sign_for_claim = claim(
         &algod,
         investor_address,
         dao.central_app_id,
@@ -44,16 +44,10 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
     )
     .await?;
 
-    let mut to_sign = vec![to_sign_for_harvest.app_call_tx];
+    let mut to_sign = vec![to_sign_for_claim.app_call_tx];
 
-    let maybe_to_sign_for_drain = drain_if_needed_txs(
-        &algod,
-        &dao,
-        investor_address,
-        funds_asset_id,
-        &capi_deps,
-    )
-    .await?;
+    let maybe_to_sign_for_drain =
+        drain_if_needed_txs(&algod, &dao, investor_address, funds_asset_id, &capi_deps).await?;
 
     // we append drain at the end since it's optional, so the indices of the non optional txs are fixed
     let mut maybe_drain_tx_msg_pack = None;
@@ -66,25 +60,25 @@ pub async fn _bridge_bridge_harvest(pars: HarvestParJs) -> Result<HarvestResJs> 
             Some(rmp_serde::to_vec_named(&to_sign_for_drain.capi_share_tx)?);
     }
 
-    Ok(HarvestResJs {
+    Ok(ClaimResJs {
         to_sign: to_my_algo_txs1(&to_sign).map_err(Error::msg)?,
-        pt: SubmitHarvestPassthroughParJs {
+        pt: SubmitClaimPassthroughParJs {
             maybe_drain_tx_msg_pack,
             maybe_capi_share_tx_msg_pack,
-            harvest_tx_msg_pack: rmp_serde::to_vec_named(&to_sign_for_harvest.harvest_tx)?,
+            claim_tx_msg_pack: rmp_serde::to_vec_named(&to_sign_for_claim.claim_tx)?,
         },
     })
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct HarvestParJs {
+pub struct ClaimParJs {
     pub dao_id: String,
     pub amount: String,
     pub investor_address: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct HarvestResJs {
+pub struct ClaimResJs {
     pub to_sign: Vec<Value>,
-    pub pt: SubmitHarvestPassthroughParJs,
+    pub pt: SubmitClaimPassthroughParJs,
 }
