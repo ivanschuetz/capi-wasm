@@ -129,7 +129,7 @@ gtxn 1 AssetAmount
 +
 app_local_put
 gtxn 0 Sender
-byte "claimedTotal"
+byte "ClaimedTotal"
 gtxn 0 Sender
 byte "Shares"
 app_local_get
@@ -145,7 +145,7 @@ app_global_get
 int TMPL_PRECISION_SQUARE
 /
 gtxn 0 Sender
-byte "claimedTotal"
+byte "ClaimedTotal"
 app_local_get
 -
 app_local_put
@@ -298,7 +298,7 @@ gtxn 1 AssetAmount
 +
 app_local_put
 gtxn 0 Sender
-byte "claimedTotal"
+byte "ClaimedTotal"
 gtxn 0 Sender
 byte "Shares"
 app_local_get
@@ -314,7 +314,7 @@ app_global_get
 int TMPL_PRECISION_SQUARE
 /
 gtxn 0 Sender
-byte "claimedTotal"
+byte "ClaimedTotal"
 app_local_get
 -
 app_local_put
@@ -378,16 +378,16 @@ app_global_get
 int TMPL_PRECISION_SQUARE
 /
 gtxn 0 Sender
-byte "claimedTotal"
+byte "ClaimedTotal"
 app_local_get
 -
 gtxn 1 AssetAmount
 >=
 assert
 gtxn 0 Sender
-byte "claimedTotal"
+byte "ClaimedTotal"
 gtxn 0 Sender
-byte "claimedTotal"
+byte "ClaimedTotal"
 app_local_get
 gtxn 1 AssetAmount
 +

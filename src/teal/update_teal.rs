@@ -12,14 +12,14 @@ mod test {
 
     #[test]
     fn update_teal() -> Result<()> {
-        let core_path = Path::new("../../core");
+        let teal_path = Path::new("../../teal");
 
         // Update core's TEAL, to ensure that the copied TEAL is up to date (corresponds to PyTeal)
-        update_teal_in_core(core_path)?;
+        update_teal_in_teal_dir(teal_path)?;
 
         // Copy the TEAL to this dao (as strings in Rust files)
-        let core_teal_templates_dir = fs::read_dir(core_path.join("teal_template"))?;
-        let core_teal_dir = fs::read_dir(core_path.join("teal"))?;
+        let core_teal_templates_dir = fs::read_dir(teal_path.join("teal_template"))?;
+        let core_teal_dir = fs::read_dir(teal_path.join("teal"))?;
         import_teal_from(core_teal_templates_dir)?;
         import_teal_from(core_teal_dir)?;
 
@@ -28,18 +28,16 @@ mod test {
         Ok(())
     }
 
-    /// Updates TEAL in core
-    /// Mote specifically: Calls a core script that compiles core's PyTeal and overwrites core's TEAL files.
-    fn update_teal_in_core(core_path: &Path) -> Result<()> {
+    /// Updates TEAL in the teal directory
+    /// Mote specifically: Calls a script in the teal directory that compiles core's PyTeal and overwrites core's TEAL files.
+    fn update_teal_in_teal_dir(teal_path: &Path) -> Result<()> {
         // the update teal script uses paths relative to core, so we switch to core's dir
         let initial_dir = env::current_dir()?;
-        env::set_current_dir(&core_path)?;
+        env::set_current_dir(&teal_path)?;
 
-        let core_teal_update_script_path = core_path.join("scripts/update_teal.sh");
+        let teal_update_script_path = "scripts/update_teal.sh";
 
-        let script_res = Command::new("sh")
-            .arg(core_teal_update_script_path)
-            .status()?;
+        let script_res = Command::new("sh").arg(teal_update_script_path).status()?;
         println!("Update core TEAL script res: {:?}", script_res);
 
         env::set_current_dir(&initial_dir)?;
