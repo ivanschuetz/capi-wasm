@@ -55,7 +55,7 @@ pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
 pub fn capi_deps_for_net(net: &Network) -> Result<CapiAssetDaoDeps> {
     Ok(match net {
         Network::Private | Network::SandboxPrivate => CapiAssetDaoDeps {
-            escrow: "74WUVHTYBOGUHUU733UBMIHT5O3UHZYJAE3CRWDIJC2232EIHNAWPLK2VI"
+            escrow: "IP5Q6HIW4KAPN4UZIXFRR26RQL26TS54HZTANMUJ6Y4AADIZV65XDGVWZA"
                 .parse()
                 .map_err(Error::msg)?,
             escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
