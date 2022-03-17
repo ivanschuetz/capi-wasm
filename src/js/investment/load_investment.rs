@@ -64,10 +64,6 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
 
     let central_state = central_global_state(&algod, dao.central_app_id).await?;
 
-    // TODO review redundancy with backend, as we store the share count in the db too
-    // maybe we shouldn't store them in the backend (also meaning: the backend can't deliver Dao objects but a reduced view of them),
-    // as it may get out of sync when shares are diluted
-    // also use Decimal for everything involving fractions
     let investor_percentage = investor_shares.as_decimal() / dao.specs.shares.supply.as_decimal();
 
     let drain_amounts = drain_amounts(
