@@ -12,9 +12,7 @@ use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
 use core::flows::create_dao::create_dao_specs::CreateDaoSpecs;
-use core::flows::create_dao::setup::create_shares::{
-    submit_create_assets, CrateDaoAssetsSigned,
-};
+use core::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
 use core::flows::create_dao::share_amount::ShareAmount;
 use core::flows::create_dao::shares_percentage::SharesPercentage;
 use core::flows::create_dao::shares_specs::SharesDistributionSpecs;
@@ -293,10 +291,7 @@ pub struct CreateDaoFormInputsJs {
 }
 
 impl CreateDaoFormInputsJs {
-    pub fn to_dao_specs(
-        &self,
-        funds_asset_specs: &FundsAssetSpecs,
-    ) -> Result<CreateDaoSpecs> {
+    pub fn to_dao_specs(&self, funds_asset_specs: &FundsAssetSpecs) -> Result<CreateDaoSpecs> {
         let validated_inputs = validate_dao_inputs(self, funds_asset_specs)?;
         validated_inputs_to_dao_specs(validated_inputs)
     }
