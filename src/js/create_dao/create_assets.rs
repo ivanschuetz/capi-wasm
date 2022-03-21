@@ -33,6 +33,7 @@ pub async fn _bridge_create_dao_assets_txs(
     let create_assets_txs = create_assets(
         &algod,
         &validated_inputs.creator,
+        &validated_inputs.creator, // for now creator is owner
         &dao_specs,
         &teal::programs(),
         PRECISION,

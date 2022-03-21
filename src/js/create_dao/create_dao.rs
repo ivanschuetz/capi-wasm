@@ -66,6 +66,7 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
         &algod,
         &dao_specs,
         creator_address,
+        creator_address, // for now creator is owner
         submit_assets_res.shares_asset_id,
         funds_asset_specs.id,
         &teal::programs(),
