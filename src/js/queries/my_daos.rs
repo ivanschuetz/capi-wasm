@@ -49,8 +49,8 @@ pub struct MyDaoJs {
 impl From<MyStoredDao> for MyDaoJs {
     fn from(p: MyStoredDao) -> Self {
         MyDaoJs {
-            url_rel: format!("/{}", p.dao.id.to_string()),
-            name: p.dao.dao.specs.name,
+            url_rel: format!("/{}", p.dao.id().to_string()),
+            name: p.dao.specs.name,
             created_by_me: p.created_by_me.to_string(),
             invested_by_me: p.invested_by_me.to_string(),
         }

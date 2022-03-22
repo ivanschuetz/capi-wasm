@@ -7,7 +7,7 @@ use crate::{
 use anyhow::{anyhow, Error, Result};
 use core::{
     decimal_util::DecimalExt,
-    dependencies::{algod, indexer},
+    dependencies::algod,
     flows::{
         claim::claim::claimable_dividend,
         create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
@@ -16,7 +16,7 @@ use core::{
     funds::FundsAmount,
     state::{
         app_state::ApplicationLocalStateError,
-        central_app_state::{central_global_state, central_investor_state},
+        central_app_state::{dao_global_state, dao_investor_state},
     },
 };
 use serde::{Deserialize, Serialize};
@@ -32,21 +32,17 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     log::debug!("bridge_load_investment, pars: {:?}", pars);
 
     let algod = algod();
-    let indexer = indexer();
     let funds_asset_specs = funds_asset_specs();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
-        .await?
-        .dao;
+    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
-    let investor_state_res =
-        central_investor_state(&algod, investor_address, dao.central_app_id).await;
+    let investor_state_res = dao_investor_state(&algod, investor_address, dao.app_id).await;
     let (investor_shares, investor_claimed) = match investor_state_res {
         Ok(state) => (state.shares, state.claimed),
         Err(e) => {
@@ -62,7 +58,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         }
     };
 
-    let central_state = central_global_state(&algod, dao.central_app_id).await?;
+    let central_state = dao_global_state(&algod, dao.app_id).await?;
 
     let investor_percentage = investor_shares.as_decimal() / dao.specs.shares.supply.as_decimal();
 

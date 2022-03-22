@@ -1,3 +1,7 @@
+use crate::{
+    dependencies::funds_asset_specs,
+    js::common::{signed_js_tx_to_signed_tx1, SignedTxFromJs},
+};
 use algonaut::{algod::v2::Algod, core::Address};
 use anyhow::Result;
 use core::{
@@ -12,11 +16,6 @@ use core::{
     funds::FundsAssetId,
     network_util::wait_for_pending_transaction,
     state::account_state::funds_holdings,
-};
-
-use crate::{
-    dependencies::funds_asset_specs,
-    js::common::{signed_js_tx_to_signed_tx1, SignedTxFromJs},
 };
 
 /// Returns txs if needed to drain, None if not needed.
@@ -37,7 +36,7 @@ pub async fn drain_if_needed_txs(
             fetch_drain_amount_and_drain(
                 algod,
                 sender,
-                dao.central_app_id,
+                dao.app_id,
                 funds_asset_specs().id,
                 capi_deps,
                 &dao.customer_escrow,

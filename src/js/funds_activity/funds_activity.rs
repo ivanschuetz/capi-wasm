@@ -34,15 +34,13 @@ pub async fn _bridge_load_funds_activity(
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
-        .await?
-        .dao;
+    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
 
     let mut activity_entries = funds_activity(
         &algod,
         &indexer,
         &creator,
-        &dao_id,
+        dao_id,
         dao.customer_escrow.address(),
         dao.central_escrow.address(),
         &programs.escrows,

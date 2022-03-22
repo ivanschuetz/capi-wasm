@@ -4,7 +4,7 @@ use crate::js::investment::submit_harvest::SubmitClaimPassthroughParJs;
 use crate::service::drain_if_needed::drain_if_needed_txs;
 use crate::teal::programs;
 use anyhow::{Error, Result};
-use core::dependencies::{algod, indexer};
+use core::dependencies::algod;
 use core::flows::claim::claim::claim;
 use core::flows::create_dao::storage::load_dao::load_dao;
 use core::funds::FundsAmount;
@@ -20,7 +20,6 @@ pub async fn bridge_claim(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_bridge_claim(pars: ClaimParJs) -> Result<ClaimResJs> {
     let algod = algod();
-    let indexer = indexer();
     let funds_asset_id = funds_asset_specs().id;
     let capi_deps = capi_deps()?;
     let programs = programs();
@@ -28,16 +27,14 @@ pub async fn _bridge_bridge_claim(pars: ClaimParJs) -> Result<ClaimResJs> {
     let dao_id = pars.dao_id.parse()?;
     let amount = FundsAmount::new(pars.amount.parse()?);
 
-    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
-        .await?
-        .dao;
+    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
     let to_sign_for_claim = claim(
         &algod,
         investor_address,
-        dao.central_app_id,
+        dao.app_id,
         funds_asset_id,
         amount,
         &dao.central_escrow,

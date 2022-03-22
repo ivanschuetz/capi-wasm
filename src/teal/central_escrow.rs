@@ -70,7 +70,7 @@ int pay
 ==
 assert
 gtxn 0 Sender
-addr TMPL_DAO_CREATOR
+addr TMPL_OWNER
 ==
 assert
 gtxn 0 Amount
@@ -90,7 +90,7 @@ int TMPL_FUNDS_ASSET_ID
 ==
 assert
 gtxn 1 AssetReceiver
-addr TMPL_DAO_CREATOR
+addr TMPL_OWNER
 ==
 assert
 gtxn 1 Fee
@@ -121,7 +121,7 @@ int TMPL_CENTRAL_APP_ID
 ==
 assert
 gtxn 0 NumAppArgs
-int 4
+int 13
 ==
 assert
 gtxn 1 TypeEnum
@@ -197,7 +197,7 @@ int axfer
 ==
 assert
 gtxn 9 XferAsset
-gtxna 0 ApplicationArgs 2
+gtxna 0 ApplicationArgs 4
 btoi
 ==
 assert

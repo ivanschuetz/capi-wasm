@@ -1,16 +1,14 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use crate::model::dao_for_users::dao_to_dao_for_users;
-use crate::model::dao_for_users_view_data::{
-    dao_for_users_to_view_data, DaoForUsersViewData,
-};
+use crate::model::dao_for_users_view_data::{dao_for_users_to_view_data, DaoForUsersViewData};
 use crate::service::available_funds::available_funds;
 use crate::service::str_to_algos::base_units_to_display_units;
 use crate::teal::programs;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
-use core::dependencies::{algod, indexer};
+use core::dependencies::algod;
 use core::flows::create_dao::storage::load_dao::load_dao;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -24,16 +22,13 @@ pub async fn bridge_view_dao(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_view_dao(pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
     let algod = algod();
-    let indexer = indexer();
     let funds_asset_specs = funds_asset_specs();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
-        .await?
-        .dao;
+    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
 
     // TODO investor count: get all holders of asset (indexer?)
 
@@ -56,10 +51,8 @@ pub async fn _bridge_view_dao(pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
 
     let investos_share_formatted = format!("{} %", dao.specs.investors_part());
 
-    let dao_view_data = dao_for_users_to_view_data(
-        dao_to_dao_for_users(&dao, &dao_id)?,
-        &funds_asset_specs,
-    );
+    let dao_view_data =
+        dao_for_users_to_view_data(dao_to_dao_for_users(&dao, &dao_id)?, &funds_asset_specs);
 
     Ok(ViewDaoResJs {
         dao: dao_view_data,

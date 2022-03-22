@@ -4,7 +4,7 @@ use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge
 use crate::service::drain_if_needed::submit_drain;
 use crate::teal::programs;
 use anyhow::{anyhow, Error, Result};
-use core::dependencies::{algod, indexer};
+use core::dependencies::algod;
 use core::diagnostics::log_claim_diagnostics;
 use core::flows::claim::claim::{submit_claim, ClaimSigned};
 use core::flows::create_dao::storage::load_dao::load_dao;
@@ -21,7 +21,6 @@ pub async fn bridge_submit_claim(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_submit_claim(pars: SubmitClaimParJs) -> Result<SubmitClaimResJs> {
     let algod = algod();
-    let indexer = indexer();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
@@ -51,13 +50,11 @@ pub async fn _bridge_submit_claim(pars: SubmitClaimParJs) -> Result<SubmitClaimR
     ///////////////////////////
     let dao = load_dao(
         &algod,
-        &indexer,
-        &pars.dao_id_for_diagnostics.parse()?,
+        pars.dao_id_for_diagnostics.parse()?,
         &programs.escrows,
         &capi_deps,
     )
-    .await?
-    .dao;
+    .await?;
 
     log_claim_diagnostics(
         &algod,

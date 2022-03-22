@@ -10,7 +10,7 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use core::{
-    dependencies::{algod, indexer},
+    dependencies::algod,
     flows::{
         create_dao::storage::load_dao::load_dao,
         withdraw::withdraw::{withdraw, WithdrawalInputs},
@@ -30,20 +30,11 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
     let algod = algod();
-    let indexer = indexer();
     let funds_asset_specs = funds_asset_specs();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let dao = load_dao(
-        &algod,
-        &indexer,
-        &pars.dao_id.parse()?,
-        &programs.escrows,
-        &capi_deps,
-    )
-    .await?
-    .dao;
+    let dao = load_dao(&algod, pars.dao_id.parse()?, &programs.escrows, &capi_deps).await?;
 
     let inputs_par = WithdrawInputsPassthroughJs {
         sender: pars.sender.clone(),

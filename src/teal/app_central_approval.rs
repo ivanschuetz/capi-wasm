@@ -3,37 +3,70 @@ pub const SRC: &str = r#"
 gtxn 0 ApplicationID
 int 0
 ==
-bnz main_l16
-global GroupSize
-int 1
+bnz main_l20
+gtxn 0 OnCompletion
+int 4
 ==
-bnz main_l15
+bnz main_l19
 global GroupSize
 int 10
 ==
-bnz main_l14
+bnz main_l18
+gtxna 0 ApplicationArgs 0
+byte "optin"
+==
+bnz main_l17
 gtxna 0 ApplicationArgs 0
 byte "unlock"
 ==
-bnz main_l13
+bnz main_l16
 gtxna 0 ApplicationArgs 0
 byte "claim"
 ==
-bnz main_l12
+bnz main_l15
 gtxna 0 ApplicationArgs 0
 byte "lock"
 ==
-bnz main_l11
+bnz main_l14
 gtxna 0 ApplicationArgs 0
 byte "drain"
 ==
-bnz main_l10
+bnz main_l13
 gtxna 0 ApplicationArgs 0
 byte "invest"
 ==
-bnz main_l9
+bnz main_l12
+gtxna 0 ApplicationArgs 0
+byte "update_data"
+==
+bnz main_l11
 err
-main_l9:
+main_l11:
+gtxn 0 TypeEnum
+int appl
+==
+assert
+gtxn 0 ApplicationID
+global CurrentApplicationID
+==
+assert
+gtxn 0 OnCompletion
+int NoOp
+==
+assert
+gtxn 0 NumAppArgs
+int 3
+==
+assert
+byte "CentralEscrowAddress"
+gtxna 0 ApplicationArgs 1
+app_global_put
+byte "CustomerEscrowAddress"
+gtxna 0 ApplicationArgs 2
+app_global_put
+int 1
+return
+main_l12:
 global GroupSize
 int 4
 ==
@@ -155,7 +188,7 @@ gtxna 0 ApplicationArgs 1
 app_local_put
 int 1
 return
-main_l10:
+main_l13:
 global GroupSize
 int 4
 ==
@@ -247,7 +280,7 @@ gtxn 2 AssetAmount
 app_global_put
 int 1
 return
-main_l11:
+main_l14:
 global GroupSize
 int 2
 ==
@@ -324,7 +357,7 @@ gtxna 0 ApplicationArgs 1
 app_local_put
 int 1
 return
-main_l12:
+main_l15:
 global GroupSize
 int 2
 ==
@@ -394,7 +427,7 @@ gtxn 1 AssetAmount
 app_local_put
 int 1
 return
-main_l13:
+main_l16:
 global GroupSize
 int 2
 ==
@@ -436,7 +469,22 @@ app_global_get
 assert
 int 1
 return
-main_l14:
+main_l17:
+gtxn 0 TypeEnum
+int appl
+==
+assert
+gtxn 0 ApplicationID
+global CurrentApplicationID
+==
+assert
+gtxn 0 OnCompletion
+int OptIn
+==
+assert
+int 1
+return
+main_l18:
 gtxn 0 TypeEnum
 int appl
 ==
@@ -450,7 +498,7 @@ int NoOp
 ==
 assert
 gtxn 0 NumAppArgs
-int 4
+int 13
 ==
 assert
 gtxn 1 TypeEnum
@@ -514,7 +562,7 @@ int axfer
 ==
 assert
 gtxn 9 XferAsset
-gtxna 0 ApplicationArgs 2
+gtxna 0 ApplicationArgs 4
 btoi
 ==
 assert
@@ -527,32 +575,61 @@ app_global_put
 byte "CustomerEscrowAddress"
 gtxna 0 ApplicationArgs 1
 app_global_put
-byte "SharesAssetId"
+byte "InvestingEscrowAddress"
 gtxna 0 ApplicationArgs 2
+app_global_put
+byte "LockingEscrowAddress"
+gtxna 0 ApplicationArgs 3
+app_global_put
+byte "SharesAssetId"
+gtxna 0 ApplicationArgs 4
 btoi
 app_global_put
 byte "FundsAssetId"
-gtxna 0 ApplicationArgs 3
+gtxna 0 ApplicationArgs 5
 btoi
+app_global_put
+byte "ProjectName"
+gtxna 0 ApplicationArgs 6
+app_global_put
+byte "ProjectDesc"
+gtxna 0 ApplicationArgs 7
+app_global_put
+byte "SharePrice"
+gtxna 0 ApplicationArgs 8
+btoi
+app_global_put
+byte "InvestorsPart"
+gtxna 0 ApplicationArgs 9
+btoi
+app_global_put
+byte "LogoUrl"
+gtxna 0 ApplicationArgs 10
+app_global_put
+byte "SocialMediaUrl"
+gtxna 0 ApplicationArgs 11
+app_global_put
+byte "Owner"
+gtxna 0 ApplicationArgs 12
 app_global_put
 int 1
 return
-main_l15:
+main_l19:
+global GroupSize
+int 1
+==
+assert
 gtxn 0 TypeEnum
 int appl
 ==
 assert
-gtxn 0 ApplicationID
-global CurrentApplicationID
-==
-assert
-gtxn 0 OnCompletion
-int OptIn
+gtxn 0 Sender
+addr TMPL_OWNER
 ==
 assert
 int 1
 return
-main_l16:
+main_l20:
 gtxn 0 TypeEnum
 int appl
 ==

@@ -43,7 +43,7 @@ pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId) -> Result<DaoForUsers> {
         logo_url: dao.specs.logo_url.clone(),
         social_media_url: dao.specs.social_media_url.clone(),
         shares_asset_id: dao.shares_asset_id,
-        central_app_id: dao.central_app_id,
+        central_app_id: dao.app_id.0,
         invest_escrow_address: *dao.invest_escrow.address(),
         locking_escrow_address: *dao.locking_escrow.address(),
         central_escrow_address: *dao.central_escrow.address(),

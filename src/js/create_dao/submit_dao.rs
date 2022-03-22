@@ -1,24 +1,21 @@
+use crate::dependencies::funds_asset_specs;
+use crate::js::common::SignedTxFromJs;
+use crate::js::common::{
+    parse_bridge_pars, signed_js_tx_to_signed_tx1, signed_js_txs_to_signed_tx1, to_bridge_res,
+};
+use crate::js::general::js_types_workarounds::ContractAccountJs;
+use crate::model::dao_for_users::dao_to_dao_for_users;
+use crate::model::dao_for_users_view_data::{dao_for_users_to_view_data, DaoForUsersViewData};
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
 use core::flows::create_dao::create_dao_specs::CreateDaoSpecs;
-use core::flows::create_dao::storage::save_dao::save_dao;
-use core::flows::create_dao::{
-    create_dao::submit_create_dao, model::CreateDaoSigned,
-};
+use core::flows::create_dao::storage::load_dao::DaoAppId;
+use core::flows::create_dao::{create_dao::submit_create_dao, model::CreateDaoSigned};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::convert::TryInto;
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
-
-use crate::dependencies::funds_asset_specs;
-use crate::js::common::{
-    parse_bridge_pars, signed_js_tx_to_signed_tx1, signed_js_txs_to_signed_tx1, to_bridge_res,
-};
-use crate::js::common::{to_my_algo_tx1, SignedTxFromJs};
-use crate::js::general::js_types_workarounds::ContractAccountJs;
-
-use super::submit_save_dao::SubmitSaveDaoPassthroughParJs;
 
 #[wasm_bindgen]
 pub async fn bridge_submit_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
@@ -28,9 +25,7 @@ pub async fn bridge_submit_create_dao(pars: JsValue) -> Result<JsValue, JsValue>
 
 /// create daos specs + signed assets txs -> create dao result
 /// submits the signed assets, creates rest of dao with generated asset ids
-async fn _bridge_submit_create_dao(
-    pars: SubmitCreateDaoParJs,
-) -> Result<SubmitCreateDaoResJs> {
+async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForUsersViewData> {
     // log::debug!("in bridge_submit_create_dao, pars: {:?}", pars);
 
     let algod = algod();
@@ -50,8 +45,6 @@ async fn _bridge_submit_create_dao(
     let escrow_funding_txs = &pars.txs[1..5];
     let xfer_shares_to_invest_escrow = &pars.txs[5];
 
-    let dao_creator = pars.pt.creator.parse().map_err(Error::msg)?;
-
     log::debug!("Submitting the dao..");
 
     let submit_dao_res = submit_create_dao(
@@ -70,23 +63,17 @@ async fn _bridge_submit_create_dao(
             central_escrow: pars.pt.central_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
             funds_asset_id: funds_asset_specs().id,
-            central_app_id: pars.pt.central_app_id,
+            app_id: DaoAppId(pars.pt.central_app_id),
         },
     )
     .await?;
 
     log::debug!("Submit dao res: {:?}", submit_dao_res);
 
-    // let save_dao_res = api.save_dao(&submit_dao_res.dao).await?;
-
-    let to_sign = save_dao(&algod, &dao_creator, &submit_dao_res.dao).await?;
-
-    Ok(SubmitCreateDaoResJs {
-        to_sign: to_my_algo_tx1(&to_sign.tx)?,
-        pt: SubmitSaveDaoPassthroughParJs {
-            dao_msg_pack: rmp_serde::to_vec_named(&to_sign.dao)?,
-        },
-    })
+    Ok(dao_for_users_to_view_data(
+        dao_to_dao_for_users(&submit_dao_res.dao, &submit_dao_res.dao.id())?,
+        &funds_asset_specs(),
+    ))
 }
 
 /// The assets creation signed transactions and the specs to create the dao
@@ -119,5 +106,4 @@ pub struct SubmitCreateDaoPassthroughParJs {
 pub struct SubmitCreateDaoResJs {
     // next step tx: save the dao
     pub to_sign: Value,
-    pub pt: SubmitSaveDaoPassthroughParJs,
 }

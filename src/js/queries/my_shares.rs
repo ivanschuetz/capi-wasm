@@ -5,11 +5,11 @@ use crate::{
 };
 use anyhow::{anyhow, Error, Result};
 use core::{
-    dependencies::{algod, indexer},
+    dependencies::algod,
     flows::create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
     state::{
         account_state::asset_holdings, app_state::ApplicationLocalStateError,
-        central_app_state::central_investor_state,
+        central_app_state::dao_investor_state,
     },
 };
 use serde::{Deserialize, Serialize};
@@ -24,21 +24,18 @@ pub async fn bridge_my_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
     let algod = algod();
-    let indexer = indexer();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
-        .await?
-        .dao;
+    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
 
     log::debug!("Dao: {dao:?}");
 
     let my_address = &pars.my_address.parse().map_err(Error::msg)?;
 
-    let locked_shares = match central_investor_state(&algod, my_address, dao.central_app_id).await {
+    let locked_shares = match dao_investor_state(&algod, my_address, dao.app_id).await {
         Ok(state) => state.shares,
         Err(ApplicationLocalStateError::NotOptedIn) => ShareAmount::new(0), // not invested -> 0 shares
         Err(e) => return Err(Error::msg(e)),

@@ -3,10 +3,10 @@ use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::js::unlock::submit_unlock::SubmitUnlockPassthroughParJs;
 use crate::teal::programs;
 use anyhow::{Error, Result};
-use core::dependencies::{algod, indexer};
+use core::dependencies::algod;
 use core::flows::create_dao::storage::load_dao::load_dao;
 use core::flows::unlock::unlock::unlock;
-use core::state::central_app_state::central_investor_state;
+use core::state::central_app_state::dao_investor_state;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -19,24 +19,14 @@ pub async fn bridge_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
     let algod = algod();
-    let indexer = indexer();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
-    let dao = load_dao(
-        &algod,
-        &indexer,
-        &pars.dao_id.parse()?,
-        &programs.escrows,
-        &capi_deps,
-    )
-    .await?
-    .dao;
+    let dao = load_dao(&algod, pars.dao_id.parse()?, &programs.escrows, &capi_deps).await?;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 
-    let investor_state =
-        central_investor_state(&algod, &investor_address, dao.central_app_id).await?;
+    let investor_state = dao_investor_state(&algod, &investor_address, dao.app_id).await?;
 
     log::debug!("Unlocking shares: {:?}", investor_state.shares);
 
@@ -45,7 +35,7 @@ pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
         investor_address,
         investor_state.shares,
         dao.shares_asset_id,
-        dao.central_app_id,
+        dao.app_id,
         &dao.locking_escrow,
     )
     .await?;

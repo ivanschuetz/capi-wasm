@@ -4,11 +4,11 @@ use crate::{
     teal::programs,
 };
 use anyhow::{Error, Result};
+use core::flows::create_dao::share_amount::ShareAmount;
 use core::{
     dependencies::algod,
     flows::{create_dao::storage::load_dao::load_dao, lock::lock::lock},
 };
-use core::{dependencies::indexer, flows::create_dao::share_amount::ShareAmount};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -21,22 +21,12 @@ pub async fn bridge_lock(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_lock(pars: LockParJs) -> Result<LockResJs> {
     let algod = algod();
-    let indexer = indexer();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
     let share_amount = ShareAmount::new(pars.share_count.parse()?);
 
-    let stored_dao = load_dao(
-        &algod,
-        &indexer,
-        &pars.dao_id.parse()?,
-        &programs.escrows,
-        &capi_deps,
-    )
-    .await?;
-
-    let dao = stored_dao.dao;
+    let dao = load_dao(&algod, pars.dao_id.parse()?, &programs.escrows, &capi_deps).await?;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 
@@ -45,9 +35,9 @@ pub async fn _bridge_lock(pars: LockParJs) -> Result<LockResJs> {
         investor_address,
         share_amount,
         dao.shares_asset_id,
-        dao.central_app_id,
+        dao.app_id,
         &dao.locking_escrow,
-        &stored_dao.id,
+        dao.id(),
     )
     .await?;
 

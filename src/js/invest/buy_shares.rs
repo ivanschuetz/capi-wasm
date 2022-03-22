@@ -8,7 +8,7 @@ use crate::{
 use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Error, Result};
 use core::{
-    dependencies::{algod, indexer},
+    dependencies::algod,
     flows::{
         create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
         invest::invest::invest_txs,
@@ -26,7 +26,6 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
     let algod = algod();
-    let indexer = indexer();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
@@ -40,21 +39,18 @@ pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
-        .await?
-        .dao;
+    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
 
     let to_sign = invest_txs(
         &algod,
         &dao,
         &pars.investor_address.parse().map_err(Error::msg)?,
         &dao.locking_escrow,
-        dao.central_app_id,
+        dao.app_id,
         dao.shares_asset_id,
         validated_share_amount,
         funds_asset_specs().id,
         dao.specs.share_price,
-        &dao_id,
     )
     .await?;
 

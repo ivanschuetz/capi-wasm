@@ -20,7 +20,7 @@ pub async fn _bridge_load_roadmap(pars: GetRoadmapParJs) -> Result<GetRoadmapRes
     let dao_creator = pars.creator_address.parse().map_err(Error::msg)?;
     let dao_id = pars.dao_id.parse()?;
 
-    let roadmap = get_roadmap(&indexer, &dao_creator, &dao_id).await?;
+    let roadmap = get_roadmap(&indexer, &dao_creator, dao_id).await?;
     let mut items = roadmap.items;
     // sort ascendingly by date
     items.sort_by(|i1, i2| i1.date.cmp(&i2.date));

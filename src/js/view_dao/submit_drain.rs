@@ -4,7 +4,7 @@ use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge
 use crate::service::str_to_algos::microalgos_to_algos;
 use crate::teal::programs;
 use anyhow::Result;
-use core::dependencies::{algod, indexer};
+use core::dependencies::algod;
 use core::flows::create_dao::storage::load_dao::load_dao;
 use core::flows::drain::drain::{submit_drain_customer_escrow, DrainCustomerEscrowSigned};
 use serde::{Deserialize, Serialize};
@@ -19,7 +19,6 @@ pub async fn bridge_submit_drain(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainResJs> {
     let algod = algod();
-    let indexer = indexer();
     let capi_deps = capi_deps()?;
     let programs = programs();
 
@@ -42,13 +41,11 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
 
     let dao = load_dao(
         &algod,
-        &indexer,
-        &pars.pt.dao_id.parse()?,
+        pars.pt.dao_id.parse()?,
         &programs.escrows,
         &capi_deps,
     )
-    .await?
-    .dao;
+    .await?;
 
     // TODO (low prio) Consider just recalculating instead of new fetch
 

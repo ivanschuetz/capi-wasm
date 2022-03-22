@@ -33,9 +33,7 @@ pub async fn _bridge_income_vs_spending(
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, &indexer, &dao_id, &programs.escrows, &capi_deps)
-        .await?
-        .dao;
+    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
 
     let mut income = received_payments(&indexer, dao.customer_escrow.address()).await?;
     income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
@@ -44,7 +42,7 @@ pub async fn _bridge_income_vs_spending(
         &algod,
         &indexer,
         &dao.creator,
-        &dao_id,
+        dao_id,
         &programs.escrows,
         &capi_deps,
     )
