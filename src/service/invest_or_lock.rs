@@ -12,6 +12,7 @@ pub async fn submit_apps_optins_from_js(algod: &Algod, optins: &[SignedTxFromJs]
 }
 
 async fn submit_apps_optins(algod: &Algod, central_optin: &SignedTxFromJs) -> Result<()> {
+    log::debug!("Submitting app opt-ins...");
     let app_optins_txs = vec![signed_js_tx_to_signed_tx1(central_optin)?];
     let res = algod.broadcast_signed_transactions(&app_optins_txs).await?;
     let _ = wait_for_pending_transaction(algod, &res.tx_id.parse()?);

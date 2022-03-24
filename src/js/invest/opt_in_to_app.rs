@@ -5,7 +5,10 @@ use algonaut::{
     transaction::{tx_group::TxGroup, Transaction},
 };
 use anyhow::{anyhow, Result};
-use core::{dependencies::algod, flows::shared::app::optin_to_app};
+use core::{
+    dependencies::algod,
+    flows::{create_dao::storage::load_dao::DaoAppId, shared::app::optin_to_dao_app},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -61,10 +64,10 @@ pub async fn bridge_opt_in_to_apps_if_needed(pars: JsValue) -> Result<JsValue, J
 async fn optin_to_all_apps(
     algod: &Algod,
     investor_address: &Address,
-    central_app_id: u64,
+    app_id: DaoAppId,
 ) -> Result<Vec<Transaction>> {
     let params = algod.suggested_transaction_params().await?;
-    let txs = &mut [&mut optin_to_app(&params, central_app_id, *investor_address).await?];
+    let txs = &mut [&mut optin_to_dao_app(&params, app_id, *investor_address).await?];
     TxGroup::assign_group_id(txs)?;
     Ok(txs.into_iter().map(|t| t.clone()).collect())
 }
