@@ -1,7 +1,11 @@
 use algonaut::core::Address;
 use anyhow::Result;
 use core::{
-    flows::create_dao::{model::Dao, share_amount::ShareAmount, storage::load_dao::DaoId},
+    flows::create_dao::{
+        model::Dao,
+        share_amount::ShareAmount,
+        storage::load_dao::{DaoAppId, DaoId},
+    },
     funds::FundsAmount,
 };
 use serde::{Deserialize, Serialize};
@@ -18,7 +22,7 @@ pub struct DaoForUsers {
     pub logo_url: String,
     pub social_media_url: String,
     pub shares_asset_id: u64,
-    pub central_app_id: u64,
+    pub app_id: DaoAppId,
     pub invest_escrow_address: Address,
     pub locking_escrow_address: Address,
     pub central_escrow_address: Address,
@@ -43,7 +47,7 @@ pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId) -> Result<DaoForUsers> {
         logo_url: dao.specs.logo_url.clone(),
         social_media_url: dao.specs.social_media_url.clone(),
         shares_asset_id: dao.shares_asset_id,
-        central_app_id: dao.app_id.0,
+        app_id: dao.app_id,
         invest_escrow_address: *dao.invest_escrow.address(),
         locking_escrow_address: *dao.locking_escrow.address(),
         central_escrow_address: *dao.central_escrow.address(),

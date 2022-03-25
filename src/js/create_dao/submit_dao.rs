@@ -63,7 +63,7 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
             central_escrow: pars.pt.central_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
             funds_asset_id: funds_asset_specs().id,
-            app_id: DaoAppId(pars.pt.central_app_id),
+            app_id: DaoAppId(pars.pt.app_id),
         },
     )
     .await?;
@@ -99,7 +99,7 @@ pub struct SubmitCreateDaoPassthroughParJs {
     pub locking_escrow: ContractAccountJs,
     pub central_escrow: ContractAccountJs,
     pub customer_escrow: ContractAccountJs,
-    pub central_app_id: u64,
+    pub app_id: u64,
 }
 
 #[derive(Debug, Clone, Serialize)]

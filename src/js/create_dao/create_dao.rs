@@ -105,7 +105,7 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
             locking_escrow: to_sign.locking_escrow.into(),
             central_escrow: to_sign.central_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
-            central_app_id: submit_assets_res.app_id.0,
+            app_id: submit_assets_res.app_id.0,
         },
     })
 }
