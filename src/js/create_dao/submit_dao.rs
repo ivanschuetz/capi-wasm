@@ -29,6 +29,7 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
     // log::debug!("in bridge_submit_create_dao, pars: {:?}", pars);
 
     let algod = algod();
+    let funds_asset_specs = funds_asset_specs()?;
 
     if pars.txs.len() != 6 {
         return Err(anyhow!(
@@ -62,7 +63,7 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
             locking_escrow: pars.pt.locking_escrow.try_into().map_err(Error::msg)?,
             central_escrow: pars.pt.central_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
-            funds_asset_id: funds_asset_specs().id,
+            funds_asset_id: funds_asset_specs.id,
             app_id: DaoAppId(pars.pt.app_id),
         },
     )
@@ -72,7 +73,7 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
 
     Ok(dao_for_users_to_view_data(
         dao_to_dao_for_users(&submit_dao_res.dao, &submit_dao_res.dao.id())?,
-        &funds_asset_specs(),
+        &funds_asset_specs,
     ))
 }
 

@@ -28,6 +28,6 @@ async fn _bridge_load_dao_user_view_with_id(dao_id_str: String) -> Result<DaoFor
 
     Ok(dao_for_users_to_view_data(
         dao_to_dao_for_users(&dao, &dao_id)?,
-        &funds_asset_specs(),
+        &funds_asset_specs()?,
     ))
 }

@@ -37,7 +37,7 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
     let entries = load_withdrawals(
         &algod,
         &indexer,
-        &funds_asset_specs(),
+        &funds_asset_specs()?,
         dao_id,
         &creator,
         &programs,

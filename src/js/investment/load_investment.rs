@@ -32,7 +32,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     log::debug!("bridge_load_investment, pars: {:?}", pars);
 
     let algod = algod();
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
     let programs = programs();
 

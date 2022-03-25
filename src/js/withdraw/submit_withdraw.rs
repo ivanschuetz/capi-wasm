@@ -25,7 +25,7 @@ pub async fn bridge_submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs> {
     let algod = algod();
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
 
     let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs, &funds_asset_specs)?;
 

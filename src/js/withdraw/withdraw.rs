@@ -30,7 +30,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
     let algod = algod();
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
     let programs = programs();
 

@@ -24,7 +24,7 @@ pub async fn _bridge_create_dao_assets_txs(
 ) -> Result<CreateDaoAssetsResJs> {
     let algod = algod();
     let capi_deps = capi_deps()?;
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
 
     let dao_specs = pars.inputs.to_dao_specs(&funds_asset_specs)?;
 

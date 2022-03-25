@@ -1,0 +1,2 @@
+# Note that this script isn't meant to be updated frequently, as TestNet / MainNet dependencies are permanent / more long lived (than local/sandbox ones).
+NETWORK=test ENV=test FUNDS_ASSET_ID=75503403 CAPI_ESCROW_ADDRESS=CLD4ZQ6GOLBPYRJXYBUPITJ356B72K6RHCG3UNDGMPFKK64JYTB5VOO4PU CAPI_APP_ID=75503537 CAPI_ASSET_ID=77428422 wasm-pack build --out-dir ../wasm-build --release

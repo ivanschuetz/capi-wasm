@@ -31,7 +31,7 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
         &algod,
         &pars.drainer_address.parse().map_err(Error::msg)?,
         dao.app_id,
-        funds_asset_specs().id,
+        funds_asset_specs()?.id,
         &capi_deps,
         &dao.customer_escrow,
         &dao.central_escrow,

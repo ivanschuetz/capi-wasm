@@ -17,7 +17,7 @@ pub async fn bridge_pay_dao(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_pay_dao(pars: PayDaoParJs) -> Result<PayDaoResJs> {
     let algod = algod();
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
 
     let customer_address = pars.customer_address.parse().map_err(Error::msg)?;
     let customer_escrow_address = pars.customer_escrow_address.parse().map_err(Error::msg)?;

@@ -37,7 +37,7 @@ pub async fn drain_if_needed_txs(
                 algod,
                 sender,
                 dao.app_id,
-                funds_asset_specs().id,
+                funds_asset_specs()?.id,
                 capi_deps,
                 &dao.customer_escrow,
                 &dao.central_escrow,

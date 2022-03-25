@@ -20,7 +20,7 @@ pub async fn bridge_claim(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_bridge_claim(pars: ClaimParJs) -> Result<ClaimResJs> {
     let algod = algod();
-    let funds_asset_id = funds_asset_specs().id;
+    let funds_asset_id = funds_asset_specs()?.id;
     let capi_deps = capi_deps()?;
     let programs = programs();
 

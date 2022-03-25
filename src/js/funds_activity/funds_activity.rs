@@ -59,7 +59,7 @@ pub async fn _bridge_load_funds_activity(
     let mut view_data_entries = vec![];
     for entry in activity_entries {
         view_data_entries.push(FundsActivityViewData {
-            amount: base_units_to_display_units_str(entry.amount, &funds_asset_specs()),
+            amount: base_units_to_display_units_str(entry.amount, &funds_asset_specs()?),
             is_income: match entry.type_ {
                 FundsActivityEntryType::Income => "true",
                 FundsActivityEntryType::Spending => "false",

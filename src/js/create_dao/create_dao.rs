@@ -38,7 +38,7 @@ pub async fn bridge_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> {
     let algod = algod();
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
 
     // we assume order: js has as little logic as possible:

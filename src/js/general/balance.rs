@@ -16,7 +16,7 @@ pub async fn bridge_balance(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_balance(pars: BalanceParJs) -> Result<BalanceResJs> {
     let algod = algod();
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
 
     let account = algod
         .account_information(&pars.address.parse().map_err(Error::msg)?)

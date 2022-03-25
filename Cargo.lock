@@ -14,7 +14,6 @@ dependencies = [
 [[package]]
 name = "algonaut"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#7f20399cf6bb8b33c4a2e7906b83095bc1efdea2"
 dependencies = [
  "algonaut_client",
  "algonaut_core",
@@ -29,7 +28,6 @@ dependencies = [
 [[package]]
 name = "algonaut_client"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#7f20399cf6bb8b33c4a2e7906b83095bc1efdea2"
 dependencies = [
  "algonaut_core",
  "algonaut_crypto",
@@ -48,7 +46,6 @@ dependencies = [
 [[package]]
 name = "algonaut_core"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#7f20399cf6bb8b33c4a2e7906b83095bc1efdea2"
 dependencies = [
  "algonaut_crypto",
  "algonaut_encoding",
@@ -65,7 +62,6 @@ dependencies = [
 [[package]]
 name = "algonaut_crypto"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#7f20399cf6bb8b33c4a2e7906b83095bc1efdea2"
 dependencies = [
  "algonaut_encoding",
  "data-encoding",
@@ -82,7 +78,6 @@ dependencies = [
 [[package]]
 name = "algonaut_encoding"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#7f20399cf6bb8b33c4a2e7906b83095bc1efdea2"
 dependencies = [
  "data-encoding",
  "serde",
@@ -91,7 +86,6 @@ dependencies = [
 [[package]]
 name = "algonaut_model"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#7f20399cf6bb8b33c4a2e7906b83095bc1efdea2"
 dependencies = [
  "algonaut_core",
  "algonaut_crypto",
@@ -106,7 +100,6 @@ dependencies = [
 [[package]]
 name = "algonaut_transaction"
 version = "0.3.0"
-source = "git+https://github.com/manuelmauro/algonaut?branch=main#7f20399cf6bb8b33c4a2e7906b83095bc1efdea2"
 dependencies = [
  "algonaut_core",
  "algonaut_crypto",
@@ -1383,7 +1376,6 @@ dependencies = [
 [[package]]
 name = "tealdbg"
 version = "0.1.0"
-source = "git+https://github.com/ivanschuetz/tealdbg_launcher#a042c97f404344080654f2dd6b64dd4ed230458f"
 dependencies = [
  "algonaut",
 ]

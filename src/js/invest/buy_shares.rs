@@ -49,7 +49,7 @@ pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
         dao.app_id,
         dao.shares_asset_id,
         validated_share_amount,
-        funds_asset_specs().id,
+        funds_asset_specs()?.id,
         dao.specs.share_price,
     )
     .await?;

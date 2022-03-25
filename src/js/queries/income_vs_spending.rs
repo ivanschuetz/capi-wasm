@@ -27,7 +27,7 @@ pub async fn _bridge_income_vs_spending(
 ) -> Result<IncomeVsSpendingResJs> {
     let algod = algod();
     let indexer = indexer();
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
     let programs = programs();
 

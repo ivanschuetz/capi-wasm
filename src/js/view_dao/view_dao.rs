@@ -22,7 +22,7 @@ pub async fn bridge_view_dao(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_view_dao(pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
     let algod = algod();
-    let funds_asset_specs = funds_asset_specs();
+    let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
     let programs = programs();
 
