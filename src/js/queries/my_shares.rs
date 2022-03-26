@@ -7,10 +7,7 @@ use anyhow::{anyhow, Error, Result};
 use core::{
     dependencies::algod,
     flows::create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
-    state::{
-        account_state::asset_holdings, app_state::ApplicationLocalStateError,
-        central_app_state::dao_investor_state,
-    },
+    state::{account_state::asset_holdings, app_state::ApplicationLocalStateError, dao_app_state::dao_investor_state},
 };
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;

@@ -12,5 +12,6 @@ pub mod pay_dao;
 pub mod queries;
 pub mod roadmap;
 pub mod unlock;
+pub mod update_app;
 pub mod view_dao;
 pub mod withdraw;
