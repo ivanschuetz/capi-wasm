@@ -34,7 +34,7 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
         funds_asset_specs()?.id,
         &capi_deps,
         &dao.customer_escrow,
-        &dao.central_escrow,
+        &dao.central_escrow.address(),
     )
     .await?;
 
