@@ -43,15 +43,23 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
     let investor_state_res = dao_investor_state(&algod, investor_address, dao.app_id).await;
-    let (investor_shares, investor_claimed) = match investor_state_res {
-        Ok(state) => (state.shares, state.claimed),
+    let (investor_shares, investor_claimed, already_retrieved) = match investor_state_res {
+        Ok(state) => (
+            state.shares,
+            state.claimed,
+            state.claimed - state.claimed_init,
+        ),
         Err(e) => {
             if e == ApplicationLocalStateError::NotOptedIn {
                 // If the investor isn't opted in (unlocked the shares - note that currently it's not possible to unlock only a part of the shares),
                 // we don't show an error, it just means that they've 0 shares and haven't claimed anything.
                 // the later is discussable UX wise (they may have claimed before unlocking the shares),
                 // but the local state is deleted when unlocking (opting out), so 0 is the only meaningful thing we can return here.
-                (ShareAmount::new(0), FundsAmount::new(0))
+                (
+                    ShareAmount::new(0),
+                    FundsAmount::new(0),
+                    FundsAmount::new(0),
+                )
             } else {
                 Err(e)?
             }
@@ -106,7 +114,7 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
         investors_share_number: investors_share_normalized.to_string(),
 
         investor_already_retrieved_amount: base_units_to_display_units_str(
-            investor_claimed,
+            already_retrieved,
             &funds_asset_specs,
         ),
         investor_claimable_dividend: base_units_to_display_units_str(can_claim, &funds_asset_specs),
