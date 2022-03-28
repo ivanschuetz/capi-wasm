@@ -3,7 +3,7 @@ use crate::js::common::SignedTxFromJs;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, signed_js_txs_to_signed_tx1, to_bridge_res,
 };
-use crate::js::general::js_types_workarounds::ContractAccountJs;
+use crate::js::general::js_types_workarounds::VersionedContractAccountJs;
 use crate::model::dao_for_users::dao_to_dao_for_users;
 use crate::model::dao_for_users_view_data::{dao_for_users_to_view_data, DaoForUsersViewData};
 use anyhow::{anyhow, Error, Result};
@@ -96,10 +96,10 @@ pub struct SubmitCreateDaoPassthroughParJs {
     // Note: multiple transactions: the tx vector is serialized into a single u8 vector
     pub escrow_optin_signed_txs_msg_pack: Vec<u8>,
     pub shares_asset_id: u64,
-    pub invest_escrow: ContractAccountJs,
-    pub locking_escrow: ContractAccountJs,
-    pub central_escrow: ContractAccountJs,
-    pub customer_escrow: ContractAccountJs,
+    pub invest_escrow: VersionedContractAccountJs,
+    pub locking_escrow: VersionedContractAccountJs,
+    pub central_escrow: VersionedContractAccountJs,
+    pub customer_escrow: VersionedContractAccountJs,
     pub app_id: u64,
 }
 

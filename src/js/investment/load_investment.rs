@@ -1,8 +1,7 @@
 use crate::{
-    dependencies::{capi_deps, funds_asset_specs},
+    dependencies::{api, capi_deps, funds_asset_specs},
     js::common::{parse_bridge_pars, to_bridge_res},
     service::{constants::PRECISION, str_to_algos::base_units_to_display_units_str},
-    teal::programs,
 };
 use anyhow::{anyhow, Error, Result};
 use core::{
@@ -32,13 +31,13 @@ pub async fn _bridge_load_investment(pars: LoadInvestmentParJs) -> Result<LoadIn
     log::debug!("bridge_load_investment, pars: {:?}", pars);
 
     let algod = algod();
+    let api = api();
     let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 

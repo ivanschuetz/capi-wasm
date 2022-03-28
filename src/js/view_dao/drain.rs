@@ -1,6 +1,5 @@
-use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::dependencies::{api, capi_deps, funds_asset_specs};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
-use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::algod;
 use core::flows::create_dao::storage::load_dao::load_dao;
@@ -20,12 +19,12 @@ pub async fn bridge_drain(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
     let algod = algod();
+    let api = api();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
     let to_sign = fetch_drain_amount_and_drain(
         &algod,
@@ -33,7 +32,7 @@ pub async fn _bridge_drain(pars: DrainParJs) -> Result<DrainResJs> {
         dao.app_id,
         funds_asset_specs()?.id,
         &capi_deps,
-        &dao.customer_escrow,
+        &dao.customer_escrow.account,
         &dao.central_escrow.address(),
     )
     .await?;

@@ -1,10 +1,9 @@
-use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::dependencies::{api, capi_deps, funds_asset_specs};
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use crate::model::dao_for_users::dao_to_dao_for_users;
 use crate::model::dao_for_users_view_data::{dao_for_users_to_view_data, DaoForUsersViewData};
 use crate::service::available_funds::available_funds;
 use crate::service::str_to_algos::base_units_to_display_units;
-use crate::teal::programs;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
@@ -22,13 +21,13 @@ pub async fn bridge_view_dao(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_view_dao(pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
     let algod = algod();
+    let api = api();
     let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
     // TODO investor count: get all holders of asset (indexer?)
 

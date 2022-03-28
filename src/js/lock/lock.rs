@@ -1,7 +1,6 @@
 use crate::{
-    dependencies::capi_deps,
+    dependencies::{api, capi_deps},
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
-    teal::programs,
 };
 use anyhow::{Error, Result};
 use core::flows::create_dao::share_amount::ShareAmount;
@@ -21,12 +20,12 @@ pub async fn bridge_lock(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_lock(pars: LockParJs) -> Result<LockResJs> {
     let algod = algod();
+    let api = api();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let share_amount = ShareAmount::new(pars.share_count.parse()?);
 
-    let dao = load_dao(&algod, pars.dao_id.parse()?, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, pars.dao_id.parse()?, &api, &capi_deps).await?;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 

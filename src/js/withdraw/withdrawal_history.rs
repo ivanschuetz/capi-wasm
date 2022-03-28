@@ -1,17 +1,14 @@
 use crate::{
-    dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs},
+    dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs},
     js::common::{parse_bridge_pars, to_bridge_res},
-    teal::programs,
 };
 use algonaut::{algod::v2::Algod, core::Address, indexer::v2::Indexer};
 use anyhow::{Error, Result};
 use core::{
+    api::api::Api,
     capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     dependencies::{algod, indexer},
-    flows::{
-        create_dao::{create_dao::Programs, storage::load_dao::DaoId},
-        withdraw::withdrawals::withdrawals,
-    },
+    flows::{create_dao::storage::load_dao::DaoId, withdraw::withdrawals::withdrawals},
 };
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -26,9 +23,9 @@ pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> 
 
 pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs> {
     let algod = algod();
+    let api = api();
     let indexer = indexer();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
@@ -40,7 +37,7 @@ pub async fn _bridge_load_withdrawals(pars: LoadWithdrawalParJs) -> Result<LoadW
         &funds_asset_specs()?,
         dao_id,
         &creator,
-        &programs,
+        &api,
         &capi_deps,
     )
     .await?;
@@ -54,18 +51,10 @@ pub async fn load_withdrawals(
     funds_asset_specs: &FundsAssetSpecs,
     dao_id: DaoId,
     creator: &Address,
-    programs: &Programs,
+    api: &dyn Api,
     capi_deps: &CapiAssetDaoDeps,
 ) -> Result<Vec<WithdrawalViewData>> {
-    let entries = withdrawals(
-        algod,
-        indexer,
-        creator,
-        dao_id,
-        &programs.escrows,
-        capi_deps,
-    )
-    .await?;
+    let entries = withdrawals(algod, indexer, creator, dao_id, api, capi_deps).await?;
     let mut reqs_view_data = vec![];
     for entry in entries {
         reqs_view_data.push(withdrawal_view_data(

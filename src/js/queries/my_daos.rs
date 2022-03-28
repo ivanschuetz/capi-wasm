@@ -1,6 +1,5 @@
-use crate::dependencies::capi_deps;
+use crate::dependencies::{api, capi_deps};
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
-use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::{algod, indexer};
 use core::queries::my_daos::{my_daos, MyStoredDao};
@@ -15,13 +14,13 @@ pub async fn bridge_my_daos(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_my_daos(pars: MyDaosParJs) -> Result<MyDaosResJs> {
     let algod = algod();
+    let api = api();
     let indexer = indexer();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let address = pars.address.parse().map_err(Error::msg)?;
 
-    let daos = my_daos(&algod, &indexer, &address, &programs.escrows, &capi_deps).await?;
+    let daos = my_daos(&algod, &indexer, &address, &api, &capi_deps).await?;
 
     Ok(MyDaosResJs {
         daos: daos.into_iter().map(|p| p.into()).collect(),

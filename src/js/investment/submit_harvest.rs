@@ -1,8 +1,7 @@
-use crate::dependencies::capi_deps;
+use crate::dependencies::{api, capi_deps};
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use crate::service::drain_if_needed::submit_drain;
-use crate::teal::programs;
 use anyhow::{anyhow, Error, Result};
 use core::dependencies::algod;
 use core::diagnostics::log_claim_diagnostics;
@@ -21,8 +20,8 @@ pub async fn bridge_submit_claim(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_submit_claim(pars: SubmitClaimParJs) -> Result<SubmitClaimResJs> {
     let algod = algod();
+    let api = api();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     // 1 tx if only claim, 3 if claim + 2 drain
     if pars.txs.len() != 1 && pars.txs.len() != 3 {
@@ -51,7 +50,7 @@ pub async fn _bridge_submit_claim(pars: SubmitClaimParJs) -> Result<SubmitClaimR
     let dao = load_dao(
         &algod,
         pars.dao_id_for_diagnostics.parse()?,
-        &programs.escrows,
+        &api,
         &capi_deps,
     )
     .await?;

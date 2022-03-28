@@ -19,9 +19,7 @@ mod test {
 
         // Copy the TEAL to this dao (as strings in Rust files)
         let core_teal_templates_dir = fs::read_dir(teal_path.join("teal_template"))?;
-        let core_teal_dir = fs::read_dir(teal_path.join("teal"))?;
         import_teal_from(core_teal_templates_dir)?;
-        import_teal_from(core_teal_dir)?;
 
         println!("TEAL updated");
 
@@ -55,8 +53,8 @@ mod test {
             // Ignore files
             if [
                 "always_succeeds",   // this is just for debugging / tests
-                "app_capi_clear",    // related to capi asset
-                "app_capi_approval", // related to capi asset
+                "capi_app_clear",    // related to capi asset
+                "capi_app_approval", // related to capi asset
                 "capi_escrow",       // related to capi asset
             ]
             .contains(&file_stem)

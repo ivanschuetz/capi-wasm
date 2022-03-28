@@ -55,7 +55,7 @@ int NoOp
 ==
 assert
 gtxn 0 NumAppArgs
-int 11
+int 12
 ==
 assert
 byte "CentralEscrowAddress"
@@ -88,6 +88,9 @@ gtxna 0 ApplicationArgs 9
 app_global_put
 byte "Owner"
 gtxna 0 ApplicationArgs 10
+app_global_put
+byte "Versions"
+gtxna 0 ApplicationArgs 11
 app_global_put
 int 1
 return
@@ -535,7 +538,7 @@ int NoOp
 ==
 assert
 gtxn 0 NumAppArgs
-int 13
+int 14
 ==
 assert
 gtxn 1 TypeEnum
@@ -648,6 +651,9 @@ gtxna 0 ApplicationArgs 11
 app_global_put
 byte "Owner"
 gtxna 0 ApplicationArgs 12
+app_global_put
+byte "Versions"
+gtxna 0 ApplicationArgs 13
 app_global_put
 int 1
 return

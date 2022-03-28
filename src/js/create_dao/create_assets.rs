@@ -1,10 +1,11 @@
 use super::create_dao::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs};
-use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::dependencies::{api, capi_deps, funds_asset_specs};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::js::create_dao::create_dao::validate_dao_inputs;
 use crate::service::constants::PRECISION;
-use crate::teal;
 use anyhow::{Error, Result};
+use core::api::api::Api;
+use core::api::contract::Contract;
 use core::dependencies::algod;
 use core::flows::create_dao::setup::create_shares::create_assets;
 use serde::{Deserialize, Serialize};
@@ -23,6 +24,7 @@ pub async fn _bridge_create_dao_assets_txs(
     pars: CreateDaoAssetsParJs,
 ) -> Result<CreateDaoAssetsResJs> {
     let algod = algod();
+    let api = api();
     let capi_deps = capi_deps()?;
     let funds_asset_specs = funds_asset_specs()?;
 
@@ -30,12 +32,17 @@ pub async fn _bridge_create_dao_assets_txs(
 
     let validated_inputs = validate_dao_inputs(&pars.inputs, &funds_asset_specs)?;
 
+    let last_versions = api.last_versions();
+    let last_approval_tmpl = api.template(Contract::DaoAppApproval, last_versions.app_approval)?;
+    let last_clear_tmpl = api.template(Contract::DaoAppClear, last_versions.app_clear)?;
+
     let create_assets_txs = create_assets(
         &algod,
         &validated_inputs.creator,
         &validated_inputs.creator, // for now creator is owner
         &dao_specs,
-        &teal::programs(),
+        &last_approval_tmpl,
+        &last_clear_tmpl,
         PRECISION,
         &capi_deps,
     )

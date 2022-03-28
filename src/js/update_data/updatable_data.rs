@@ -23,10 +23,10 @@ pub async fn _bridge_updatable_data(pars: UpdatableDataParJs) -> Result<Updatabl
 
     Ok(UpdatableDataResJs {
         owner: app_state.owner.to_string(),
-        central_escrow: app_state.central_escrow.to_string(),
-        customer_escrow: app_state.customer_escrow.to_string(),
-        investing_escrow: app_state.investing_escrow.to_string(),
-        locking_escrow: app_state.locking_escrow.to_string(),
+        central_escrow: app_state.central_escrow.address.to_string(),
+        customer_escrow: app_state.customer_escrow.address.to_string(),
+        investing_escrow: app_state.investing_escrow.address.to_string(),
+        locking_escrow: app_state.locking_escrow.address.to_string(),
         project_name: app_state.project_name,
         project_desc: app_state.project_desc,
         share_price: app_state.share_price.to_string(),

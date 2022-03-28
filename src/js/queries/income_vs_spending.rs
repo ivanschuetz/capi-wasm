@@ -1,8 +1,7 @@
 use crate::{
-    dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs},
+    dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs},
     js::common::{parse_bridge_pars, to_bridge_res},
     service::str_to_algos::base_units_to_display_units,
-    teal::programs,
 };
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, TimeZone, Timelike, Utc};
@@ -26,27 +25,20 @@ pub async fn _bridge_income_vs_spending(
     pars: IncomeVsSpendingParJs,
 ) -> Result<IncomeVsSpendingResJs> {
     let algod = algod();
+    let api = api();
     let indexer = indexer();
     let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
     let mut income = received_payments(&indexer, dao.customer_escrow.address()).await?;
     income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
-    let mut spending = withdrawals(
-        &algod,
-        &indexer,
-        &dao.creator,
-        dao_id,
-        &programs.escrows,
-        &capi_deps,
-    )
-    .await?;
+    let mut spending =
+        withdrawals(&algod, &indexer, &dao.creator, dao_id, &api, &capi_deps).await?;
     spending.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
     let income_data_points: Vec<ChartDataPoint> = income

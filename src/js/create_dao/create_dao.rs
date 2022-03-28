@@ -1,16 +1,18 @@
 use super::submit_dao::SubmitCreateDaoPassthroughParJs;
-use crate::dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs};
+use crate::dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, to_my_algo_txs1,
 };
 use crate::service::constants::PRECISION;
 use crate::service::str_to_algos::validate_funds_amount_input;
-use crate::teal;
 use algonaut::core::Address;
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
+use core::api::api::Api;
+use core::api::contract::Contract;
 use core::dependencies::algod;
+use core::flows::create_dao::create_dao::{Escrows, Programs};
 use core::flows::create_dao::create_dao_specs::CreateDaoSpecs;
 use core::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
 use core::flows::create_dao::share_amount::ShareAmount;
@@ -38,6 +40,7 @@ pub async fn bridge_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> {
     let algod = algod();
+    let api = api();
     let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
 
@@ -60,6 +63,19 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
     let creator_address = pars.pt.inputs.creator.parse().map_err(Error::msg)?;
     let dao_specs = pars.pt.inputs.to_dao_specs(&funds_asset_specs)?;
 
+    let last_versions = api.last_versions();
+
+    let programs = Programs {
+        central_app_approval: api.template(Contract::DaoAppApproval, last_versions.app_approval)?,
+        central_app_clear: api.template(Contract::DaoAppClear, last_versions.app_clear)?,
+        escrows: Escrows {
+            central_escrow: api.template(Contract::DaoCentral, last_versions.central_escrow)?,
+            customer_escrow: api.template(Contract::DaoCustomer, last_versions.customer_escrow)?,
+            invest_escrow: api.template(Contract::DaoInvesting, last_versions.investing_escrow)?,
+            locking_escrow: api.template(Contract::Daolocking, last_versions.locking_escrow)?,
+        },
+    };
+
     let to_sign = create_dao_txs(
         &algod,
         &dao_specs,
@@ -67,7 +83,7 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
         creator_address, // for now creator is owner
         submit_assets_res.shares_asset_id,
         funds_asset_specs.id,
-        &teal::programs(),
+        &programs,
         PRECISION,
         submit_assets_res.app_id,
         &capi_deps,

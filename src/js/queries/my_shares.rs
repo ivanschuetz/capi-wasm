@@ -1,13 +1,15 @@
 use crate::{
-    dependencies::capi_deps,
+    dependencies::{api, capi_deps},
     js::common::{parse_bridge_pars, to_bridge_res},
-    teal::programs,
 };
 use anyhow::{anyhow, Error, Result};
 use core::{
     dependencies::algod,
     flows::create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
-    state::{account_state::asset_holdings, app_state::ApplicationLocalStateError, dao_app_state::dao_investor_state},
+    state::{
+        account_state::asset_holdings, app_state::ApplicationLocalStateError,
+        dao_app_state::dao_investor_state,
+    },
 };
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -21,12 +23,12 @@ pub async fn bridge_my_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_my_shares(pars: MySharesParJs) -> Result<MySharesResJs> {
     let algod = algod();
+    let api = api();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
     log::debug!("Dao: {dao:?}");
 

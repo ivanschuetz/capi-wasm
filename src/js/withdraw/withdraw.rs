@@ -1,12 +1,11 @@
 use super::submit_withdraw::SubmitWithdrawPassthroughParJs;
 use crate::{
-    dependencies::{capi_deps, funds_asset_specs},
+    dependencies::{api, capi_deps, funds_asset_specs},
     js::{
         common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
         withdraw::submit_withdraw::{validate_withdrawal_inputs, WithdrawInputsPassthroughJs},
     },
     service::drain_if_needed::drain_if_needed_txs,
-    teal::programs,
 };
 use anyhow::{Error, Result};
 use core::{
@@ -30,11 +29,11 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
     let algod = algod();
+    let api = api();
     let funds_asset_specs = funds_asset_specs()?;
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
-    let dao = load_dao(&algod, pars.dao_id.parse()?, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, pars.dao_id.parse()?, &api, &capi_deps).await?;
 
     let inputs_par = WithdrawInputsPassthroughJs {
         sender: pars.sender.clone(),
@@ -56,7 +55,7 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         pars.sender.parse().map_err(Error::msg)?,
         funds_asset_specs.id,
         inputs,
-        &dao.central_escrow,
+        &dao.central_escrow.account,
     )
     .await?;
 

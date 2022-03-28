@@ -1,11 +1,10 @@
 use crate::{
-    dependencies::{capi_deps, funds_asset_specs},
+    dependencies::{api, capi_deps, funds_asset_specs},
     js::{
         common::{parse_bridge_pars, to_bridge_res},
         explorer_links::explorer_tx_id_link_env,
     },
     service::str_to_algos::base_units_to_display_units_str,
-    teal::programs,
 };
 use anyhow::{Error, Result};
 use core::{
@@ -26,15 +25,15 @@ pub async fn _bridge_load_funds_activity(
     pars: LoadFundsActivityParJs,
 ) -> Result<LoadFundsActivityResJs> {
     let algod = algod();
+    let api = api();
     let indexer = indexer();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let creator = pars.creator_address.parse().map_err(Error::msg)?;
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
     let mut activity_entries = funds_activity(
         &algod,
@@ -43,7 +42,7 @@ pub async fn _bridge_load_funds_activity(
         dao_id,
         dao.customer_escrow.address(),
         dao.central_escrow.address(),
-        &programs.escrows,
+        &api,
         &capi_deps,
     )
     .await?;

@@ -1,9 +1,8 @@
 use super::submit_buy_shares::SubmitBuySharesPassthroughParJs;
 use crate::{
-    dependencies::{capi_deps, funds_asset_specs},
+    dependencies::{api, capi_deps, funds_asset_specs},
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1, SignedTxFromJs},
     service::invest_or_lock::submit_apps_optins_from_js,
-    teal::programs,
 };
 use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Error, Result};
@@ -26,8 +25,8 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
     let algod = algod();
+    let api = api();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
     let validated_share_amount = validate_share_count(&pars.share_count)?;
 
@@ -39,7 +38,7 @@ pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
 
     let dao_id = pars.dao_id.parse()?;
 
-    let dao = load_dao(&algod, dao_id, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
     let to_sign = invest_txs(
         &algod,

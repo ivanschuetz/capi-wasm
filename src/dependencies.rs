@@ -1,6 +1,8 @@
+use crate::service::api::TealStringsApi;
 use algonaut::core::Address;
 use anyhow::{anyhow, Error, Result};
 use core::{
+    api::api::Api,
     capi_asset::{
         capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps, capi_asset_id::CapiAssetId,
     },
@@ -38,6 +40,10 @@ pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
         app_id: capi_app_id()?,
         asset_id: capi_asset_id()?,
     })
+}
+
+pub fn api() -> impl Api {
+    TealStringsApi {}
 }
 
 /// This is WASM-only as the decimals are needed only for formatting - we don't need this in core.

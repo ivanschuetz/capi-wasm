@@ -1,6 +1,7 @@
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_tx1};
 use algonaut::core::Address;
 use anyhow::{Error, Result};
+use core::api::version::{Version, VersionedAddress};
 use core::dependencies::algod;
 use core::flows::create_dao::storage::load_dao::DaoId;
 use core::flows::update_data::update_data::{update_data, UpdatableDaoData};
@@ -33,10 +34,22 @@ pub async fn _bridge_update_data(pars: UpdateDataParJs) -> Result<UpdateDataResJ
         &owner,
         dao_id.0,
         &UpdatableDaoData {
-            central_escrow: parse_addr(pars.central_escrow)?,
-            customer_escrow: parse_addr(pars.customer_escrow)?,
-            investing_escrow: parse_addr(pars.investing_escrow)?,
-            locking_escrow: parse_addr(pars.locking_escrow)?,
+            central_escrow: VersionedAddress::new(
+                parse_addr(pars.central_escrow)?,
+                parse_int(pars.central_escrow_version)?,
+            ),
+            customer_escrow: VersionedAddress::new(
+                parse_addr(pars.customer_escrow)?,
+                parse_int(pars.customer_escrow_version)?,
+            ),
+            investing_escrow: VersionedAddress::new(
+                parse_addr(pars.investing_escrow)?,
+                parse_int(pars.investing_escrow_version)?,
+            ),
+            locking_escrow: VersionedAddress::new(
+                parse_addr(pars.locking_escrow)?,
+                parse_int(pars.locking_escrow_version)?,
+            ),
             project_name: pars.project_name,
             project_desc: pars.project_desc,
             share_price: FundsAmount::new(pars.share_price.parse().map_err(Error::msg)?),
@@ -50,6 +63,10 @@ pub async fn _bridge_update_data(pars: UpdateDataParJs) -> Result<UpdateDataResJ
     Ok(UpdateDataResJs {
         to_sign: to_my_algo_tx1(&to_sign.update).map_err(Error::msg)?,
     })
+}
+
+fn parse_int(str: String) -> Result<Version> {
+    Ok(Version(str.parse().map_err(Error::msg)?))
 }
 
 fn parse_addr(s: String) -> Result<Address> {
@@ -67,6 +84,11 @@ pub struct UpdateDataParJs {
     pub customer_escrow: String,
     pub investing_escrow: String,
     pub locking_escrow: String,
+
+    pub central_escrow_version: String,
+    pub customer_escrow_version: String,
+    pub investing_escrow_version: String,
+    pub locking_escrow_version: String,
 
     pub project_name: String,
     pub project_desc: String,

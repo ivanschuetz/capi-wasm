@@ -1,7 +1,6 @@
-use crate::dependencies::capi_deps;
+use crate::dependencies::{api, capi_deps};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use crate::js::unlock::submit_unlock::SubmitUnlockPassthroughParJs;
-use crate::teal::programs;
 use anyhow::{Error, Result};
 use core::dependencies::algod;
 use core::flows::create_dao::storage::load_dao::load_dao;
@@ -19,10 +18,10 @@ pub async fn bridge_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
 
 pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
     let algod = algod();
+    let api = api();
     let capi_deps = capi_deps()?;
-    let programs = programs();
 
-    let dao = load_dao(&algod, pars.dao_id.parse()?, &programs.escrows, &capi_deps).await?;
+    let dao = load_dao(&algod, pars.dao_id.parse()?, &api, &capi_deps).await?;
 
     let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
 
@@ -36,7 +35,7 @@ pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
         investor_state.shares,
         dao.shares_asset_id,
         dao.app_id,
-        &dao.locking_escrow,
+        &dao.locking_escrow.account,
     )
     .await?;
 
