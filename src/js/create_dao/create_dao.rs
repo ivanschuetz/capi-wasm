@@ -153,18 +153,83 @@ fn txs_to_sign(res: &CreateDaoToSign) -> Vec<Transaction> {
 pub fn validate_dao_inputs(
     inputs: &CreateDaoFormInputsJs,
     funds_asset_specs: &FundsAssetSpecs,
-) -> Result<ValidatedDaoInputs> {
-    let dao_name = validate_dao_name(&inputs.dao_name)?;
-    let dao_description = validate_dao_description(&inputs.dao_description)?;
-    let asset_name = generate_asset_name(&dao_name)?;
-    let creator_address = inputs.creator.parse().map_err(Error::msg)?;
-    let share_supply = validate_share_supply(&inputs.share_count)?;
-    let share_price = validate_share_price(&inputs.share_price, funds_asset_specs)?;
-    let logo_url = validate_logo_url(&inputs.logo_url)?;
-    let social_media_url = validate_social_media_url(&inputs.social_media_url)?;
+) -> Result<ValidatedDaoInputs, ValidateDaoInputsError> {
+    let dao_name_res = validate_dao_name(&inputs.dao_name);
+    let dao_description_res = validate_dao_description(&inputs.dao_description);
+    let creator_address_res = validate_address(&inputs.creator);
+    let share_supply_res = validate_share_supply(&inputs.share_count);
+    let share_price_res = validate_share_price(&inputs.share_price, funds_asset_specs);
+    let logo_url_res = validate_logo_url(&inputs.logo_url);
+    let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
+    let investors_share_res = validate_investors_share(&inputs.investors_share);
 
-    let investors_share = validate_investors_share(&inputs.investors_share)?;
-    let investors_part = validate_investors_part(&investors_share, share_supply)?;
+    let dao_name_err = dao_name_res.clone().err();
+    let dao_description_err = dao_description_res.clone().err();
+    let creator_address_err = creator_address_res.clone().err();
+    let share_supply_err = share_supply_res.clone().err();
+    let share_price_err = share_price_res.clone().err();
+    let logo_url_err = logo_url_res.clone().err();
+    let social_media_url_err = social_media_url_res.clone().err();
+    let investors_share_err = investors_share_res.clone().err();
+
+    if [
+        dao_name_err,
+        dao_description_err,
+        creator_address_err,
+        share_supply_err,
+        share_price_err,
+        logo_url_err,
+        social_media_url_err,
+        investors_share_err,
+    ]
+    .iter()
+    .any(|e| e.is_some())
+    {
+        let errors = CreateAssetsInputErrors {
+            name: dao_name_res.err(),
+            description: dao_description_res.err(),
+            creator: creator_address_res.err(),
+            share_supply: share_supply_res.err(),
+            share_price: share_price_res.err(),
+            investors_share: investors_share_res.err(),
+            logo_url: logo_url_res.err(),
+            social_media_url: social_media_url_res.err(),
+        };
+        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
+    }
+
+    // Note error handling here: these errors *should* not happen, as there are caught above.
+    // this is to protect from programmatic errors - being careful, because we want to avoid crashes in WASM at any cost.
+    // ideally ensure it via the compiler - couldn't find how quickly other than nesting all the validations with match which is not a great alternative.
+    let dao_name = dao_name_res.map_err(|e| to_single_field_val_error("dao_name", e))?;
+    let dao_description =
+        dao_description_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
+    let creator_address =
+        creator_address_res.map_err(|e| to_single_field_val_error("creator_address", e))?;
+    let investors_share =
+        investors_share_res.map_err(|e| to_single_field_val_error("investors_share", e))?;
+    let share_supply =
+        share_supply_res.map_err(|e| to_single_field_val_error("share_supply", e))?;
+    let share_price = share_price_res.map_err(|e| to_single_field_val_error("share_price", e))?;
+    let logo_url = logo_url_res.map_err(|e| to_single_field_val_error("logo_url", e))?;
+    let social_media_url =
+        social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
+
+    // derived from other fields
+    let asset_name = generate_asset_name(&dao_name).map_err(|_| {
+        ValidateDaoInputsError::NonValidation(format!(
+            "Error generating asset name, based on: {dao_name}"
+        ))
+    })?;
+    let investors_part = validate_investors_part(&investors_share, share_supply).map_err(|_| {
+        ValidateDaoInputsError::NonValidation(format!(
+            "Error calculating investors part, based on: {investors_share:?} and: {share_supply}"
+        ))
+    })?;
+
+    if investors_part > share_supply {
+        return Err(ValidateDaoInputsError::InvestorsPartIsGreaterThanShareSupply);
+    }
 
     Ok(ValidatedDaoInputs {
         name: dao_name,
@@ -179,36 +244,117 @@ pub fn validate_dao_inputs(
     })
 }
 
-fn validate_dao_name(name: &str) -> Result<String> {
-    validate_text_min_max_length(name, 2, 40, "Dao name")
+fn to_single_field_val_error(field_name: &str, e: ValidationError) -> ValidateDaoInputsError {
+    ValidateDaoInputsError::SingleFieldValidation {
+        field: field_name.to_owned(),
+        error: e,
+    }
 }
 
-fn validate_dao_description(descr: &str) -> Result<String> {
-    validate_text_min_max_length(descr, 0, 200, "Dao description")
+#[derive(Debug, Clone, Serialize)]
+pub enum ValidateDaoInputsError {
+    AllFieldsValidation(CreateAssetsInputErrors),
+    InvestorsPartIsGreaterThanShareSupply,
+    SingleFieldValidation {
+        field: String,
+        error: ValidationError,
+    },
+    NonValidation(String),
+}
+
+/// Errors to be shown next to the respective input fields
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct CreateAssetsInputErrors {
+    pub name: Option<ValidationError>,
+    pub description: Option<ValidationError>,
+    pub creator: Option<ValidationError>,
+    pub share_supply: Option<ValidationError>,
+    pub share_price: Option<ValidationError>,
+    pub investors_share: Option<ValidationError>,
+    pub logo_url: Option<ValidationError>,
+    pub social_media_url: Option<ValidationError>,
+}
+
+/// Note String used for many originally numeric fields: these fields are only to display to the user
+/// using String allows to reuse them easily for different numbers, like u64 or Decimal and format them
+#[derive(Debug, Clone, Serialize)]
+pub enum ValidationError {
+    Empty,
+    MinLength {
+        min: String,
+        actual: String,
+    },
+    MaxLength {
+        max: String,
+        actual: String,
+    },
+    Min {
+        min: String,
+        actual: String,
+    },
+    Max {
+        max: String,
+        actual: String,
+    },
+    Address,
+    NotAnInteger,
+    NotADecimal,
+    TooManyFractionalDigits {
+        max: String,
+        actual: String,
+    },
+    /// Related to validation but not directly attributable to the user (e.g. overflows when converting entered quantities to base units).
+    /// Shouldn't happen normally - the conditions leading to these errors should be validated.
+    Unexpected(String),
+}
+
+/// Temporary hack for backwards compatibility with previous validation (which returned only a string)
+/// TODO all places that can trigger ValidationError should be adjusted in JS to handle the structured validation errors
+impl From<ValidationError> for anyhow::Error {
+    fn from(error: ValidationError) -> Self {
+        anyhow::Error::msg(format!("{error:?}"))
+    }
+}
+
+/// Temporary hack for backwards compatibility with previous validation (which returned only a string)
+/// TODO all places that can trigger ValidationError should be adjusted in JS to handle the structured validation errors
+impl From<ValidateDaoInputsError> for anyhow::Error {
+    fn from(error: ValidateDaoInputsError) -> Self {
+        anyhow::Error::msg(format!("{error:?}"))
+    }
+}
+
+fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
+    validate_text_min_max_length(name, 2, 40)
+}
+
+fn validate_dao_description(descr: &str) -> Result<String, ValidationError> {
+    validate_text_min_max_length(descr, 0, 200)
+}
+
+fn validate_address(str: &str) -> Result<Address, ValidationError> {
+    str.parse().map_err(|_| ValidationError::Address)
 }
 
 fn validate_text_min_max_length(
     text: &str,
     min: usize,
     max: usize,
-    field_name: &str,
-) -> Result<String> {
+) -> Result<String, ValidationError> {
     let text = text.trim();
 
     let dao_name_len = text.len();
     if dao_name_len < min {
-        return Err(anyhow!(
-            "{field_name} must have at least {} characters. Current: {}",
-            min,
-            text.len()
-        ));
+        return Err(ValidationError::MinLength {
+            min: min.to_string(),
+            actual: dao_name_len.to_string(),
+        });
     }
     if dao_name_len > max {
-        return Err(anyhow!(
-            "{field_name} must not have more than {} characters. Current: {}",
-            max,
-            text.len()
-        ));
+        return Err(ValidationError::MaxLength {
+            max: max.to_string(),
+            actual: dao_name_len.to_string(),
+        });
     }
 
     Ok(text.to_owned())
@@ -223,29 +369,47 @@ fn generate_asset_name(validated_dao_name: &str) -> Result<String> {
     Ok(asset_name.to_owned())
 }
 
-fn validate_share_supply(input: &str) -> Result<ShareAmount> {
-    let share_count = input.parse()?;
+fn validate_share_supply(input: &str) -> Result<ShareAmount, ValidationError> {
+    let share_count: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
     if share_count == 0 {
-        return Err(anyhow!("Please enter a valid share count"));
+        return Err(ValidationError::Min {
+            min: 1u8.to_string(),
+            actual: share_count.to_string(),
+        });
     }
     Ok(ShareAmount::new(share_count))
 }
 
-fn validate_share_price(input: &str, funds_asset_specs: &FundsAssetSpecs) -> Result<FundsAmount> {
+fn validate_share_price(
+    input: &str,
+    funds_asset_specs: &FundsAssetSpecs,
+) -> Result<FundsAmount, ValidationError> {
     validate_funds_amount_input(input, funds_asset_specs)
 }
 
-fn validate_investors_share(input: &str) -> Result<SharesPercentage> {
-    let value = input.parse::<Decimal>()?;
+fn validate_investors_share(input: &str) -> Result<SharesPercentage, ValidationError> {
+    let value = input
+        .parse::<Decimal>()
+        .map_err(|_| ValidationError::NotADecimal)?;
+
     let min = 0u8.into();
     let max = 100u8.into();
-    if value >= min && value <= max {
-        // from here we use (0..1) percentage - 100 based is just for user friendliness
-        (value / Decimal::from(100u8)).try_into()
+
+    if value < min {
+        Err(ValidationError::Min {
+            min: min.to_string(),
+            actual: value.to_string(),
+        })
+    } else if value > max {
+        Err(ValidationError::Max {
+            max: max.to_string(),
+            actual: value.to_string(),
+        })
     } else {
-        Err(anyhow!(
-            "Invalid percentage value: {value}. Must be [{min}..{max}]"
-        ))
+        // from here we use (0..1) percentage - 100 based is just for user friendliness
+        (value / Decimal::from(100u8)).try_into().map_err(|_| {
+            ValidationError::Unexpected(format!("Couldn't divide {value} by 100").to_owned())
+        })
     }
 }
 
@@ -260,24 +424,26 @@ fn validate_investors_part(
     )
 }
 
-fn validate_logo_url(input: &str) -> Result<String> {
+fn validate_logo_url(input: &str) -> Result<String, ValidationError> {
     let count = input.len();
     let max_chars = 100;
     if count > max_chars {
-        return Err(anyhow!(
-            "Logo URL must not have more than {max_chars} characters. Consider using a URL shortener."
-        ));
+        return Err(ValidationError::MaxLength {
+            max: max_chars.to_string(),
+            actual: count.to_string(),
+        });
     }
     Ok(input.to_owned())
 }
 
-fn validate_social_media_url(input: &str) -> Result<String> {
+fn validate_social_media_url(input: &str) -> Result<String, ValidationError> {
     let count = input.len();
     let max_chars = 100;
     if count > max_chars {
-        return Err(anyhow!(
-            "Social media URL must not have more than {max_chars} characters. Consider using a URL shortener."
-        ));
+        return Err(ValidationError::MaxLength {
+            max: max_chars.to_string(),
+            actual: count.to_string(),
+        });
     }
     Ok(input.to_owned())
 }
@@ -307,9 +473,13 @@ pub struct CreateDaoFormInputsJs {
 }
 
 impl CreateDaoFormInputsJs {
-    pub fn to_dao_specs(&self, funds_asset_specs: &FundsAssetSpecs) -> Result<CreateDaoSpecs> {
+    pub fn to_dao_specs(
+        &self,
+        funds_asset_specs: &FundsAssetSpecs,
+    ) -> Result<CreateDaoSpecs, ValidateDaoInputsError> {
         let validated_inputs = validate_dao_inputs(self, funds_asset_specs)?;
         validated_inputs_to_dao_specs(validated_inputs)
+            .map_err(|e| ValidateDaoInputsError::NonValidation(format!("Unexpected: {e:?}")))
     }
 }
 

@@ -1,12 +1,16 @@
-use super::create_dao::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs};
+use super::create_dao::{
+    CreateDaoFormInputsJs, CreateDaoPassthroughParJs, ValidateDaoInputsError, ValidationError,
+};
 use crate::dependencies::{api, capi_deps, funds_asset_specs};
-use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
+use crate::js::common::{parse_bridge_pars, to_js_value, to_my_algo_txs1};
 use crate::js::create_dao::create_dao::validate_dao_inputs;
 use crate::service::constants::PRECISION;
+use algonaut::core::Address;
 use anyhow::{Error, Result};
 use core::api::api::Api;
 use core::api::contract::Contract;
 use core::dependencies::algod;
+use core::flows::create_dao::create_dao_specs::CreateDaoSpecs;
 use core::flows::create_dao::setup::create_shares::create_assets;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -17,20 +21,175 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub async fn bridge_create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_create_dao_assets, pars: {:?}", pars);
-    to_bridge_res(_bridge_create_dao_assets_txs(parse_bridge_pars(pars)?).await)
+    _bridge_create_dao_assets_txs(parse_bridge_pars(pars)?)
+        .await
+        .map(to_js_value)
 }
 
 pub async fn _bridge_create_dao_assets_txs(
     pars: CreateDaoAssetsParJs,
+) -> Result<CreateDaoAssetsResJs, JsValue> {
+    let funds_asset_specs = funds_asset_specs().map_err(to_js_value)?;
+
+    // Note: partly redundant validation here (to_dao_specs validates everything again)
+    let validated_inputs = validate_dao_inputs(&pars.inputs, &funds_asset_specs)?;
+    let dao_specs = pars.inputs.to_dao_specs(&funds_asset_specs)?;
+
+    create_dao_assets_txs(&dao_specs, &validated_inputs.creator, pars.inputs)
+        .await
+        .map_err(to_js_value)
+}
+
+/// Errors to be shown next to the respective input fields
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct CreateAssetsInputErrorsJs {
+    // just some string to identify the struct in js
+    pub type_identifier: String,
+    pub name: Option<ValidationErrorJs>,
+    pub description: Option<ValidationErrorJs>,
+    pub creator: Option<ValidationErrorJs>,
+    pub share_supply: Option<ValidationErrorJs>,
+    pub share_price: Option<ValidationErrorJs>,
+    pub investors_share: Option<ValidationErrorJs>,
+    pub logo_url: Option<ValidationErrorJs>,
+    pub social_media_url: Option<ValidationErrorJs>,
+}
+
+impl From<ValidateDaoInputsError> for JsValue {
+    fn from(error: ValidateDaoInputsError) -> JsValue {
+        match error {
+            ValidateDaoInputsError::AllFieldsValidation(e) => {
+                let errors_js = CreateAssetsInputErrorsJs {
+                    type_identifier: "input_errors".to_owned(),
+                    name: e.name.map(to_validation_error_js),
+                    description: e.description.map(to_validation_error_js),
+                    creator: e.creator.map(to_validation_error_js),
+                    share_supply: e.share_supply.map(to_validation_error_js),
+                    share_price: e.share_price.map(to_validation_error_js),
+                    investors_share: e.investors_share.map(to_validation_error_js),
+                    logo_url: e.logo_url.map(to_validation_error_js),
+                    social_media_url: e.social_media_url.map(to_validation_error_js),
+                };
+                match JsValue::from_serde(&errors_js) {
+                    Ok(js) => js,
+                    Err(e) => to_js_value(e),
+                }
+            }
+            _ => to_js_value(format!("Error processing inputs: {error:?}")),
+        }
+    }
+}
+
+fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
+    let type_ = match &error {
+        ValidationError::Empty => "empty",
+        ValidationError::MinLength { .. } => "min_length",
+        ValidationError::MaxLength { .. } => "max_length",
+        ValidationError::Min { .. } => "min",
+        ValidationError::Max { .. } => "max",
+        ValidationError::Address => "address",
+        ValidationError::NotAnInteger => "not_int",
+        ValidationError::NotADecimal => "not_dec",
+        ValidationError::TooManyFractionalDigits { .. } => "max_fractionals",
+        ValidationError::Unexpected(_) => "unexpected",
+    }
+    .to_owned();
+
+    ValidationErrorJs {
+        type_,
+        min_length: match &error {
+            ValidationError::MinLength { min, actual } => Some(ValidationErrorMinLengthJs {
+                min: min.to_owned(),
+                actual: actual.to_owned(),
+            }),
+            _ => None,
+        },
+        max_length: match &error {
+            ValidationError::MaxLength { max, actual } => Some(ValidationErrorMaxLengthJs {
+                max: max.to_owned(),
+                actual: actual.to_owned(),
+            }),
+            _ => None,
+        },
+        min: match &error {
+            ValidationError::Min { min, actual } => Some(ValidationErrorMinJs {
+                min: min.to_owned(),
+                actual: actual.to_owned(),
+            }),
+            _ => None,
+        },
+        max: match &error {
+            ValidationError::Max { max, actual } => Some(ValidationErrorMaxJs {
+                max: max.to_owned(),
+                actual: actual.to_owned(),
+            }),
+            _ => None,
+        },
+        max_fractionals: match &error {
+            ValidationError::TooManyFractionalDigits { max, actual } => {
+                Some(TooManyFractionalDigitsJs {
+                    max: max.to_owned(),
+                    actual: actual.to_owned(),
+                })
+            }
+            _ => None,
+        },
+        unexpected: match error {
+            ValidationError::Unexpected(s) => Some(s),
+            _ => None,
+        },
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ValidationErrorJs {
+    pub type_: String,
+    pub min_length: Option<ValidationErrorMinLengthJs>,
+    pub max_length: Option<ValidationErrorMaxLengthJs>,
+    pub min: Option<ValidationErrorMinJs>,
+    pub max: Option<ValidationErrorMaxJs>,
+    pub max_fractionals: Option<TooManyFractionalDigitsJs>,
+    pub unexpected: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ValidationErrorMinLengthJs {
+    pub min: String,
+    pub actual: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ValidationErrorMaxLengthJs {
+    pub max: String,
+    pub actual: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ValidationErrorMinJs {
+    pub min: String,
+    pub actual: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ValidationErrorMaxJs {
+    pub max: String,
+    pub actual: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TooManyFractionalDigitsJs {
+    pub max: String,
+    pub actual: String,
+}
+
+async fn create_dao_assets_txs(
+    dao_specs: &CreateDaoSpecs,
+    creator: &Address,
+    inputs: CreateDaoFormInputsJs,
 ) -> Result<CreateDaoAssetsResJs> {
     let algod = algod();
     let api = api();
     let capi_deps = capi_deps()?;
-    let funds_asset_specs = funds_asset_specs()?;
-
-    let dao_specs = pars.inputs.to_dao_specs(&funds_asset_specs)?;
-
-    let validated_inputs = validate_dao_inputs(&pars.inputs, &funds_asset_specs)?;
 
     let last_versions = api.last_versions();
     let last_approval_tmpl = api.template(Contract::DaoAppApproval, last_versions.app_approval)?;
@@ -38,9 +197,9 @@ pub async fn _bridge_create_dao_assets_txs(
 
     let create_assets_txs = create_assets(
         &algod,
-        &validated_inputs.creator,
-        &validated_inputs.creator, // for now creator is owner
-        &dao_specs,
+        creator,
+        creator, // for now creator is owner
+        dao_specs,
         &last_approval_tmpl,
         &last_clear_tmpl,
         PRECISION,
@@ -56,9 +215,7 @@ pub async fn _bridge_create_dao_assets_txs(
         .map_err(Error::msg)?,
         // we forward the inputs to the next step, just for a little convenience (javascript could pass them as separate fields again instead)
         // the next step will validate them again, as this performs type conversion too (+ general safety)
-        pt: CreateDaoPassthroughParJs {
-            inputs: pars.inputs,
-        },
+        pt: CreateDaoPassthroughParJs { inputs },
     })
 }
 
@@ -74,3 +231,5 @@ pub struct CreateDaoAssetsResJs {
     pub to_sign: Vec<Value>,
     pub pt: CreateDaoPassthroughParJs, // passthrough
 }
+
+pub struct CreateDaoValidationErrors {}
