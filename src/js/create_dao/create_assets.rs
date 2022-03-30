@@ -1,6 +1,6 @@
 use super::create_dao::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs, ValidateDaoInputsError};
 use crate::dependencies::{api, capi_deps, funds_asset_specs};
-use crate::js::common::{parse_bridge_pars, to_js_value, to_my_algo_txs1};
+use crate::js::common::{parse_bridge_pars, to_js_res, to_js_value, to_my_algo_txs1};
 use crate::js::create_dao::create_dao::validate_dao_inputs;
 use crate::js::inputs_validation_js::{to_validation_error_js, ValidationErrorJs};
 use crate::service::constants::PRECISION;
@@ -20,9 +20,9 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub async fn bridge_create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_create_dao_assets, pars: {:?}", pars);
-    _bridge_create_dao_assets_txs(parse_bridge_pars(pars)?)
-        .await
-        .map(to_js_value)
+    let res: Result<CreateDaoAssetsResJs, JsValue> =
+        _bridge_create_dao_assets_txs(parse_bridge_pars(pars)?).await;
+    res.and_then(to_js_res)
 }
 
 pub async fn _bridge_create_dao_assets_txs(
