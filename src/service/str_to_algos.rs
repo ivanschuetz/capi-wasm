@@ -1,10 +1,8 @@
-use core::funds::FundsAmount;
-
+use crate::{dependencies::FundsAssetSpecs, inputs_validation::ValidationError};
 use algonaut::core::MicroAlgos;
 use anyhow::Result;
+use core::funds::FundsAmount;
 use rust_decimal::{prelude::ToPrimitive, Decimal};
-
-use crate::{dependencies::FundsAssetSpecs, js::create_dao::create_dao::ValidationError};
 
 #[allow(dead_code)] // we might use Algo inputs in the future e.g. for fees
 pub fn validate_algos_input(s: &str) -> Result<MicroAlgos, ValidationError> {

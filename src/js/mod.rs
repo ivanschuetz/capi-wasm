@@ -4,6 +4,7 @@ pub mod create_dao;
 pub mod explorer_links;
 pub mod funds_activity;
 pub mod general;
+pub mod inputs_validation_js;
 pub mod invest;
 pub mod investment;
 pub mod load_dao_user_view_with_id;

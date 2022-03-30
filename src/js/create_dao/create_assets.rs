@@ -1,9 +1,8 @@
-use super::create_dao::{
-    CreateDaoFormInputsJs, CreateDaoPassthroughParJs, ValidateDaoInputsError, ValidationError,
-};
+use super::create_dao::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs, ValidateDaoInputsError};
 use crate::dependencies::{api, capi_deps, funds_asset_specs};
 use crate::js::common::{parse_bridge_pars, to_js_value, to_my_algo_txs1};
 use crate::js::create_dao::create_dao::validate_dao_inputs;
+use crate::js::inputs_validation_js::{to_validation_error_js, ValidationErrorJs};
 use crate::service::constants::PRECISION;
 use algonaut::core::Address;
 use anyhow::{Error, Result};
@@ -78,108 +77,6 @@ impl From<ValidateDaoInputsError> for JsValue {
             _ => to_js_value(format!("Error processing inputs: {error:?}")),
         }
     }
-}
-
-fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
-    let type_ = match &error {
-        ValidationError::Empty => "empty",
-        ValidationError::MinLength { .. } => "min_length",
-        ValidationError::MaxLength { .. } => "max_length",
-        ValidationError::Min { .. } => "min",
-        ValidationError::Max { .. } => "max",
-        ValidationError::Address => "address",
-        ValidationError::NotAnInteger => "not_int",
-        ValidationError::NotADecimal => "not_dec",
-        ValidationError::TooManyFractionalDigits { .. } => "max_fractionals",
-        ValidationError::Unexpected(_) => "unexpected",
-    }
-    .to_owned();
-
-    ValidationErrorJs {
-        type_,
-        min_length: match &error {
-            ValidationError::MinLength { min, actual } => Some(ValidationErrorMinLengthJs {
-                min: min.to_owned(),
-                actual: actual.to_owned(),
-            }),
-            _ => None,
-        },
-        max_length: match &error {
-            ValidationError::MaxLength { max, actual } => Some(ValidationErrorMaxLengthJs {
-                max: max.to_owned(),
-                actual: actual.to_owned(),
-            }),
-            _ => None,
-        },
-        min: match &error {
-            ValidationError::Min { min, actual } => Some(ValidationErrorMinJs {
-                min: min.to_owned(),
-                actual: actual.to_owned(),
-            }),
-            _ => None,
-        },
-        max: match &error {
-            ValidationError::Max { max, actual } => Some(ValidationErrorMaxJs {
-                max: max.to_owned(),
-                actual: actual.to_owned(),
-            }),
-            _ => None,
-        },
-        max_fractionals: match &error {
-            ValidationError::TooManyFractionalDigits { max, actual } => {
-                Some(TooManyFractionalDigitsJs {
-                    max: max.to_owned(),
-                    actual: actual.to_owned(),
-                })
-            }
-            _ => None,
-        },
-        unexpected: match error {
-            ValidationError::Unexpected(s) => Some(s),
-            _ => None,
-        },
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ValidationErrorJs {
-    pub type_: String,
-    pub min_length: Option<ValidationErrorMinLengthJs>,
-    pub max_length: Option<ValidationErrorMaxLengthJs>,
-    pub min: Option<ValidationErrorMinJs>,
-    pub max: Option<ValidationErrorMaxJs>,
-    pub max_fractionals: Option<TooManyFractionalDigitsJs>,
-    pub unexpected: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ValidationErrorMinLengthJs {
-    pub min: String,
-    pub actual: String,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ValidationErrorMaxLengthJs {
-    pub max: String,
-    pub actual: String,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ValidationErrorMinJs {
-    pub min: String,
-    pub actual: String,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ValidationErrorMaxJs {
-    pub max: String,
-    pub actual: String,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct TooManyFractionalDigitsJs {
-    pub max: String,
-    pub actual: String,
 }
 
 async fn create_dao_assets_txs(
