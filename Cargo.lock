@@ -15,13 +15,35 @@ dependencies = [
 name = "algonaut"
 version = "0.3.0"
 dependencies = [
+ "algonaut_abi",
  "algonaut_client",
  "algonaut_core",
  "algonaut_crypto",
  "algonaut_encoding",
  "algonaut_model",
  "algonaut_transaction",
+ "data-encoding",
+ "futures-timer",
+ "gloo-timers",
+ "instant",
+ "num-bigint",
+ "num-traits",
  "rmp-serde",
+ "sha2",
+ "thiserror",
+]
+
+[[package]]
+name = "algonaut_abi"
+version = "0.3.0"
+dependencies = [
+ "algonaut_core",
+ "derive_more",
+ "lazy_static",
+ "num-bigint",
+ "regex",
+ "serde",
+ "sha2",
  "thiserror",
 ]
 
@@ -101,6 +123,7 @@ dependencies = [
 name = "algonaut_transaction"
 version = "0.3.0"
 dependencies = [
+ "algonaut_abi",
  "algonaut_core",
  "algonaut_crypto",
  "algonaut_encoding",
@@ -108,6 +131,7 @@ dependencies = [
  "data-encoding",
  "derive_more",
  "getrandom",
+ "num-bigint",
  "num-traits",
  "rand",
  "ring",
@@ -856,6 +880,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-bigint"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f93ab6289c7b344a8a9f60f88d80aa20032336fe78da341afc91c8a2341fc75f"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "num-integer"
 version = "0.1.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1042,9 +1077,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.5.4"
+version = "1.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d07a8629359eb56f1e2fb1652bb04212c072a87ba68546a04065d525673ac461"
+checksum = "1a11647b6b25ff05a515cb92c365cec08801e83423a235b51e231e1808747286"
 dependencies = [
  "aho-corasick",
  "memchr",
