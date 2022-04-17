@@ -70,7 +70,6 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
         central_app_approval: api.template(Contract::DaoAppApproval, last_versions.app_approval)?,
         central_app_clear: api.template(Contract::DaoAppClear, last_versions.app_clear)?,
         escrows: Escrows {
-            central_escrow: api.template(Contract::DaoCentral, last_versions.central_escrow)?,
             customer_escrow: api.template(Contract::DaoCustomer, last_versions.customer_escrow)?,
             invest_escrow: api.template(Contract::DaoInvesting, last_versions.investing_escrow)?,
             locking_escrow: api.template(Contract::Daolocking, last_versions.locking_escrow)?,
@@ -95,7 +94,7 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
     // but return the functions in separate groups to the core logic (so rely on indices),
     // (separate groups are needed since groups need to be executed in specific order, e.g. opt in before transferring assets)
     // we double-check length here. The other txs to be signed are in single tx fields so no need to check those.
-    if to_sign.escrow_funding_txs.len() != 4 {
+    if to_sign.escrow_funding_txs.len() != 3 {
         return Err(anyhow!(
             "Unexpected funding txs length: {}",
             to_sign.escrow_funding_txs.len()
@@ -120,7 +119,6 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
             shares_asset_id: submit_assets_res.shares_asset_id,
             invest_escrow: to_sign.invest_escrow.into(),
             locking_escrow: to_sign.locking_escrow.into(),
-            central_escrow: to_sign.central_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
             app_id: submit_assets_res.app_id.0,
         },
@@ -148,6 +146,7 @@ fn txs_to_sign(res: &CreateDaoToSign) -> Vec<Transaction> {
         txs.push(tx.to_owned());
     }
     txs.push(res.xfer_shares_to_invest_escrow.clone());
+    txs.push(res.fund_app_tx.clone());
     txs
 }
 

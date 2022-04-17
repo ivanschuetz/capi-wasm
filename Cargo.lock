@@ -113,6 +113,7 @@ dependencies = [
  "algonaut_crypto",
  "algonaut_encoding",
  "data-encoding",
+ "num-traits",
  "serde",
  "serde_bytes",
  "serde_json",

@@ -43,14 +43,16 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
     // maybe refactor writing/reading into a helper struct or function
     // (written in create_dao::txs_to_sign)
     let setup_app_tx = &pars.txs[0];
-    let escrow_funding_txs = &pars.txs[1..5];
-    let xfer_shares_to_invest_escrow = &pars.txs[5];
+    let escrow_funding_txs = &pars.txs[1..4];
+    let xfer_shares_to_invest_escrow = &pars.txs[4];
+    let app_funding_tx = &pars.txs[5];
 
     log::debug!("Submitting the dao..");
 
     let submit_dao_res = submit_create_dao(
         &algod,
         CreateDaoSigned {
+            app_funding_tx: signed_js_tx_to_signed_tx1(app_funding_tx)?,
             escrow_funding_txs: signed_js_txs_to_signed_tx1(escrow_funding_txs)?,
             optin_txs: rmp_serde::from_slice(&pars.pt.escrow_optin_signed_txs_msg_pack)
                 .map_err(Error::msg)?,
@@ -61,7 +63,6 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
             shares_asset_id: pars.pt.shares_asset_id,
             invest_escrow: pars.pt.invest_escrow.try_into().map_err(Error::msg)?,
             locking_escrow: pars.pt.locking_escrow.try_into().map_err(Error::msg)?,
-            central_escrow: pars.pt.central_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
             funds_asset_id: funds_asset_specs.id,
             app_id: DaoAppId(pars.pt.app_id),
@@ -98,7 +99,6 @@ pub struct SubmitCreateDaoPassthroughParJs {
     pub shares_asset_id: u64,
     pub invest_escrow: VersionedContractAccountJs,
     pub locking_escrow: VersionedContractAccountJs,
-    pub central_escrow: VersionedContractAccountJs,
     pub customer_escrow: VersionedContractAccountJs,
     pub app_id: u64,
 }

@@ -53,13 +53,13 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
     let to_sign_for_withdrawal = withdraw(
         &algod,
         pars.sender.parse().map_err(Error::msg)?,
-        funds_asset_specs.id,
         inputs,
-        &dao.central_escrow.account,
+        dao.app_id,
+        dao.funds_asset_id,
     )
     .await?;
 
-    let mut to_sign = vec![to_sign_for_withdrawal.pay_withdraw_fee_tx];
+    let mut to_sign = vec![to_sign_for_withdrawal.withdraw_tx];
 
     let maybe_to_sign_for_drain = drain_if_needed_txs(
         &algod,
@@ -85,7 +85,6 @@ pub async fn _bridge_withdraw(pars: WithdrawParJs) -> Result<WithdrawResJs> {
         pt: SubmitWithdrawPassthroughParJs {
             maybe_drain_tx_msg_pack,
             maybe_capi_share_tx_msg_pack,
-            withdraw_tx_msg_pack: rmp_serde::to_vec_named(&to_sign_for_withdrawal.withdraw_tx)?,
             inputs: inputs_par.clone(),
         },
     })

@@ -69,7 +69,6 @@ pub async fn _bridge_submit_claim(pars: SubmitClaimParJs) -> Result<SubmitClaimR
     let claim_tx_id = submit_claim(
         &algod,
         &ClaimSigned {
-            claim_tx: rmp_serde::from_slice(&pars.pt.claim_tx_msg_pack)?,
             app_call_tx_signed: app_call_tx,
         },
     )
@@ -96,7 +95,6 @@ pub struct SubmitClaimPassthroughParJs {
     // set if a drain tx is necessary
     pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
     pub maybe_capi_share_tx_msg_pack: Option<Vec<u8>>,
-    pub claim_tx_msg_pack: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize)]

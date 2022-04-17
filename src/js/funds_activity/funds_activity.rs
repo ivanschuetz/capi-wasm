@@ -41,7 +41,6 @@ pub async fn _bridge_load_funds_activity(
         &creator,
         dao_id,
         dao.customer_escrow.address(),
-        dao.central_escrow.address(),
         &api,
         &capi_deps,
     )

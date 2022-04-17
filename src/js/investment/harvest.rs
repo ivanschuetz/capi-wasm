@@ -6,7 +6,6 @@ use anyhow::{Error, Result};
 use core::dependencies::algod;
 use core::flows::claim::claim::claim;
 use core::flows::create_dao::storage::load_dao::load_dao;
-use core::funds::FundsAmount;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -24,21 +23,12 @@ pub async fn _bridge_bridge_claim(pars: ClaimParJs) -> Result<ClaimResJs> {
     let capi_deps = capi_deps()?;
 
     let dao_id = pars.dao_id.parse()?;
-    let amount = FundsAmount::new(pars.amount.parse()?);
 
     let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
     let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
-    let to_sign_for_claim = claim(
-        &algod,
-        investor_address,
-        dao.app_id,
-        funds_asset_id,
-        amount,
-        &dao.central_escrow.account,
-    )
-    .await?;
+    let to_sign_for_claim = claim(&algod, investor_address, dao.app_id, funds_asset_id).await?;
 
     let mut to_sign = vec![to_sign_for_claim.app_call_tx];
 
@@ -61,7 +51,6 @@ pub async fn _bridge_bridge_claim(pars: ClaimParJs) -> Result<ClaimResJs> {
         pt: SubmitClaimPassthroughParJs {
             maybe_drain_tx_msg_pack,
             maybe_capi_share_tx_msg_pack,
-            claim_tx_msg_pack: rmp_serde::to_vec_named(&to_sign_for_claim.claim_tx)?,
         },
     })
 }

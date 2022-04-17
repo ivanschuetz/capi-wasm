@@ -14,8 +14,7 @@ pub async fn available_funds(
     let customer_escrow_amount =
         funds_holdings(algod, dao.customer_escrow.address(), funds_asset_id).await?;
 
-    let central_escrow_amount =
-        funds_holdings(algod, dao.central_escrow.address(), funds_asset_id).await?;
+    let app_amount = funds_holdings(algod, &dao.app_address(), funds_asset_id).await?;
 
-    Ok(customer_escrow_amount + central_escrow_amount)
+    Ok(customer_escrow_amount + app_amount)
 }

@@ -47,14 +47,11 @@ pub async fn _bridge_submit_drain(pars: SubmitDrainParJs) -> Result<SubmitDrainR
         .await?
         .amount;
 
-    let central_escrow_balance = algod
-        .account_information(dao.central_escrow.address())
-        .await?
-        .amount;
+    let app_balance = algod.account_information(&dao.app_address()).await?.amount;
 
     Ok(SubmitDrainResJs {
         new_customer_escrow_balance: microalgos_to_algos(customer_escrow_balance).to_string(),
-        new_central_escrow_balance: microalgos_to_algos(central_escrow_balance).to_string(),
+        new_app_balance: microalgos_to_algos(app_balance).to_string(),
     })
 }
 
@@ -75,5 +72,5 @@ pub struct SubmitDrainPassthroughParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct SubmitDrainResJs {
     pub new_customer_escrow_balance: String,
-    pub new_central_escrow_balance: String,
+    pub new_app_balance: String,
 }

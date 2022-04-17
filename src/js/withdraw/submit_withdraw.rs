@@ -2,7 +2,7 @@ use super::withdrawal_history::WithdrawalViewData;
 use crate::{
     dependencies::{funds_asset_specs, FundsAssetSpecs},
     js::{
-        common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
+        common::{parse_bridge_pars, to_bridge_res, SignedTxFromJs, signed_js_tx_to_signed_tx1},
         withdraw::withdrawal_view_data,
     },
     service::{drain_if_needed::submit_drain, str_to_algos::validate_funds_amount_input},
@@ -29,7 +29,7 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
 
     let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs, &funds_asset_specs)?;
 
-    // 1 tx if only withdrawal, 3 if withdrawal + 2 drain
+    // 1 tx if only withdrawal, 3 if withdrawal with drain
     if pars.txs.len() != 1 && pars.txs.len() != 3 {
         return Err(anyhow!(
             "Unexpected withdraw txs length: {}",
@@ -39,7 +39,7 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
     // sanity check
     if pars.txs.len() == 1 && pars.pt.maybe_drain_tx_msg_pack.is_some() {
         return Err(anyhow!(
-            "Invalid state: 2 txs with a passthrough draining tx",
+            "Invalid state: 0 txs with a passthrough draining tx",
         ));
     }
 
@@ -60,13 +60,10 @@ pub async fn _bridge_submit_withdraw(pars: SubmitWithdrawParJs) -> Result<Submit
         .await?;
     }
 
-    let pay_withdraw_fee_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
-
     let withdraw_tx_id = submit_withdraw(
         &algod,
         &WithdrawSigned {
-            withdraw_tx: rmp_serde::from_slice(&pars.pt.withdraw_tx_msg_pack)?,
-            pay_withdraw_fee_tx,
+            withdraw_tx: signed_js_tx_to_signed_tx1(&pars.txs[0])?,
         },
     )
     .await?;
@@ -95,8 +92,6 @@ pub struct SubmitWithdrawPassthroughParJs {
     // set if a drain tx is necessary
     pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
     pub maybe_capi_share_tx_msg_pack: Option<Vec<u8>>,
-
-    pub withdraw_tx_msg_pack: Vec<u8>,
 
     pub inputs: WithdrawInputsPassthroughJs,
 }

@@ -34,10 +34,6 @@ pub async fn _bridge_update_data(pars: UpdateDataParJs) -> Result<UpdateDataResJ
         &owner,
         dao_id.0,
         &UpdatableDaoData {
-            central_escrow: VersionedAddress::new(
-                parse_addr(pars.central_escrow)?,
-                parse_int(pars.central_escrow_version)?,
-            ),
             customer_escrow: VersionedAddress::new(
                 parse_addr(pars.customer_escrow)?,
                 parse_int(pars.customer_escrow_version)?,
