@@ -1,5 +1,4 @@
 use crate::service::api::TealStringsApi;
-use algonaut::core::Address;
 use anyhow::{anyhow, Error, Result};
 use core::{
     api::api::Api,
@@ -35,7 +34,6 @@ pub fn funds_asset_specs() -> Result<FundsAssetSpecs> {
 
 pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
     Ok(CapiAssetDaoDeps {
-        escrow: capi_escrow_address()?,
         escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
         app_id: capi_app_id()?,
         asset_id: capi_asset_id()?,
@@ -59,14 +57,6 @@ pub fn funds_asset_id() -> Result<FundsAssetId> {
     log::debug!("Funds asset id: {:?}", str);
 
     Ok(FundsAssetId(str.parse().map_err(Error::msg)?))
-}
-
-pub fn capi_escrow_address() -> Result<Address> {
-    let str = option_env!("CAPI_ESCROW_ADDRESS")
-        .ok_or_else(|| anyhow!("Please pass CAPI_ESCROW_ADDRESS"))?;
-    log::debug!("Capi escrow address: {:?}", str);
-
-    str.parse().map_err(Error::msg)
 }
 
 pub fn capi_app_id() -> Result<CapiAppId> {

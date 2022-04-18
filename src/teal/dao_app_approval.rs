@@ -455,7 +455,7 @@ byte "ClaimedTotal"
 app_local_get
 -
 itxn_field AssetAmount
-txn Sender
+gtxn 0 Sender
 itxn_field AssetReceiver
 byte "FundsAssetId"
 app_global_get

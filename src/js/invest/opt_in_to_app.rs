@@ -67,7 +67,7 @@ async fn optin_to_all_apps(
     app_id: DaoAppId,
 ) -> Result<Vec<Transaction>> {
     let params = algod.suggested_transaction_params().await?;
-    let txs = &mut [&mut optin_to_dao_app(&params, app_id, *investor_address).await?];
+    let txs = &mut [&mut optin_to_dao_app(&params, app_id, *investor_address)?];
     TxGroup::assign_group_id(txs)?;
     Ok(txs.into_iter().map(|t| t.clone()).collect())
 }

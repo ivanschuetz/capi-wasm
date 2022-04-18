@@ -54,7 +54,6 @@ pub async fn _bridge_update_app_txs(pars: UpdateDaoAppParJs) -> Result<UpdateDao
         dao.specs.shares.supply,
         PRECISION,
         dao.specs.investors_part(),
-        &capi_deps.escrow,
         capi_deps.app_id,
         capi_deps.escrow_percentage,
         dao.specs.share_price,

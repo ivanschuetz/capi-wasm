@@ -1,2 +1,3 @@
 # Note that this script isn't meant to be updated frequently, as TestNet / MainNet dependencies are permanent / more long lived (than local/sandbox ones).
-NETWORK=test ENV=test FUNDS_ASSET_ID=81166440 CAPI_ESCROW_ADDRESS=EWBJIU3RKKKIYVHIHHLK473GLKEHGOPY64XW4YWEIUF4BQVXCLTBCEWEJA CAPI_APP_ID=81166595 CAPI_ASSET_ID=81166572 wasm-pack build --out-dir ../wasm-build --release
+# I forgot how this script is updated - appearently manually? could only find code to generate build_local.sh in core
+NETWORK=test ENV=test FUNDS_ASSET_ID=81166440 CAPI_APP_ID=81166595 CAPI_ASSET_ID=81166572 wasm-pack build --out-dir ../wasm-build --release
