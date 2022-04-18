@@ -25,7 +25,6 @@ pub async fn _bridge_submit_unlock(pars: SubmitUnlockParJs) -> Result<SubmitUnlo
         &algod,
         UnlockSigned {
             central_app_optout_tx: signed_js_tx_to_signed_tx1(app_call_tx)?,
-            shares_xfer_tx_signed: rmp_serde::from_slice(&pars.pt.shares_xfer_tx_msg_pack)?,
         },
     )
     .await?;
@@ -39,12 +38,6 @@ pub async fn _bridge_submit_unlock(pars: SubmitUnlockParJs) -> Result<SubmitUnlo
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitUnlockParJs {
     pub txs: Vec<SignedTxFromJs>,
-    pub pt: SubmitUnlockPassthroughParJs,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SubmitUnlockPassthroughParJs {
-    pub shares_xfer_tx_msg_pack: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize)]

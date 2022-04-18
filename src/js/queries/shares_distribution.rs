@@ -29,7 +29,6 @@ pub async fn _bridge_shares_distribution(
     let share_supply = pars.share_supply.parse()?;
     let app_id = pars.app_id.parse()?;
     let investing_escrow = pars.investing_escrow_address.parse().map_err(Error::msg)?;
-    let locking_escrow = pars.locking_escrow_address.parse().map_err(Error::msg)?;
 
     let holders = shares_holders_distribution(
         &algod,
@@ -38,7 +37,6 @@ pub async fn _bridge_shares_distribution(
         app_id,
         share_supply,
         &investing_escrow,
-        &locking_escrow,
     )
     .await?;
 
@@ -95,7 +93,6 @@ pub struct SharedDistributionParJs {
 
     pub app_id: String,
     pub investing_escrow_address: String,
-    pub locking_escrow_address: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

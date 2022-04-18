@@ -72,7 +72,6 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
         escrows: Escrows {
             customer_escrow: api.template(Contract::DaoCustomer, last_versions.customer_escrow)?,
             invest_escrow: api.template(Contract::DaoInvesting, last_versions.investing_escrow)?,
-            locking_escrow: api.template(Contract::Daolocking, last_versions.locking_escrow)?,
         },
     };
 
@@ -94,7 +93,7 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
     // but return the functions in separate groups to the core logic (so rely on indices),
     // (separate groups are needed since groups need to be executed in specific order, e.g. opt in before transferring assets)
     // we double-check length here. The other txs to be signed are in single tx fields so no need to check those.
-    if to_sign.escrow_funding_txs.len() != 3 {
+    if to_sign.escrow_funding_txs.len() != 2 {
         return Err(anyhow!(
             "Unexpected funding txs length: {}",
             to_sign.escrow_funding_txs.len()
@@ -103,7 +102,7 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
     // double-checking total length as well, just in case
     // in the next step we also check the length of the signed txs
     let txs_to_sign = &txs_to_sign(&to_sign);
-    if txs_to_sign.len() as u64 != 6 {
+    if txs_to_sign.len() as u64 != 5 {
         return Err(anyhow!(
             "Unexpected to sign dao txs length: {}",
             txs_to_sign.len()
@@ -118,7 +117,6 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
             escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)?,
             shares_asset_id: submit_assets_res.shares_asset_id,
             invest_escrow: to_sign.invest_escrow.into(),
-            locking_escrow: to_sign.locking_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
             app_id: submit_assets_res.app_id.0,
         },

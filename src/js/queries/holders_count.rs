@@ -1,4 +1,5 @@
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
+use algonaut::core::to_app_address;
 use anyhow::{Error, Result};
 use core::{dependencies::indexer, queries::shares_distribution::holders_count};
 use serde::{Deserialize, Serialize};
@@ -16,10 +17,12 @@ pub async fn _bridge_holders_count(pars: HoldersCountParJs) -> Result<HoldersCou
 
     let asset_id = pars.asset_id.parse()?;
     let investing_escrow = pars.investing_escrow_address.parse().map_err(Error::msg)?;
-    let locking_escrow = pars.locking_escrow_address.parse().map_err(Error::msg)?;
+    let app_id = pars.app_id.parse()?;
+
+    let app_address = to_app_address(app_id);
 
     Ok(HoldersCountResJs {
-        count: holders_count(&indexer, asset_id, &investing_escrow, &locking_escrow)
+        count: holders_count(&indexer, asset_id, &investing_escrow, &app_address)
             .await?
             .to_string(),
     })
@@ -29,7 +32,7 @@ pub async fn _bridge_holders_count(pars: HoldersCountParJs) -> Result<HoldersCou
 pub struct HoldersCountParJs {
     pub asset_id: String,
     pub investing_escrow_address: String,
-    pub locking_escrow_address: String,
+    pub app_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

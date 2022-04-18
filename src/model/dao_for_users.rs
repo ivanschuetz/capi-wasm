@@ -24,7 +24,6 @@ pub struct DaoForUsers {
     pub shares_asset_id: u64,
     pub app_id: DaoAppId,
     pub invest_escrow_address: Address,
-    pub locking_escrow_address: Address,
     pub customer_escrow_address: Address,
     pub invest_link: String,
     pub my_investment_link: String,
@@ -48,7 +47,6 @@ pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId) -> Result<DaoForUsers> {
         shares_asset_id: dao.shares_asset_id,
         app_id: dao.app_id,
         invest_escrow_address: *dao.invest_escrow.address(),
-        locking_escrow_address: *dao.locking_escrow.address(),
         customer_escrow_address: *dao.customer_escrow.address(),
         // invest_link: format!("/{}/invest", dao_id_str),
         // for now just the dao, because we don't have a dedicated investing view anymore and the embedded view is not linked

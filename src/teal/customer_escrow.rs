@@ -1,7 +1,7 @@
 pub const SRC: &str = r#"
 #pragma version 5
 global GroupSize
-int 9
+int 7
 ==
 bnz main_l4
 gtxna 0 ApplicationArgs 0
@@ -102,7 +102,7 @@ int NoOp
 ==
 assert
 gtxn 1 NumAppArgs
-int 13
+int 12
 ==
 assert
 gtxn 2 TypeEnum
@@ -118,7 +118,11 @@ int pay
 ==
 assert
 gtxn 4 TypeEnum
-int pay
+int axfer
+==
+assert
+gtxn 4 AssetAmount
+int 0
 ==
 assert
 gtxn 5 TypeEnum
@@ -133,24 +137,8 @@ gtxn 6 TypeEnum
 int axfer
 ==
 assert
-gtxn 6 AssetAmount
-int 0
-==
-assert
-gtxn 7 TypeEnum
-int axfer
-==
-assert
-gtxn 7 AssetAmount
-int 0
-==
-assert
-gtxn 8 TypeEnum
-int axfer
-==
-assert
-gtxn 8 XferAsset
-gtxna 1 ApplicationArgs 3
+gtxn 6 XferAsset
+gtxna 1 ApplicationArgs 2
 btoi
 ==
 assert

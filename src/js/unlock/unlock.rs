@@ -1,6 +1,5 @@
 use crate::dependencies::{api, capi_deps};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
-use crate::js::unlock::submit_unlock::SubmitUnlockPassthroughParJs;
 use anyhow::{Error, Result};
 use core::dependencies::algod;
 use core::flows::create_dao::storage::load_dao::load_dao;
@@ -29,23 +28,12 @@ pub async fn _bridge_unlock(pars: UnlockParJs) -> Result<UnlockResJs> {
 
     log::debug!("Unlocking shares: {:?}", investor_state.shares);
 
-    let to_sign = unlock(
-        &algod,
-        investor_address,
-        investor_state.shares,
-        dao.shares_asset_id,
-        dao.app_id,
-        &dao.locking_escrow.account,
-    )
-    .await?;
+    let to_sign = unlock(&algod, investor_address, dao.app_id, dao.shares_asset_id).await?;
 
     let to_sign_txs = vec![to_sign.central_app_optout_tx];
 
     Ok(UnlockResJs {
         to_sign: to_my_algo_txs1(&to_sign_txs)?,
-        pt: SubmitUnlockPassthroughParJs {
-            shares_xfer_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.shares_xfer_tx)?,
-        },
     })
 }
 
@@ -58,5 +46,4 @@ pub struct UnlockParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct UnlockResJs {
     pub to_sign: Vec<Value>,
-    pub pt: SubmitUnlockPassthroughParJs,
 }

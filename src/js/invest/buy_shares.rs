@@ -44,7 +44,6 @@ pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
         &algod,
         &dao,
         &pars.investor_address.parse().map_err(Error::msg)?,
-        &dao.locking_escrow.address(),
         dao.app_id,
         dao.shares_asset_id,
         validated_share_amount,

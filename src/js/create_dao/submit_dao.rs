@@ -31,7 +31,7 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
     let algod = algod();
     let funds_asset_specs = funds_asset_specs()?;
 
-    if pars.txs.len() != 6 {
+    if pars.txs.len() != 5 {
         return Err(anyhow!(
             "Unexpected signed dao txs length: {}",
             pars.txs.len()
@@ -43,9 +43,9 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
     // maybe refactor writing/reading into a helper struct or function
     // (written in create_dao::txs_to_sign)
     let setup_app_tx = &pars.txs[0];
-    let escrow_funding_txs = &pars.txs[1..4];
-    let xfer_shares_to_invest_escrow = &pars.txs[4];
-    let app_funding_tx = &pars.txs[5];
+    let escrow_funding_txs = &pars.txs[1..3];
+    let xfer_shares_to_invest_escrow = &pars.txs[3];
+    let app_funding_tx = &pars.txs[4];
 
     log::debug!("Submitting the dao..");
 
@@ -62,7 +62,6 @@ async fn _bridge_submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<DaoForU
             creator: pars.pt.creator.parse().map_err(Error::msg)?,
             shares_asset_id: pars.pt.shares_asset_id,
             invest_escrow: pars.pt.invest_escrow.try_into().map_err(Error::msg)?,
-            locking_escrow: pars.pt.locking_escrow.try_into().map_err(Error::msg)?,
             customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
             funds_asset_id: funds_asset_specs.id,
             app_id: DaoAppId(pars.pt.app_id),
@@ -98,7 +97,6 @@ pub struct SubmitCreateDaoPassthroughParJs {
     pub escrow_optin_signed_txs_msg_pack: Vec<u8>,
     pub shares_asset_id: u64,
     pub invest_escrow: VersionedContractAccountJs,
-    pub locking_escrow: VersionedContractAccountJs,
     pub customer_escrow: VersionedContractAccountJs,
     pub app_id: u64,
 }
