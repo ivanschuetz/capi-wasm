@@ -9,7 +9,7 @@ use core::{
     dependencies::{algod, indexer},
     flows::{create_dao::storage::load_dao::load_dao, withdraw::withdrawals::withdrawals},
     funds::FundsAmount,
-    queries::received_payments::received_payments,
+    queries::received_payments::all_received_payments,
 };
 use serde::{Deserialize, Serialize};
 use std::{convert::TryInto, fmt::Debug, ops::Div};
@@ -34,8 +34,13 @@ pub async fn _bridge_income_vs_spending(
 
     let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
-    let mut income =
-        received_payments(&indexer, dao.customer_escrow.address(), dao.funds_asset_id).await?;
+    let mut income = all_received_payments(
+        &indexer,
+        &dao.app_address(),
+        dao.customer_escrow.address(),
+        dao.funds_asset_id,
+    )
+    .await?;
     income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
     let mut spending = withdrawals(&algod, &indexer, &dao.owner, dao_id, &api, &capi_deps).await?;
