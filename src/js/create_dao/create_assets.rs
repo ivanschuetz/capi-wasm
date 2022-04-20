@@ -9,8 +9,8 @@ use anyhow::{Error, Result};
 use core::api::api::Api;
 use core::api::contract::Contract;
 use core::dependencies::algod;
-use core::flows::create_dao::create_dao_specs::CreateDaoSpecs;
 use core::flows::create_dao::setup::create_shares::create_assets;
+use core::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;
@@ -80,7 +80,7 @@ impl From<ValidateDaoInputsError> for JsValue {
 }
 
 async fn create_dao_assets_txs(
-    dao_specs: &CreateDaoSpecs,
+    dao_specs: &SetupDaoSpecs,
     creator: &Address,
     inputs: CreateDaoFormInputsJs,
 ) -> Result<CreateDaoAssetsResJs> {
@@ -95,7 +95,6 @@ async fn create_dao_assets_txs(
     let create_assets_txs = create_assets(
         &algod,
         creator,
-        creator, // for now creator is owner
         dao_specs,
         &last_approval_tmpl,
         &last_clear_tmpl,

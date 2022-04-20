@@ -38,8 +38,9 @@ pub async fn _bridge_view_dao(pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
 
     let available_funds = available_funds(&algod, &dao, funds_asset_specs.id).await?;
 
+    // TODO!! not-locked shares (use global function to get not-locked (name prob. "available" shares))
     let shares_available = algod
-        .account_information(dao.invest_escrow.address())
+        .account_information(&dao.app_address())
         .await?
         .assets
         .iter()

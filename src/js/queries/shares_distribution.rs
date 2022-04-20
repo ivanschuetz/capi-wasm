@@ -3,7 +3,7 @@ use crate::js::{
     explorer_links::explorer_address_link_env,
 };
 use algonaut::core::Address;
-use anyhow::{anyhow, Error, Result};
+use anyhow::{anyhow, Result};
 use core::{
     decimal_util::{AsDecimal, DecimalExt},
     dependencies::{algod, indexer},
@@ -28,17 +28,9 @@ pub async fn _bridge_shares_distribution(
     let asset_id = pars.asset_id.parse()?;
     let share_supply = pars.share_supply.parse()?;
     let app_id = pars.app_id.parse()?;
-    let investing_escrow = pars.investing_escrow_address.parse().map_err(Error::msg)?;
 
-    let holders = shares_holders_distribution(
-        &algod,
-        &indexer,
-        asset_id,
-        app_id,
-        share_supply,
-        &investing_escrow,
-    )
-    .await?;
+    let holders =
+        shares_holders_distribution(&algod, &indexer, asset_id, app_id, share_supply).await?;
 
     let mut holders_js = vec![];
     for h in &holders {
@@ -92,7 +84,6 @@ pub struct SharedDistributionParJs {
     pub share_supply: String,
 
     pub app_id: String,
-    pub investing_escrow_address: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

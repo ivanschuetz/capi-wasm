@@ -38,10 +38,6 @@ pub async fn _bridge_update_data(pars: UpdateDataParJs) -> Result<UpdateDataResJ
                 parse_addr(pars.customer_escrow)?,
                 parse_int(pars.customer_escrow_version)?,
             ),
-            investing_escrow: VersionedAddress::new(
-                parse_addr(pars.investing_escrow)?,
-                parse_int(pars.investing_escrow_version)?,
-            ),
             project_name: pars.project_name,
             project_desc: pars.project_desc,
             share_price: FundsAmount::new(pars.share_price.parse().map_err(Error::msg)?),
@@ -74,11 +70,9 @@ pub struct UpdateDataParJs {
 
     pub central_escrow: String,
     pub customer_escrow: String,
-    pub investing_escrow: String,
 
     pub central_escrow_version: String,
     pub customer_escrow_version: String,
-    pub investing_escrow_version: String,
 
     pub project_name: String,
     pub project_desc: String,

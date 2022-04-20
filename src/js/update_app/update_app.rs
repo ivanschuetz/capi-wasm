@@ -50,7 +50,6 @@ pub async fn _bridge_update_app_txs(pars: UpdateDaoAppParJs) -> Result<UpdateDao
     let app_source = render_and_compile_app_approval(
         &algod,
         &approval_template,
-        &owner,
         dao.specs.shares.supply,
         PRECISION,
         dao.specs.investors_part(),

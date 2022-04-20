@@ -1,7 +1,6 @@
 pub mod customer_escrow;
 pub mod dao_app_approval;
 pub mod dao_app_clear;
-pub mod investing_escrow;
 pub mod update_teal;
 
 // use core::flows::create_dao::create_dao::{Escrows, Programs};
@@ -13,7 +12,6 @@ pub mod update_teal;
 //         central_app_clear: TealSource(app_central_clear::SRC.as_bytes().to_vec()),
 //         escrows: Escrows {
 //             customer_escrow: TealSourceTemplate(customer_escrow::SRC.as_bytes().to_vec()),
-//             invest_escrow: TealSourceTemplate(investing_escrow::SRC.as_bytes().to_vec()),
 //         },
 //     }
 // }

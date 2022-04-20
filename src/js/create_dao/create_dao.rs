@@ -1,4 +1,4 @@
-use super::submit_dao::SubmitCreateDaoPassthroughParJs;
+use super::submit_dao::SubmitSetupDaoPassthroughParJs;
 use crate::dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::inputs_validation::ValidationError;
 use crate::js::common::SignedTxFromJs;
@@ -13,15 +13,15 @@ use anyhow::{anyhow, Error, Result};
 use core::api::api::Api;
 use core::api::contract::Contract;
 use core::dependencies::algod;
-use core::flows::create_dao::create_dao::{Escrows, Programs};
-use core::flows::create_dao::create_dao_specs::CreateDaoSpecs;
 use core::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
+use core::flows::create_dao::setup_dao::{Escrows, Programs};
+use core::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use core::flows::create_dao::share_amount::ShareAmount;
 use core::flows::create_dao::shares_percentage::SharesPercentage;
 use core::flows::create_dao::shares_specs::SharesDistributionSpecs;
 use core::flows::create_dao::{
-    create_dao::create_dao_txs,
-    model::{CreateDaoToSign, CreateSharesSpecs},
+    model::{CreateSharesSpecs, SetupDaoToSign},
+    setup_dao::setup_dao_txs,
 };
 use core::funds::FundsAmount;
 use rust_decimal::Decimal;
@@ -71,11 +71,10 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
         central_app_clear: api.template(Contract::DaoAppClear, last_versions.app_clear)?,
         escrows: Escrows {
             customer_escrow: api.template(Contract::DaoCustomer, last_versions.customer_escrow)?,
-            invest_escrow: api.template(Contract::DaoInvesting, last_versions.investing_escrow)?,
         },
     };
 
-    let to_sign = create_dao_txs(
+    let to_sign = setup_dao_txs(
         &algod,
         &dao_specs,
         creator_address,
@@ -89,20 +88,10 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
     )
     .await?;
 
-    // since we've to bundle all the txs to be signed in one array (so the user has to confirm only once in myalgo)
-    // but return the functions in separate groups to the core logic (so rely on indices),
-    // (separate groups are needed since groups need to be executed in specific order, e.g. opt in before transferring assets)
-    // we double-check length here. The other txs to be signed are in single tx fields so no need to check those.
-    if to_sign.escrow_funding_txs.len() != 2 {
-        return Err(anyhow!(
-            "Unexpected funding txs length: {}",
-            to_sign.escrow_funding_txs.len()
-        ));
-    }
     // double-checking total length as well, just in case
     // in the next step we also check the length of the signed txs
     let txs_to_sign = &txs_to_sign(&to_sign);
-    if txs_to_sign.len() as u64 != 5 {
+    if txs_to_sign.len() as u64 != 4 {
         return Err(anyhow!(
             "Unexpected to sign dao txs length: {}",
             txs_to_sign.len()
@@ -111,20 +100,22 @@ pub async fn _bridge_create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs> 
 
     Ok(CreateDaoResJs {
         to_sign: to_my_algo_txs1(txs_to_sign)?,
-        pt: SubmitCreateDaoPassthroughParJs {
+        pt: SubmitSetupDaoPassthroughParJs {
             specs: dao_specs,
             creator: creator_address.to_string(),
-            escrow_optin_signed_txs_msg_pack: rmp_serde::to_vec_named(&to_sign.optin_txs)?,
+            // !! TODO renamed: escrow_optin_signed_txs_msg_pack -> and only 1 tx now (not vec)
+            customer_escrow_optin_to_funds_asset_tx_msg_pack: rmp_serde::to_vec_named(
+                &to_sign.customer_escrow_optin_to_funds_asset_tx,
+            )?,
             shares_asset_id: submit_assets_res.shares_asset_id,
-            invest_escrow: to_sign.invest_escrow.into(),
             customer_escrow: to_sign.customer_escrow.into(),
             app_id: submit_assets_res.app_id.0,
         },
     })
 }
 
-fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<CreateDaoSpecs> {
-    CreateDaoSpecs::new(
+fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
+    SetupDaoSpecs::new(
         inputs.name,
         inputs.description,
         CreateSharesSpecs {
@@ -138,14 +129,13 @@ fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<CreateDao
     )
 }
 
-fn txs_to_sign(res: &CreateDaoToSign) -> Vec<Transaction> {
-    let mut txs = vec![res.setup_app_tx.clone()];
-    for tx in &res.escrow_funding_txs {
-        txs.push(tx.to_owned());
-    }
-    txs.push(res.xfer_shares_to_invest_escrow.clone());
-    txs.push(res.fund_app_tx.clone());
-    txs
+fn txs_to_sign(res: &SetupDaoToSign) -> Vec<Transaction> {
+    vec![
+        res.setup_app_tx.clone(),
+        res.customer_escrow_funding_tx.clone(),
+        res.fund_app_tx.clone(),
+        res.transfer_shares_to_app_tx.clone(),
+    ]
 }
 
 pub fn validate_dao_inputs(
@@ -425,7 +415,7 @@ impl CreateDaoFormInputsJs {
     pub fn to_dao_specs(
         &self,
         funds_asset_specs: &FundsAssetSpecs,
-    ) -> Result<CreateDaoSpecs, ValidateDaoInputsError> {
+    ) -> Result<SetupDaoSpecs, ValidateDaoInputsError> {
         let validated_inputs = validate_dao_inputs(self, funds_asset_specs)?;
         validated_inputs_to_dao_specs(validated_inputs)
             .map_err(|e| ValidateDaoInputsError::NonValidation(format!("Unexpected: {e:?}")))
@@ -448,5 +438,5 @@ pub struct CreateDaoPassthroughParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct CreateDaoResJs {
     pub to_sign: Vec<Value>,
-    pub pt: SubmitCreateDaoPassthroughParJs, // passthrough
+    pub pt: SubmitSetupDaoPassthroughParJs, // passthrough
 }

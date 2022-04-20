@@ -4,7 +4,6 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1, SignedTxFromJs},
     service::invest_or_lock::submit_apps_optins_from_js,
 };
-use algonaut::core::ToMsgPack;
 use anyhow::{anyhow, Error, Result};
 use core::{
     dependencies::algod,
@@ -62,7 +61,6 @@ pub async fn _bridge_buy_shares(pars: InvestParJs) -> Result<InvestResJs> {
         to_sign: to_my_algo_txs1(&to_sign_txs).map_err(Error::msg)?,
         pt: SubmitBuySharesPassthroughParJs {
             dao_msg_pack: rmp_serde::to_vec_named(&dao)?,
-            shares_xfer_tx_msg_pack: to_sign.shares_xfer_tx.to_msg_pack()?,
         },
     })
 }

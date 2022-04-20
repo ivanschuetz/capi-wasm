@@ -1,7 +1,7 @@
 pub const SRC: &str = r#"
-#pragma version 5
+#pragma version 6
 global GroupSize
-int 7
+int 5
 ==
 bnz main_l4
 gtxna 0 ApplicationArgs 0
@@ -24,6 +24,10 @@ int NoOp
 assert
 gtxn 0 Sender
 gtxn 1 Sender
+==
+assert
+gtxn 0 ApplicationID
+int TMPL_CENTRAL_APP_ID
 ==
 assert
 gtxn 1 TypeEnum
@@ -81,14 +85,6 @@ assert
 int 1
 return
 main_l4:
-gtxn 0 TypeEnum
-int pay
-==
-assert
-gtxn 0 Receiver
-addr TMPL_APP_ESCROW_ADDRESS
-==
-assert
 gtxn 1 TypeEnum
 int appl
 ==
@@ -101,45 +97,12 @@ gtxn 1 OnCompletion
 int NoOp
 ==
 assert
-gtxn 1 NumAppArgs
-int 12
-==
-assert
-gtxn 2 TypeEnum
-int pay
-==
-assert
-gtxn 2 Receiver
-gtxna 1 ApplicationArgs 0
-==
-assert
 gtxn 3 TypeEnum
-int pay
-==
-assert
-gtxn 4 TypeEnum
 int axfer
 ==
 assert
-gtxn 4 AssetAmount
+gtxn 3 AssetAmount
 int 0
-==
-assert
-gtxn 5 TypeEnum
-int axfer
-==
-assert
-gtxn 5 AssetAmount
-int 0
-==
-assert
-gtxn 6 TypeEnum
-int axfer
-==
-assert
-gtxn 6 XferAsset
-gtxna 1 ApplicationArgs 2
-btoi
 ==
 assert
 int 1

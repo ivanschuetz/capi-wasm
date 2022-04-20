@@ -37,8 +37,6 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
             central_app_setup_tx,
             shares_asset_optin_tx,
             payment_tx,
-            shares_xfer_tx: rmp_serde::from_slice(&pars.pt.shares_xfer_tx_msg_pack)
-                .map_err(to_js_value)?,
         },
     )
     .await
@@ -65,7 +63,6 @@ pub struct SubmitBuySharesParJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitBuySharesPassthroughParJs {
     pub dao_msg_pack: Vec<u8>,
-    pub shares_xfer_tx_msg_pack: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -35,7 +35,6 @@ pub async fn _bridge_lock(pars: LockParJs) -> Result<LockResJs> {
         share_amount,
         dao.shares_asset_id,
         dao.app_id,
-        dao.id(),
     )
     .await?;
 
