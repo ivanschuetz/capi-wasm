@@ -29,7 +29,7 @@ pub async fn _bridge_load_funds_activity(
     let indexer = indexer();
     let capi_deps = capi_deps()?;
 
-    let creator = pars.creator_address.parse().map_err(Error::msg)?;
+    let creator = pars.owner_address.parse().map_err(Error::msg)?;
 
     let dao_id = pars.dao_id.parse()?;
 
@@ -78,7 +78,7 @@ pub async fn _bridge_load_funds_activity(
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadFundsActivityParJs {
     pub dao_id: String,
-    pub creator_address: String,
+    pub owner_address: String,
     pub max_results: Option<String>,
 }
 

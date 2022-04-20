@@ -52,6 +52,6 @@ pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId) -> Result<DaoForUsers> {
         my_investment_link: format!("/{}/investment", dao_id_str),
         my_investment_link_rel: format!("investment/{}", dao_id_str),
         dao_link: format!("/{}", dao_id_str),
-        creator: dao.creator,
+        creator: dao.owner,
     })
 }
