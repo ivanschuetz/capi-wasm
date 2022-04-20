@@ -43,6 +43,7 @@ pub async fn _bridge_load_funds_activity(
         dao.customer_escrow.address(),
         &api,
         &capi_deps,
+        dao.funds_asset_id,
     )
     .await?;
     // sort descendingly by date (most recent activity first)

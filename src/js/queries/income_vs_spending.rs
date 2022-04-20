@@ -34,7 +34,8 @@ pub async fn _bridge_income_vs_spending(
 
     let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
-    let mut income = received_payments(&indexer, dao.customer_escrow.address()).await?;
+    let mut income =
+        received_payments(&indexer, dao.customer_escrow.address(), dao.funds_asset_id).await?;
     income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
     let mut spending = withdrawals(&algod, &indexer, &dao.owner, dao_id, &api, &capi_deps).await?;
