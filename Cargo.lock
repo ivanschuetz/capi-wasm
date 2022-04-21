@@ -1677,6 +1677,7 @@ version = "0.1.0"
 dependencies = [
  "algonaut",
  "anyhow",
+ "async-trait",
  "base",
  "chrono",
  "data-encoding",

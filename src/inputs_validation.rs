@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::js::create_dao::create_dao::ValidateDaoInputsError;
+use crate::provider::create_dao_provider::ValidateDaoInputsError;
 
 /// Note String used for many originally numeric fields: these fields are only to display to the user
 /// using String allows to reuse them easily for different numbers, like u64 or Decimal and format them
