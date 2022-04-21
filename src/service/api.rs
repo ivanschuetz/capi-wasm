@@ -1,6 +1,6 @@
 use crate::teal::{customer_escrow, dao_app_approval, dao_app_clear};
 use anyhow::{anyhow, Result};
-use core::{
+use base::{
     api::{
         api::Api,
         contract::Contract,

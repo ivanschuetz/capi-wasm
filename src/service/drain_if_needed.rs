@@ -4,7 +4,7 @@ use crate::{
 };
 use algonaut::{algod::v2::Algod, core::Address};
 use anyhow::Result;
-use core::{
+use base::{
     capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     flows::{
         create_dao::model::Dao,

@@ -1,10 +1,10 @@
 use crate::dependencies::{api, capi_deps};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1};
 use anyhow::{Error, Result};
-use core::dependencies::algod;
-use core::flows::create_dao::storage::load_dao::load_dao;
-use core::flows::unlock::unlock::unlock;
-use core::state::dao_app_state::dao_investor_state;
+use base::dependencies::algod;
+use base::flows::create_dao::storage::load_dao::load_dao;
+use base::flows::unlock::unlock::unlock;
+use base::state::dao_app_state::dao_investor_state;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

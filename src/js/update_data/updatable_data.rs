@@ -1,8 +1,8 @@
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use anyhow::{Error, Result};
-use core::dependencies::algod;
-use core::flows::create_dao::storage::load_dao::DaoId;
-use core::state::dao_app_state::dao_global_state;
+use base::dependencies::algod;
+use base::flows::create_dao::storage::load_dao::DaoId;
+use base::state::dao_app_state::dao_global_state;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

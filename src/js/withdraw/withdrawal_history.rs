@@ -4,7 +4,7 @@ use crate::{
 };
 use algonaut::{algod::v2::Algod, core::Address, indexer::v2::Indexer};
 use anyhow::{Error, Result};
-use core::{
+use base::{
     api::api::Api,
     capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     dependencies::{algod, indexer},

@@ -3,7 +3,7 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res},
 };
 use anyhow::{anyhow, Error, Result};
-use core::{
+use base::{
     dependencies::algod,
     flows::create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
     state::{

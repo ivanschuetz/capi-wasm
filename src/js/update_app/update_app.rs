@@ -2,15 +2,15 @@ use crate::dependencies::{api, capi_deps};
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_tx1};
 use crate::service::constants::PRECISION;
 use anyhow::{Error, Result};
-use core::api::api::Api;
-use core::api::contract::Contract;
-use core::api::version::Version;
-use core::dependencies::algod;
-use core::flows::create_dao::setup::create_app::{
+use base::api::api::Api;
+use base::api::contract::Contract;
+use base::api::version::Version;
+use base::dependencies::algod;
+use base::flows::create_dao::setup::create_app::{
     render_and_compile_app_approval, render_and_compile_app_clear,
 };
-use core::flows::create_dao::storage::load_dao::load_dao;
-use core::flows::update_app::update::update;
+use base::flows::create_dao::storage::load_dao::load_dao;
+use base::flows::update_app::update::update;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;

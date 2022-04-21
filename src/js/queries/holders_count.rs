@@ -1,7 +1,7 @@
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use algonaut::core::to_app_address;
 use anyhow::Result;
-use core::{dependencies::indexer, queries::shares_distribution::holders_count};
+use base::{dependencies::indexer, queries::shares_distribution::holders_count};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

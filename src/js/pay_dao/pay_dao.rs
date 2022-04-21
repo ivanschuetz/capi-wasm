@@ -4,7 +4,7 @@ use crate::{
     service::str_to_algos::validate_funds_amount_input,
 };
 use anyhow::{Error, Result};
-use core::{dependencies::algod, flows::pay_dao::pay_dao::pay_dao};
+use base::{dependencies::algod, flows::pay_dao::pay_dao::pay_dao};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

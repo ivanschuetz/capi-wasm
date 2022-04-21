@@ -3,8 +3,8 @@ pub mod dao_app_approval;
 pub mod dao_app_clear;
 pub mod update_teal;
 
-// use core::flows::create_dao::create_dao::{Escrows, Programs};
-// use core::teal::{TealSource, TealSourceTemplate};
+// use base::flows::create_dao::create_dao::{Escrows, Programs};
+// use base::teal::{TealSource, TealSourceTemplate};
 
 // pub fn programs() -> Programs {
 //     Programs {

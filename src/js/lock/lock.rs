@@ -3,8 +3,8 @@ use crate::{
     js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_txs1},
 };
 use anyhow::{Error, Result};
-use core::flows::create_dao::share_amount::ShareAmount;
-use core::{
+use base::flows::create_dao::share_amount::ShareAmount;
+use base::{
     dependencies::algod,
     flows::{create_dao::storage::load_dao::load_dao, lock::lock::lock},
 };

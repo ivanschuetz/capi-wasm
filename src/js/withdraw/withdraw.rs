@@ -8,7 +8,7 @@ use crate::{
     service::drain_if_needed::drain_if_needed_txs,
 };
 use anyhow::{Error, Result};
-use core::{
+use base::{
     dependencies::algod,
     flows::{
         create_dao::storage::load_dao::load_dao,

@@ -6,11 +6,11 @@ use crate::js::inputs_validation_js::{to_validation_error_js, ValidationErrorJs}
 use crate::service::constants::PRECISION;
 use algonaut::core::Address;
 use anyhow::{Error, Result};
-use core::api::api::Api;
-use core::api::contract::Contract;
-use core::dependencies::algod;
-use core::flows::create_dao::setup::create_shares::create_assets;
-use core::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
+use base::api::api::Api;
+use base::api::contract::Contract;
+use base::dependencies::algod;
+use base::flows::create_dao::setup::create_shares::create_assets;
+use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;

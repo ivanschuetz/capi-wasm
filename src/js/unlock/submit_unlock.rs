@@ -1,8 +1,8 @@
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use anyhow::{anyhow, Result};
-use core::dependencies::algod;
-use core::flows::unlock::unlock::{submit_unlock, UnlockSigned};
+use base::dependencies::algod;
+use base::flows::unlock::unlock::{submit_unlock, UnlockSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

@@ -1,5 +1,5 @@
 use algonaut::{core::CompiledTeal, transaction::contract_account::ContractAccount};
-use core::api::version::{Version, VersionedContractAccount};
+use base::api::version::{Version, VersionedContractAccount};
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 use std::error::Error;

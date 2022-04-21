@@ -1,6 +1,6 @@
 use crate::service::api::TealStringsApi;
 use anyhow::{anyhow, Error, Result};
-use core::{
+use base::{
     api::api::Api,
     capi_asset::{
         capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps, capi_asset_id::CapiAssetId,

@@ -1,6 +1,6 @@
 use algonaut::core::Address;
 use anyhow::Result;
-use core::{
+use base::{
     flows::create_dao::{
         model::Dao,
         share_amount::ShareAmount,

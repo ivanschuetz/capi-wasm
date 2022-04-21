@@ -1,8 +1,8 @@
 use crate::dependencies::{api, capi_deps};
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use anyhow::{Error, Result};
-use core::dependencies::{algod, indexer};
-use core::queries::my_daos::{my_daos, MyStoredDao};
+use base::dependencies::{algod, indexer};
+use base::queries::my_daos::{my_daos, MyStoredDao};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 

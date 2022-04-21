@@ -7,7 +7,7 @@ use crate::{
     },
 };
 use anyhow::Result;
-use core::{dependencies::algod, flows::create_dao::storage::load_dao::load_dao};
+use base::{dependencies::algod, flows::create_dao::storage::load_dao::load_dao};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]

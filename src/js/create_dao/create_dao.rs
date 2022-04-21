@@ -10,20 +10,20 @@ use crate::service::str_to_algos::validate_funds_amount_input;
 use algonaut::core::Address;
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
-use core::api::api::Api;
-use core::api::contract::Contract;
-use core::dependencies::algod;
-use core::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
-use core::flows::create_dao::setup_dao::{Escrows, Programs};
-use core::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
-use core::flows::create_dao::share_amount::ShareAmount;
-use core::flows::create_dao::shares_percentage::SharesPercentage;
-use core::flows::create_dao::shares_specs::SharesDistributionSpecs;
-use core::flows::create_dao::{
+use base::api::api::Api;
+use base::api::contract::Contract;
+use base::dependencies::algod;
+use base::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
+use base::flows::create_dao::setup_dao::{Escrows, Programs};
+use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
+use base::flows::create_dao::share_amount::ShareAmount;
+use base::flows::create_dao::shares_percentage::SharesPercentage;
+use base::flows::create_dao::shares_specs::SharesDistributionSpecs;
+use base::flows::create_dao::{
     model::{CreateSharesSpecs, SetupDaoToSign},
     setup_dao::setup_dao_txs,
 };
-use core::funds::FundsAmount;
+use base::funds::FundsAmount;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

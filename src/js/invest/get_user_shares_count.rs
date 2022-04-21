@@ -1,4 +1,4 @@
-use core::{dependencies::algod, state::account_state::asset_holdings};
+use base::{dependencies::algod, state::account_state::asset_holdings};
 
 use crate::js::common::{parse_bridge_pars, to_bridge_res};
 use anyhow::{Error, Result};

@@ -4,7 +4,7 @@ use crate::js::{
 };
 use algonaut::core::Address;
 use anyhow::{anyhow, Result};
-use core::{
+use base::{
     decimal_util::{AsDecimal, DecimalExt},
     dependencies::{algod, indexer},
     queries::shares_distribution::{shares_holders_distribution, ShareHoldingPercentage},

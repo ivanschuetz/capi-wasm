@@ -7,7 +7,7 @@ use crate::{
     service::str_to_algos::base_units_to_display_units_str,
 };
 use anyhow::{Error, Result};
-use core::{
+use base::{
     dependencies::{algod, indexer},
     flows::create_dao::storage::load_dao::load_dao,
     queries::funds_activity::{funds_activity, FundsActivityEntryType},

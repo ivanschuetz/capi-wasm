@@ -1,8 +1,8 @@
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use anyhow::Result;
-use core::dependencies::algod;
-use core::flows::update_data::update_data::{submit_update_data, UpdateDaoDataSigned};
+use base::dependencies::algod;
+use base::flows::update_data::update_data::{submit_update_data, UpdateDaoDataSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

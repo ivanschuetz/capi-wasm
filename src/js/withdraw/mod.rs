@@ -3,7 +3,7 @@ use super::explorer_links::explorer_tx_id_link_env;
 use crate::{
     dependencies::FundsAssetSpecs, service::str_to_algos::base_units_to_display_units_str,
 };
-use core::{flows::create_dao::storage::load_dao::TxId, funds::FundsAmount};
+use base::{flows::create_dao::storage::load_dao::TxId, funds::FundsAmount};
 
 pub mod submit_withdraw;
 #[allow(clippy::module_inception)]

@@ -5,7 +5,7 @@ use crate::{
     service::invest_or_lock::submit_apps_optins_from_js,
 };
 use anyhow::{anyhow, Error, Result};
-use core::{
+use base::{
     dependencies::algod,
     flows::{
         create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},

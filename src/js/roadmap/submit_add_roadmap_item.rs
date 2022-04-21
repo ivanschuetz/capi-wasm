@@ -2,8 +2,8 @@ use crate::js::common::{
     parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs,
 };
 use anyhow::Result;
-use core::dependencies::algod;
-use core::roadmap::add_roadmap_item::{submit_add_roadmap_item, AddRoadmapItemToSigned};
+use base::dependencies::algod;
+use base::roadmap::add_roadmap_item::{submit_add_roadmap_item, AddRoadmapItemToSigned};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;

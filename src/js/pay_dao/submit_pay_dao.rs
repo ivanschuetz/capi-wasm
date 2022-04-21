@@ -1,7 +1,7 @@
 use crate::js::common::SignedTxFromJs;
 use crate::js::common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res};
 use anyhow::Result;
-use core::{
+use base::{
     dependencies::algod,
     flows::pay_dao::pay_dao::{submit_pay_dao, PayDaoSigned},
 };

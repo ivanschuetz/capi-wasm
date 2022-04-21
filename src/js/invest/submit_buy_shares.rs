@@ -1,5 +1,5 @@
 use crate::js::common::{signed_js_tx_to_signed_tx, to_js_value, SignedTxFromJs};
-use core::{
+use base::{
     dependencies::algod,
     flows::invest::{invest::submit_invest, model::InvestSigned},
     network_util::wait_for_pending_transaction,

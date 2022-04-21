@@ -1,5 +1,5 @@
-use core::dependencies::algod;
-use core::state::account_state::funds_holdings_from_account;
+use base::dependencies::algod;
+use base::state::account_state::funds_holdings_from_account;
 
 use crate::dependencies::funds_asset_specs;
 use crate::js::common::{parse_bridge_pars, to_bridge_res};

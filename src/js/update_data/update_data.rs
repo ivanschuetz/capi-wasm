@@ -1,11 +1,11 @@
 use crate::js::common::{parse_bridge_pars, to_bridge_res, to_my_algo_tx1};
 use algonaut::core::Address;
 use anyhow::{Error, Result};
-use core::api::version::{Version, VersionedAddress};
-use core::dependencies::algod;
-use core::flows::create_dao::storage::load_dao::DaoId;
-use core::flows::update_data::update_data::{update_data, UpdatableDaoData};
-use core::funds::FundsAmount;
+use base::api::version::{Version, VersionedAddress};
+use base::dependencies::algod;
+use base::flows::create_dao::storage::load_dao::DaoId;
+use base::flows::update_data::update_data::{update_data, UpdatableDaoData};
+use base::funds::FundsAmount;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::Debug;

@@ -2,14 +2,14 @@ use super::withdrawal_history::WithdrawalViewData;
 use crate::{
     dependencies::{funds_asset_specs, FundsAssetSpecs},
     js::{
-        common::{parse_bridge_pars, to_bridge_res, SignedTxFromJs, signed_js_tx_to_signed_tx1},
+        common::{parse_bridge_pars, signed_js_tx_to_signed_tx1, to_bridge_res, SignedTxFromJs},
         withdraw::withdrawal_view_data,
     },
     service::{drain_if_needed::submit_drain, str_to_algos::validate_funds_amount_input},
 };
 use algonaut::core::Address;
 use anyhow::{anyhow, Error, Result};
-use core::{
+use base::{
     dependencies::algod,
     flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned},
     funds::FundsAmount,

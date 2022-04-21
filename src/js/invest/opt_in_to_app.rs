@@ -5,7 +5,7 @@ use algonaut::{
     transaction::{tx_group::TxGroup, Transaction},
 };
 use anyhow::{anyhow, Result};
-use core::{
+use base::{
     dependencies::algod,
     flows::{create_dao::storage::load_dao::DaoAppId, shared::app::optin_to_dao_app},
 };

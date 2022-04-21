@@ -1,6 +1,6 @@
 use algonaut::algod::v2::Algod;
 use anyhow::Result;
-use core::{
+use base::{
     flows::create_dao::model::Dao,
     funds::{FundsAmount, FundsAssetId},
     state::account_state::funds_holdings,
