@@ -5,7 +5,7 @@ use base::{
     capi_asset::{
         capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps, capi_asset_id::CapiAssetId,
     },
-    dependencies::{network, Network},
+    dependencies::{network, DataType, Network},
     funds::FundsAssetId,
 };
 use rust_decimal::Decimal;
@@ -71,4 +71,15 @@ pub fn capi_asset_id() -> Result<CapiAssetId> {
     log::debug!("Capi asset id: {:?}", str);
 
     Ok(CapiAssetId(str.parse().map_err(Error::msg)?))
+}
+
+pub fn data_type() -> Result<DataType> {
+    let str = option_env!("DATA_TYPE").ok_or_else(|| anyhow!("Please pass DATA_TYPE"))?;
+    log::debug!("Data type: {:?}", str);
+
+    match str {
+        "real" => Ok(DataType::Real),
+        "mock" => Ok(DataType::Mock),
+        _ => Err(anyhow!("Invalid data type: {str}")),
+    }
 }

@@ -50,7 +50,8 @@ impl SharesDistributionProvider for SharesDistributionProviderDef {
     }
 }
 
-fn not_owned_shares_holdings(
+// pub: shares with mock data
+pub fn not_owned_shares_holdings(
     holders: &[ShareHoldingPercentage],
     supply: u64,
 ) -> Result<ShareHoldingPercentageJs> {
@@ -75,7 +76,8 @@ fn not_owned_shares_holdings(
     })
 }
 
-fn shorten_address(address: &Address) -> Result<String> {
+// pub: shares with mock data
+pub fn shorten_address(address: &Address) -> Result<String> {
     let address_str = address.to_string();
 
     let len = address_str.len();

@@ -17,12 +17,14 @@ use super::{
         funds_activity_provider_def::FundsActivityProviderDef,
         holders_count_provider_def::HoldersCountProviderDef,
         income_vs_spending_provider_def::IncomeVsSpendingProviderDef,
-        investment_provider_def::InvestmentProviderDef, lock_provider_def::LockProviderDef,
-        my_daos_provider_def::MyDaosProviderDef, my_shares_provider_def::MySharesProviderDef,
+        investment_provider_def::InvestmentProviderDef,
+        load_dao_with_id_provider_def::LoadDaoWithIdProviderDef,
+        lock_provider_def::LockProviderDef, my_daos_provider_def::MyDaosProviderDef,
+        my_shares_provider_def::MySharesProviderDef,
         optin_to_app_provider_def::OptinToAppProviderDef, pay_dao_provider_def::PayDaoProviderDef,
         roadmap_provider_def::RoadmapProviderDef,
         shares_count_provider_def::SharesCountProviderDef,
-        shares_distribution_provider::SharesDistributionProviderDef,
+        shares_distribution_provider_def::SharesDistributionProviderDef,
         unlock_provider_def::UnlockProviderDef, update_app_provider_def::UpdateAppProviderDef,
         update_data_provider_def::UpdateDataProviderDef, view_dao_provider_def::ViewDaoProviderDef,
         withdraw_provider_def::WithdrawProviderDef,
@@ -34,6 +36,31 @@ use super::{
     income_vs_spending_provider::IncomeVsSpendingProvider,
     investment_provider::InvestmentProvider,
     lock_provider::LockProvider,
+    mock::{
+        add_roadmap_item_provider_mock::AddRoadmapItemProviderMock,
+        app_updates_provider_mock::AppUpdatesProviderMock,
+        balance_provider_mock::BalanceProviderMock,
+        buy_shares_provider_mock::BuySharesProviderMock, claim_provider_mock::ClaimProviderMock,
+        create_assets_provider_mock::CreateAssetsProviderMock,
+        create_dao_provider_mock::CreateDaoProviderMock,
+        dao_user_view_provider_mock::DaoUserViewProviderMock,
+        drain_provider_mock::DrainProviderMock,
+        funds_activity_provider_mock::FundsActivityProviderMock,
+        holders_count_provider_mock::HoldersCountProviderMock,
+        income_vs_spending_provider_mock::IncomeVsSpendingProviderMock,
+        investment_provider_mock::InvestmentProviderMock,
+        load_dao_with_id_provider_mock::LoadDaoWithIdProviderMock,
+        lock_provider_mock::LockProviderMock, my_daos_provider_mock::MyDaosProviderMock,
+        my_shares_provider_mock::MySharesProviderMock,
+        optin_to_app_provider_mock::OptinToAppProviderMock,
+        pay_dao_provider_mock::PayDaoProviderMock, roadmap_provider_mock::RoadmapProviderMock,
+        shares_count_provider_mock::SharesCountProviderMock,
+        shares_distribution_provider_mock::SharesDistributionProviderMock,
+        unlock_provider_mock::UnlockProviderMock, update_app_provider_mock::UpdateAppProviderMock,
+        update_data_provider_mock::UpdateDataProviderMock,
+        view_dao_provider_mock::ViewDaoProviderMock, withdraw_provider_mock::WithdrawProviderMock,
+        withdrawal_history_provider_mock::WithdrawalHistoryProviderMock,
+    },
     my_daos_provider::MyDaosProvider,
     my_shares_provider::MySharesProvider,
     optin_to_app_provider::OptinToAppProvider,
@@ -46,8 +73,11 @@ use super::{
     update_data_provider::UpdateDataProvider,
     view_dao_provider::ViewDaoProvider,
     withdraw_provider::WithdrawProvider,
-    withdrawal_history_provider::WithdrawalHistoryProvider,
+    withdrawal_history_provider::WithdrawalHistoryProvider, load_dao_with_id_provider::LoadDaoWithIdProvider,
 };
+use crate::{dependencies::data_type, js::common::to_js_value};
+use base::dependencies::DataType;
+use wasm_bindgen::JsValue;
 
 pub struct Providers<'a> {
     pub funds_activity: &'a dyn FundsActivityProvider,
@@ -77,9 +107,21 @@ pub struct Providers<'a> {
     pub withdrawals_history: &'a dyn WithdrawalHistoryProvider, // remove ? seems not to be used anymore (route/comp in react, but not used)
     pub create_dao: &'a dyn CreateDaoProvider,
     pub create_assets: &'a dyn CreateAssetsProvider,
+    pub dao_with_id: &'a dyn LoadDaoWithIdProvider,
 }
 
-pub fn providers<'a>() -> Providers<'a> {
+// we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
+pub fn providers<'a>() -> Result<Providers<'a>, JsValue> {
+    // note that we create data_type here instead of parametrizing, it's noise as all the bridge functions would have to pass it and no good reason for it.
+    let data_type = data_type().map_err(to_js_value)?;
+    log::info!("Data type config: {data_type:?}");
+    Ok(match data_type {
+        DataType::Real => def_providers(),
+        DataType::Mock => mock_providers(),
+    })
+}
+
+fn def_providers<'a>() -> Providers<'a> {
     Providers {
         funds_activity: &FundsActivityProviderDef {},
         balance: &BalanceProviderDef {},
@@ -108,5 +150,39 @@ pub fn providers<'a>() -> Providers<'a> {
         withdrawals_history: &WithdrawalHistoryProviderDef {},
         create_dao: &CreateDaoProviderDef {},
         create_assets: &CreateAssetsProviderDef {},
+        dao_with_id: &LoadDaoWithIdProviderDef {},
+    }
+}
+
+fn mock_providers<'a>() -> Providers<'a> {
+    Providers {
+        funds_activity: &FundsActivityProviderMock {},
+        balance: &BalanceProviderMock {},
+        buy_shares: &BuySharesProviderMock {},
+        shares_count: &SharesCountProviderMock {},
+        dao_user_view: &DaoUserViewProviderMock {},
+        app_optin: &OptinToAppProviderMock {},
+        claim: &ClaimProviderMock {},
+        investment: &InvestmentProviderMock {},
+        lock: &LockProviderMock {},
+        pay_dao: &PayDaoProviderMock {},
+        holders_count: &HoldersCountProviderMock {},
+        income_vs_spending: &IncomeVsSpendingProviderMock {},
+        my_daos: &MyDaosProviderMock {},
+        my_shares: &MySharesProviderMock {},
+        shares_distribution: &SharesDistributionProviderMock {},
+        add_roadmap_item: &AddRoadmapItemProviderMock {},
+        roadmap: &RoadmapProviderMock {},
+        unlock: &UnlockProviderMock {},
+        app_updates: &AppUpdatesProviderMock {},
+        update_app: &UpdateAppProviderMock {},
+        update_data: &UpdateDataProviderMock {},
+        view_dao: &ViewDaoProviderMock {},
+        drain: &DrainProviderMock {},
+        withdraw: &WithdrawProviderMock {},
+        withdrawals_history: &WithdrawalHistoryProviderMock {},
+        create_dao: &CreateDaoProviderMock {},
+        create_assets: &CreateAssetsProviderMock {},
+        dao_with_id: &LoadDaoWithIdProviderMock {},
     }
 }

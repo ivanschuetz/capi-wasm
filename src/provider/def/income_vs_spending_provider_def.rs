@@ -1,6 +1,3 @@
-use std::convert::TryInto;
-use std::ops::Div;
-
 use crate::dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::provider::income_vs_spending_provider::{
     ChartDataPointJs, ChartLines, IncomeVsSpendingParJs, IncomeVsSpendingProvider,
@@ -16,7 +13,9 @@ use base::{
     flows::{create_dao::storage::load_dao::load_dao, withdraw::withdrawals::withdrawals},
     queries::received_payments::all_received_payments,
 };
-use chrono::{DateTime, Duration, TimeZone, Timelike, Utc};
+use chrono::{DateTime, Duration, Timelike, Utc};
+use std::convert::TryInto;
+use std::ops::Div;
 
 pub struct IncomeVsSpendingProviderDef {}
 
@@ -63,73 +62,78 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             })
             .collect();
 
-        // To test quickly if there's no data
-        // let income_data_points = test_income_points();
-        // let spending_data_points = test_spending_points();
-
-        let income_bounds = determine_min_max_local_bounds(&income_data_points);
-        let spending_bounds = determine_min_max_local_bounds(&spending_data_points);
-
-        let bounds_without_none: Vec<DateBounds> = vec![income_bounds, spending_bounds]
-            .into_iter()
-            .filter_map(|opt| opt)
-            .collect();
-
-        // TODO determine dynamically based on min max bounds (e.g. if total time is ~1 month, 1 week interval)
-        // let grouping_interval = Duration::minutes(15);
-        let grouping_interval = Duration::days(1);
-
-        match determine_min_max_bounds(&bounds_without_none) {
-            Some(bounds) => {
-                let bounds = DateBounds {
-                    // days (for axis) start at 00:00 if using days interval, hours at 00 (if using hours/minutes..)
-                    // TODO calculate dynamically
-                    min: start_of_day(bounds.min)?,
-                    // min: start_of_hour(bounds.min)?,
-                    max: bounds.max,
-                };
-
-                let income_data_points_js = aggregate_and_format_data_points(
-                    &income_data_points,
-                    bounds.min,
-                    bounds.max,
-                    grouping_interval,
-                    &funds_asset_specs,
-                )?;
-
-                let spending_data_points_js = aggregate_and_format_data_points(
-                    &spending_data_points,
-                    bounds.min,
-                    bounds.max,
-                    grouping_interval,
-                    &funds_asset_specs,
-                )?;
-
-                let mut flattened_js = income_data_points_js.clone();
-                flattened_js.extend(spending_data_points_js.clone());
-
-                Ok(IncomeVsSpendingResJs {
-                    chart_lines: ChartLines {
-                        spending: spending_data_points_js,
-                        income: income_data_points_js,
-                    },
-                    flat_data_points: flattened_js,
-                })
-            }
-            // No min max dates -> nothing to display on the chart
-            None => Ok(IncomeVsSpendingResJs {
-                chart_lines: ChartLines {
-                    spending: vec![],
-                    income: vec![],
-                },
-                flat_data_points: vec![],
-            }),
-        }
+        to_income_vs_spending_res(
+            &income_data_points,
+            &spending_data_points,
+            &funds_asset_specs,
+        )
     }
 }
 
-fn create_test_date(year: i32, month: u32, day: u32, hour: u32, min: u32) -> DateTime<Utc> {
-    Utc.ymd(year, month, day).and_hms_milli(hour, min, 0, 0)
+// pub to be shared with the mock provider
+pub fn to_income_vs_spending_res(
+    income: &[ChartDataPoint],
+    spending: &[ChartDataPoint],
+    funds_asset_specs: &FundsAssetSpecs,
+) -> Result<IncomeVsSpendingResJs> {
+    let income_bounds = determine_min_max_local_bounds(&income);
+    let spending_bounds = determine_min_max_local_bounds(&spending);
+
+    let bounds_without_none: Vec<DateBounds> = vec![income_bounds, spending_bounds]
+        .into_iter()
+        .filter_map(|opt| opt)
+        .collect();
+
+    // TODO determine dynamically based on min max bounds (e.g. if total time is ~1 month, 1 week interval)
+    // let grouping_interval = Duration::minutes(15);
+    let grouping_interval = Duration::days(1);
+
+    match determine_min_max_bounds(&bounds_without_none) {
+        Some(bounds) => {
+            let bounds = DateBounds {
+                // days (for axis) start at 00:00 if using days interval, hours at 00 (if using hours/minutes..)
+                // TODO calculate dynamically
+                min: start_of_day(bounds.min)?,
+                // min: start_of_hour(bounds.min)?,
+                max: bounds.max,
+            };
+
+            let income_data_points_js = aggregate_and_format_data_points(
+                &income,
+                bounds.min,
+                bounds.max,
+                grouping_interval,
+                &funds_asset_specs,
+            )?;
+
+            let spending_data_points_js = aggregate_and_format_data_points(
+                &spending,
+                bounds.min,
+                bounds.max,
+                grouping_interval,
+                &funds_asset_specs,
+            )?;
+
+            let mut flattened_js = income_data_points_js.clone();
+            flattened_js.extend(spending_data_points_js.clone());
+
+            Ok(IncomeVsSpendingResJs {
+                chart_lines: ChartLines {
+                    spending: spending_data_points_js,
+                    income: income_data_points_js,
+                },
+                flat_data_points: flattened_js,
+            })
+        }
+        // No min max dates -> nothing to display on the chart
+        None => Ok(IncomeVsSpendingResJs {
+            chart_lines: ChartLines {
+                spending: vec![],
+                income: vec![],
+            },
+            flat_data_points: vec![],
+        }),
+    }
 }
 
 /// Returns min max dates of data_points
@@ -192,7 +196,7 @@ struct DateBounds {
     max: DateTime<Utc>,
 }
 
-fn aggregate_and_format_data_points(
+pub fn aggregate_and_format_data_points(
     points: &[ChartDataPoint],
     start_time: DateTime<Utc>,
     end_time: DateTime<Utc>,
@@ -268,60 +272,8 @@ fn create_data_point_js(
     })
 }
 
-#[allow(dead_code)]
-fn test_income_points() -> Vec<ChartDataPoint> {
-    vec![
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 10, 10, 30),
-            value: 1_000_000,
-        },
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 12, 12, 0),
-            value: 5_000_000,
-        },
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 15, 9, 0),
-            value: 3_000_000,
-        },
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 15, 18, 30),
-            value: 4_000_000,
-        },
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 16, 20, 15),
-            value: 5_000_000,
-        },
-    ]
-}
-
-#[allow(dead_code)]
-fn test_spending_points() -> Vec<ChartDataPoint> {
-    vec![
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 8, 10, 30),
-            value: 1_000_000,
-        },
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 8, 12, 0),
-            value: 5_000_000,
-        },
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 14, 9, 0), // appears as 13 10:30 UTC value 3, and then a 14 10:30 UTC wth value 0
-            value: 3_000_000,
-        },
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 15, 18, 30), // appears as 15 10:30 value 4
-            value: 4_000_000,
-        },
-        ChartDataPoint {
-            date: create_test_date(2022, 2, 18, 20, 15),
-            value: 5_000_000,
-        },
-    ]
-}
-
 #[derive(Debug, Clone)]
 pub struct ChartDataPoint {
-    date: DateTime<Utc>,
-    value: u64,
+    pub date: DateTime<Utc>,
+    pub value: u64,
 }
