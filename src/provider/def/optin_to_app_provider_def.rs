@@ -19,7 +19,7 @@ pub struct OptinToAppProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl OptinToAppProvider for OptinToAppProviderDef {
-    async fn optin(&self, pars: OptInToAppParJs) -> Result<OptInToAppResJs> {
+    async fn txs(&self, pars: OptInToAppParJs) -> Result<OptInToAppResJs> {
         let algod = algod();
 
         if is_opted_in(

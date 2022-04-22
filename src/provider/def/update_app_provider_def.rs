@@ -22,7 +22,7 @@ pub struct UpdateAppProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UpdateAppProvider for UpdateAppProviderDef {
-    async fn update(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs> {
+    async fn txs(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs> {
         let algod = algod();
         let api = api();
         let capi_deps = capi_deps()?;

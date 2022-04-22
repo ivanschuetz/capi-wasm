@@ -20,7 +20,7 @@ pub struct FundsActivityProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl FundsActivityProvider for FundsActivityProviderDef {
-    async fn provide(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
+    async fn get(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
         let algod = algod();
         let api = api();
         let indexer = indexer();

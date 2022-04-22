@@ -39,7 +39,7 @@ pub async fn bridge_load_funds_activity(pars: JsValue) -> Result<JsValue, JsValu
     to_bridge_res(
         providers()
             .funds_activity
-            .provide(parse_bridge_pars(pars)?)
+            .get(parse_bridge_pars(pars)?)
             .await,
     )
 }
@@ -47,7 +47,7 @@ pub async fn bridge_load_funds_activity(pars: JsValue) -> Result<JsValue, JsValu
 #[wasm_bindgen]
 pub async fn bridge_balance(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_balance, pars: {:?}", pars);
-    to_bridge_res(providers().balance.provide(parse_bridge_pars(pars)?).await)
+    to_bridge_res(providers().balance.get(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]
@@ -59,12 +59,7 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub async fn bridge_get_user_shares_count(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_get_user_shares_count, pars: {:?}", pars);
-    to_bridge_res(
-        providers()
-            .shares_count
-            .provide(parse_bridge_pars(pars)?)
-            .await,
-    )
+    to_bridge_res(providers().shares_count.get(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]
@@ -73,7 +68,7 @@ pub async fn bridge_load_dao_user_view(pars: JsValue) -> Result<JsValue, JsValue
     to_bridge_res(
         providers()
             .dao_user_view
-            .provide(parse_bridge_pars(pars)?)
+            .get(parse_bridge_pars(pars)?)
             .await,
     )
 }
@@ -81,7 +76,7 @@ pub async fn bridge_load_dao_user_view(pars: JsValue) -> Result<JsValue, JsValue
 #[wasm_bindgen]
 pub async fn bridge_opt_in_to_apps_if_needed(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_opt_in_to_apps_if_needed, pars: {:?}", pars);
-    to_bridge_res(providers().app_optin.optin(parse_bridge_pars(pars)?).await)
+    to_bridge_res(providers().app_optin.txs(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]
@@ -104,12 +99,7 @@ pub async fn bridge_claim(pars: JsValue) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub async fn bridge_load_investment(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_load_investment, pars: {:?}", pars);
-    to_bridge_res(
-        providers()
-            .investment
-            .investment(parse_bridge_pars(pars)?)
-            .await,
-    )
+    to_bridge_res(providers().investment.get(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]
@@ -158,7 +148,7 @@ pub async fn bridge_income_vs_spending(pars: JsValue) -> Result<JsValue, JsValue
     log::debug!("bridge_income_vs_spending, pars: {:?}", pars);
     to_bridge_res(
         providers()
-            .holders_count
+            .income_vs_spending
             .get(parse_bridge_pars(pars)?)
             .await,
     )
@@ -188,23 +178,18 @@ pub async fn bridge_shares_distribution(pars: JsValue) -> Result<JsValue, JsValu
 }
 
 #[wasm_bindgen]
+pub async fn bridge_load_roadmap(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_load_roadmap, pars: {:?}", pars);
+    to_bridge_res(providers().roadmap.get(parse_bridge_pars(pars)?).await)
+}
+
+#[wasm_bindgen]
 pub async fn bridge_add_roadmap_item(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_add_roadmap_item, pars: {:?}", pars);
     to_bridge_res(
         providers()
             .add_roadmap_item
-            .add(parse_bridge_pars(pars)?)
-            .await,
-    )
-}
-
-#[wasm_bindgen]
-pub async fn bridge_load_roadmap(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_load_roadmap, pars: {:?}", pars);
-    to_bridge_res(
-        providers()
-            .add_roadmap_item
-            .add(parse_bridge_pars(pars)?)
+            .txs(parse_bridge_pars(pars)?)
             .await,
     )
 }
@@ -221,20 +206,27 @@ pub async fn bridge_submit_add_roadmap_item(pars: JsValue) -> Result<JsValue, Js
 }
 
 #[wasm_bindgen]
+pub async fn bridge_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_unlock, pars: {:?}", pars);
+    to_bridge_res(providers().unlock.txs(parse_bridge_pars(pars)?).await)
+}
+
+#[wasm_bindgen]
 pub async fn bridge_submit_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_submit_unlock, pars: {:?}", pars);
     to_bridge_res(providers().unlock.submit(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]
-pub async fn bridge_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_unlock, pars: {:?}", pars);
-    to_bridge_res(providers().unlock.txs(parse_bridge_pars(pars)?).await)
-}
-#[wasm_bindgen]
 pub async fn bridge_check_for_updates(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_check_for_updates, pars: {:?}", pars);
     to_bridge_res(providers().app_updates.get(parse_bridge_pars(pars)?).await)
+}
+
+#[wasm_bindgen]
+pub async fn bridge_update_app_txs(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_update_app_txs, pars: {:?}", pars);
+    to_bridge_res(providers().update_app.txs(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]
@@ -248,15 +240,17 @@ pub async fn bridge_submit_update_app(pars: JsValue) -> Result<JsValue, JsValue>
     )
 }
 
+/// To pre fill the form to update data
 #[wasm_bindgen]
-pub async fn bridge_update_app_txs(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_update_app_txs, pars: {:?}", pars);
-    to_bridge_res(
-        providers()
-            .update_app
-            .update(parse_bridge_pars(pars)?)
-            .await,
-    )
+pub async fn bridge_updatable_data(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_updatable_data, pars: {:?}", pars);
+    to_bridge_res(providers().update_data.get(parse_bridge_pars(pars)?).await)
+}
+
+#[wasm_bindgen]
+pub async fn bridge_update_data(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_update_data, pars: {:?}", pars);
+    to_bridge_res(providers().update_data.txs(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]
@@ -268,24 +262,6 @@ pub async fn bridge_submit_update_dao_data(pars: JsValue) -> Result<JsValue, JsV
             .submit(parse_bridge_pars(pars)?)
             .await,
     )
-}
-
-/// To pre fill the form to update data
-#[wasm_bindgen]
-pub async fn bridge_updatable_data(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_updatable_data, pars: {:?}", pars);
-    to_bridge_res(
-        providers()
-            .update_data
-            .updatable_data(parse_bridge_pars(pars)?)
-            .await,
-    )
-}
-
-#[wasm_bindgen]
-pub async fn bridge_update_data(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_update_data, pars: {:?}", pars);
-    to_bridge_res(providers().update_data.txs(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]
@@ -307,15 +283,15 @@ pub async fn bridge_view_dao(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 #[wasm_bindgen]
-pub async fn bridge_submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_submit_withdraw, pars: {:?}", pars);
-    to_bridge_res(providers().withdraw.submit(parse_bridge_pars(pars)?).await)
-}
-
-#[wasm_bindgen]
 pub async fn bridge_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_withdraw, pars: {:?}", pars);
     to_bridge_res(providers().withdraw.txs(parse_bridge_pars(pars)?).await)
+}
+
+#[wasm_bindgen]
+pub async fn bridge_submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_submit_withdraw, pars: {:?}", pars);
+    to_bridge_res(providers().withdraw.submit(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]

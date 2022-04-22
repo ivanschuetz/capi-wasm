@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait BalanceProvider {
-    async fn provide(&self, pars: BalanceParJs) -> Result<BalanceResJs>;
+    async fn get(&self, pars: BalanceParJs) -> Result<BalanceResJs>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

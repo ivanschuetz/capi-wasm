@@ -15,7 +15,7 @@ pub struct DaoUserViewProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl DaoUserViewProvider for DaoUserViewProviderDef {
-    async fn provide(&self, dao_id_str: String) -> Result<DaoForUsersViewData> {
+    async fn get(&self, dao_id_str: String) -> Result<DaoForUsersViewData> {
         log::debug!("load_dao, hash: {:?}", dao_id_str);
 
         let algod = algod();

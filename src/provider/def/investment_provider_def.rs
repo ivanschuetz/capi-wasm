@@ -27,7 +27,7 @@ pub struct InvestmentProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl InvestmentProvider for InvestmentProviderDef {
-    async fn investment(&self, pars: LoadInvestmentParJs) -> Result<LoadInvestmentResJs> {
+    async fn get(&self, pars: LoadInvestmentParJs) -> Result<LoadInvestmentResJs> {
         log::debug!("bridge_load_investment, pars: {:?}", pars);
 
         let algod = algod();

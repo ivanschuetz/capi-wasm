@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait InvestmentProvider {
-    async fn investment(&self, pars: LoadInvestmentParJs) -> Result<LoadInvestmentResJs>;
+    async fn get(&self, pars: LoadInvestmentParJs) -> Result<LoadInvestmentResJs>;
 }
 
 // TODO rename structs in BuyShares*

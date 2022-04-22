@@ -21,7 +21,7 @@ pub struct UpdateDataProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UpdateDataProvider for UpdateDataProviderDef {
-    async fn updatable_data(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
+    async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
         let algod = algod();
 
         let dao_id = pars.dao_id.parse::<DaoId>().map_err(Error::msg)?;

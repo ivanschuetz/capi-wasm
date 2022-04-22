@@ -22,7 +22,7 @@ pub struct AddRoadmapItemProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl AddRoadmapItemProvider for AddRoadmapItemProviderDef {
-    async fn add(&self, pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs> {
+    async fn txs(&self, pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs> {
         let algod = algod();
 
         let dao_creator = pars.creator_address.parse().map_err(Error::msg)?;

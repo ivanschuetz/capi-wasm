@@ -9,7 +9,7 @@ use std::fmt::Debug;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait UpdateAppProvider {
-    async fn update(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs>;
+    async fn txs(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs>;
     async fn submit(&self, pars: SubmitUpdateAppParJs) -> Result<SubmitUpdateAppResJs>;
 }
 

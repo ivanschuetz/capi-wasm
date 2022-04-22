@@ -8,7 +8,7 @@ use crate::js::common::SignedTxFromJs;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait AddRoadmapItemProvider {
-    async fn add(&self, pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs>;
+    async fn txs(&self, pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs>;
     async fn submit(&self, pars: SubmitAddRoadmapItemParJs) -> Result<SubmitAddRoadmapItemResJs>;
 }
 

@@ -8,7 +8,7 @@ use crate::js::common::SignedTxFromJs;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait UpdateDataProvider {
-    async fn updatable_data(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs>;
+    async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs>;
     async fn txs(&self, pars: UpdateDataParJs) -> Result<UpdateDataResJs>;
     async fn submit(&self, pars: SubmitUpdateDataParJs) -> Result<SubmitUpdateDataResJs>;
 }
