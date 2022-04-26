@@ -26,86 +26,86 @@ impl SharesDistributionProvider for SharesDistributionProviderMock {
         let mut holders = vec![
             mock_holding(
                 "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                10_000,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                200_000,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                2_000,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                80_934,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                20,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                25_000,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                11_000,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                3_300,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                5_121,
-                fake_supply,
-            )?,
-            mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
                 100_000,
                 fake_supply,
             )?,
             mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
+                "NT4TNO4NXGI46MBS6T5HDI25XKO5GESRSMRAATNTAYE6YKUE7N34TONJBA",
+                600_123,
+                fake_supply,
+            )?,
+            mock_holding(
+                "Y6O4BH3SUBLIHDU33XTLCGTS7SFBRZWFVBUA5IOKCOO2Z4SBVY6XXT6ZUQ",
+                2_000,
+                fake_supply,
+            )?,
+            mock_holding(
+                "2QFRITR4DMZCISHVXLQROMMSY6AE4L3GUEWHURMU7PX4BUGK5JMXBO4RP4",
+                80_934,
+                fake_supply,
+            )?,
+            mock_holding(
+                "XJ3MFB3OXKGE75527WJIRW3AN7CGN37M3P722U2JL4ZVHDLZDO2NUE5X6U",
+                20,
+                fake_supply,
+            )?,
+            mock_holding(
+                "FQ5YHU7EAGRE26CAXZZKL6V7M7DEZCLVS7WLPHL2XZJPHNTMW7AE4CIN3Q",
+                25_000,
+                fake_supply,
+            )?,
+            mock_holding(
+                "3C42TKTDQ34LECWORTVWFEGE5NJCTCRBF65DBR4ALRRRDTW4IMH6UEZGO4",
+                11_000,
+                fake_supply,
+            )?,
+            mock_holding(
+                "WJ22SNKZWIDTHIL4MFVOEXKUCKWBQGBPAUFBZHVA7UV2PB6BS4YQKR3EA4",
+                3_300,
+                fake_supply,
+            )?,
+            mock_holding(
+                "67KZZOEPAKCIDYKA2L36ACH6H7HN3MSJYHRODB4NEZ7W6GDRYTA7S44F3M",
+                5_121,
+                fake_supply,
+            )?,
+            mock_holding(
+                "FKY3WF4F4DEVPOFIUF2PFXAMZMSLBZZQAISM2N7UOMUVCXCC7BYC3ECSAY",
+                100_000,
+                fake_supply,
+            )?,
+            mock_holding(
+                "3I2M6J7PAE7AJVZK7CZPNYW6ALXYPW5BXP5NEDNAK6UXYQ633U3HBSQ734",
                 95_000,
                 fake_supply,
             )?,
             mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                500_000,
+                "LJLXMEFKOCUESFVBXTWXTJBHOKS3HEKEKIJUGOYW4KQVCBNWZUJO5STBO4",
+                1_000_000,
                 fake_supply,
             )?,
             mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
+                "Q2SNH74U2ELDOESMMR2ORKM3AGIUFJ53BB4MDFNCQXO32J3YNGANSFSMMI",
                 400_000,
                 fake_supply,
             )?,
             mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
-                700_123,
+                "QKKOGQIODTJOSEHE73HDFDQDTEMN6CI3Q3D5HGWJMVJ2LTOUCRSGAUL6V4",
+                2_100_000,
                 fake_supply,
             )?,
             mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
+                "BPZI3XJUIKFUSNSREZA4I55AMDCDBKUQQC7CSMJDOS45X2B6XSBZ6WNOXM",
                 60_222,
                 fake_supply,
             )?,
             mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
+                "WKA6WHSHXB6S2FE3T4ZXTF3D4TVQ363YENQJNODHAUDXUHZRWS4XVI5GCM",
                 240_000,
                 fake_supply,
             )?,
             mock_holding(
-                "FTPBN666KYZVB5YYYLRZ6GXWBKWLJJSXQ3N753USSWS2WIAYK7WJTTYRPI",
+                "SYIP4Q2XZRGQI4OKLUCTOMEDU27USWFXJACUXTWELU3BK2JMLULLZGCNR4",
                 777_002,
                 fake_supply,
             )?,
