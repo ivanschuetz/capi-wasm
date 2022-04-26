@@ -35,6 +35,7 @@ use super::{
     holders_count_provider::HoldersCountProvider,
     income_vs_spending_provider::IncomeVsSpendingProvider,
     investment_provider::InvestmentProvider,
+    load_dao_with_id_provider::LoadDaoWithIdProvider,
     lock_provider::LockProvider,
     mock::{
         add_roadmap_item_provider_mock::AddRoadmapItemProviderMock,
@@ -73,7 +74,7 @@ use super::{
     update_data_provider::UpdateDataProvider,
     view_dao_provider::ViewDaoProvider,
     withdraw_provider::WithdrawProvider,
-    withdrawal_history_provider::WithdrawalHistoryProvider, load_dao_with_id_provider::LoadDaoWithIdProvider,
+    withdrawal_history_provider::WithdrawalHistoryProvider,
 };
 use crate::{dependencies::data_type, js::common::to_js_value};
 use base::dependencies::DataType;
