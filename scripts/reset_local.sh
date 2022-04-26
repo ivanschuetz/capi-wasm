@@ -4,5 +4,5 @@
 # but there were issues implementing the test here (tokio "core" dependency, see core for explanation)
 
 cd ../../core # core repo location
-cargo test --package core --lib -- testing::network_test_util::test::reset_and_fund_local_network --exact --nocapture --ignored
+cargo test --package base --lib -- testing::network_test_util::test::reset_and_fund_local_network --exact --nocapture --ignored
 cd -
