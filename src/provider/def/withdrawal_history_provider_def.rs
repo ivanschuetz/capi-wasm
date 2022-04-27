@@ -55,7 +55,16 @@ pub async fn load_withdrawals(
     api: &dyn Api,
     capi_deps: &CapiAssetDaoDeps,
 ) -> Result<Vec<WithdrawalViewData>> {
-    let entries = withdrawals(algod, indexer, creator, dao_id, api, capi_deps).await?;
+    let entries = withdrawals(
+        algod,
+        indexer,
+        creator,
+        dao_id,
+        api,
+        funds_asset_specs.id,
+        capi_deps,
+    )
+    .await?;
     let mut reqs_view_data = vec![];
     for entry in entries {
         reqs_view_data.push(withdrawal_view_data(

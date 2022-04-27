@@ -42,8 +42,16 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
         .await?;
         income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
-        let mut spending =
-            withdrawals(&algod, &indexer, &dao.owner, dao_id, &api, &capi_deps).await?;
+        let mut spending = withdrawals(
+            &algod,
+            &indexer,
+            &dao.owner,
+            dao_id,
+            &api,
+            funds_asset_specs.id,
+            &capi_deps,
+        )
+        .await?;
         spending.sort_by(|p1, p2| p1.date.cmp(&p2.date));
 
         let income_data_points: Vec<ChartDataPoint> = income
