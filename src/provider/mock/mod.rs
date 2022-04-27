@@ -2,7 +2,7 @@ use algonaut::{
     algod::v2::Algod,
     core::{Address, CompiledTeal, MicroAlgos},
     transaction::{Pay, Transaction, TxnBuilder},
-    util::wait_for_pending_tx::sleep,
+    util::sleep,
 };
 use anyhow::{anyhow, Result};
 use serde_json::Value;
