@@ -33,6 +33,7 @@ pub struct ValidatedDaoInputs {
     pub creator: Address,
     pub token_name: String,
     pub share_supply: ShareAmount,
+    pub shares_for_investors: ShareAmount,
     pub share_price: FundsAmount,
     pub investors_share: SharesPercentage,
     pub logo_url: String,
@@ -45,6 +46,7 @@ pub struct CreateDaoFormInputsJs {
     pub dao_name: String,
     pub dao_description: String,
     pub share_count: String,
+    pub shares_for_investors: String,
     pub share_price: String,
     pub investors_share: String, // percentage (0..100), with decimals (max decimals number defined in validations)
     pub logo_url: String,
@@ -57,23 +59,25 @@ impl CreateDaoFormInputsJs {
         funds_asset_specs: &FundsAssetSpecs,
     ) -> Result<SetupDaoSpecs, ValidateDaoInputsError> {
         let validated_inputs = validate_dao_inputs(self, funds_asset_specs)?;
-        Ok(validated_inputs_to_dao_specs(validated_inputs))
+        validated_inputs_to_dao_specs(validated_inputs)
+            .map_err(|e| ValidateDaoInputsError::NonValidation(format!("Unexpected: {e:?}")))
     }
 }
 
-fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> SetupDaoSpecs {
-    SetupDaoSpecs {
-        name: inputs.name,
-        description: inputs.description,
-        shares: CreateSharesSpecs {
+fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
+    SetupDaoSpecs::new(
+        inputs.name,
+        inputs.description,
+        CreateSharesSpecs {
             token_name: inputs.token_name,
             supply: inputs.share_supply,
         },
-        investors_share: inputs.investors_share,
-        share_price: inputs.share_price,
-        logo_url: inputs.logo_url,
-        social_media_url: inputs.social_media_url,
-    }
+        inputs.investors_share,
+        inputs.share_price,
+        inputs.logo_url,
+        inputs.social_media_url,
+        inputs.shares_for_investors,
+    )
 }
 
 pub fn validate_dao_inputs(
@@ -84,6 +88,7 @@ pub fn validate_dao_inputs(
     let dao_description_res = validate_dao_description(&inputs.dao_description);
     let creator_address_res = validate_address(&inputs.creator);
     let share_supply_res = validate_share_supply(&inputs.share_count);
+    let shares_for_investors_res = validate_shares_for_investors(&inputs.shares_for_investors);
     let share_price_res = validate_share_price(&inputs.share_price, funds_asset_specs);
     let logo_url_res = validate_logo_url(&inputs.logo_url);
     let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
@@ -93,6 +98,7 @@ pub fn validate_dao_inputs(
     let dao_description_err = dao_description_res.clone().err();
     let creator_address_err = creator_address_res.clone().err();
     let share_supply_err = share_supply_res.clone().err();
+    let shares_for_investors_err = shares_for_investors_res.clone().err();
     let share_price_err = share_price_res.clone().err();
     let logo_url_err = logo_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
@@ -103,6 +109,7 @@ pub fn validate_dao_inputs(
         dao_description_err,
         creator_address_err,
         share_supply_err,
+        shares_for_investors_err,
         share_price_err,
         logo_url_err,
         social_media_url_err,
@@ -116,6 +123,7 @@ pub fn validate_dao_inputs(
             description: dao_description_res.err(),
             creator: creator_address_res.err(),
             share_supply: share_supply_res.err(),
+            shares_for_investors: shares_for_investors_res.err(),
             share_price: share_price_res.err(),
             investors_share: investors_share_res.err(),
             logo_url: logo_url_res.err(),
@@ -136,6 +144,8 @@ pub fn validate_dao_inputs(
         investors_share_res.map_err(|e| to_single_field_val_error("investors_share", e))?;
     let share_supply =
         share_supply_res.map_err(|e| to_single_field_val_error("share_supply", e))?;
+    let shares_for_investors = shares_for_investors_res
+        .map_err(|e| to_single_field_val_error("shares_for_investors", e))?;
     let share_price = share_price_res.map_err(|e| to_single_field_val_error("share_price", e))?;
     let logo_url = logo_url_res.map_err(|e| to_single_field_val_error("logo_url", e))?;
     let social_media_url =
@@ -148,12 +158,17 @@ pub fn validate_dao_inputs(
         ))
     })?;
 
+    if shares_for_investors > share_supply {
+        return Err(ValidateDaoInputsError::SharesForInvestorsGreaterThanSupply);
+    }
+
     Ok(ValidatedDaoInputs {
         name: dao_name,
         description: dao_description,
         creator: creator_address,
         token_name: asset_name,
         share_supply,
+        shares_for_investors,
         share_price,
         investors_share,
         logo_url,
@@ -187,6 +202,7 @@ pub enum ValidateDaoInputsError {
         field: String,
         error: ValidationError,
     },
+    SharesForInvestorsGreaterThanSupply,
     NonValidation(String),
 }
 
@@ -197,6 +213,7 @@ pub struct CreateAssetsInputErrors {
     pub description: Option<ValidationError>,
     pub creator: Option<ValidationError>,
     pub share_supply: Option<ValidationError>,
+    pub shares_for_investors: Option<ValidationError>,
     pub share_price: Option<ValidationError>,
     pub investors_share: Option<ValidationError>,
     pub logo_url: Option<ValidationError>,
@@ -249,6 +266,17 @@ fn generate_asset_name(validated_dao_name: &str) -> Result<String> {
 }
 
 fn validate_share_supply(input: &str) -> Result<ShareAmount, ValidationError> {
+    let share_count: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
+    if share_count == 0 {
+        return Err(ValidationError::Min {
+            min: 1u8.to_string(),
+            actual: share_count.to_string(),
+        });
+    }
+    Ok(ShareAmount::new(share_count))
+}
+
+fn validate_shares_for_investors(input: &str) -> Result<ShareAmount, ValidationError> {
     let share_count: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
     if share_count == 0 {
         return Err(ValidationError::Min {

@@ -519,7 +519,7 @@ int NoOp
 ==
 assert
 gtxn 1 NumAppArgs
-int 11
+int 12
 ==
 assert
 gtxn 1 Sender
@@ -594,6 +594,10 @@ app_global_put
 byte "Versions"
 gtxna 1 ApplicationArgs 10
 app_global_put
+byte "SharesForInvestors"
+gtxna 1 ApplicationArgs 11
+btoi
+app_global_put
 itxn_begin
 int axfer
 itxn_field TypeEnum
@@ -617,6 +621,11 @@ itxn_field XferAsset
 int 0
 itxn_field Fee
 itxn_submit
+gtxn 4 XferAsset
+byte "SharesAssetId"
+app_global_get
+==
+assert
 int 1
 return
 
