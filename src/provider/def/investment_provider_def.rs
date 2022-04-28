@@ -90,11 +90,11 @@ impl InvestmentProvider for InvestmentProviderDef {
             dao.specs.shares.supply,
             investor_shares,
             PRECISION,
-            dao.specs.investors_part,
+            dao.specs.investors_share,
         )?;
 
         let investor_percentage_relative_to_total =
-            investor_percentage * dao.specs.investors_part.value();
+            investor_percentage * dao.specs.investors_share.value();
 
         log::info!("Determined claim amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_claim, central_state.received, withdrawable_customer_escrow_amount, investor_shares, dao.specs.shares.supply);
 

@@ -47,7 +47,7 @@ impl ViewDaoProvider for ViewDaoProviderDef {
                 anyhow!("Invalid app state: Investor escrow doesn't have shares asset, Please contact support.")
             })?.amount;
 
-        let investos_share_formatted = dao.specs.investors_part.value().format_percentage();
+        let investos_share_formatted = dao.specs.investors_share.value().format_percentage();
 
         let dao_view_data =
             dao_for_users_to_view_data(dao_to_dao_for_users(&dao, &dao_id)?, &funds_asset_specs);

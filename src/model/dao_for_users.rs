@@ -4,7 +4,8 @@ use base::{
     flows::create_dao::{
         model::Dao,
         share_amount::ShareAmount,
-        storage::load_dao::{DaoAppId, DaoId}, shares_percentage::SharesPercentage,
+        shares_percentage::SharesPercentage,
+        storage::load_dao::{DaoAppId, DaoId},
     },
     funds::FundsAmount,
 };
@@ -40,7 +41,7 @@ pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId) -> Result<DaoForUsers> {
         share_price: dao.specs.share_price,
         asset_name: dao.specs.shares.token_name.clone(),
         share_supply: dao.specs.shares.supply,
-        investors_share: dao.specs.investors_part,
+        investors_share: dao.specs.investors_share,
         logo_url: dao.specs.logo_url.clone(),
         social_media_url: dao.specs.social_media_url.clone(),
         shares_asset_id: dao.shares_asset_id,

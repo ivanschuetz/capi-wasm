@@ -34,7 +34,7 @@ pub struct ValidatedDaoInputs {
     pub token_name: String,
     pub share_supply: ShareAmount,
     pub share_price: FundsAmount,
-    pub investors_part: SharesPercentage,
+    pub investors_share: SharesPercentage,
     pub logo_url: String,
     pub social_media_url: String,
 }
@@ -46,7 +46,7 @@ pub struct CreateDaoFormInputsJs {
     pub dao_description: String,
     pub share_count: String,
     pub share_price: String,
-    pub investors_part: String, // percentage (0..100), with decimals (max decimals number defined in validations)
+    pub investors_share: String, // percentage (0..100), with decimals (max decimals number defined in validations)
     pub logo_url: String,
     pub social_media_url: String,
 }
@@ -69,7 +69,7 @@ fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> SetupDaoSpecs {
             token_name: inputs.token_name,
             supply: inputs.share_supply,
         },
-        investors_part: inputs.investors_part,
+        investors_share: inputs.investors_share,
         share_price: inputs.share_price,
         logo_url: inputs.logo_url,
         social_media_url: inputs.social_media_url,
@@ -87,7 +87,7 @@ pub fn validate_dao_inputs(
     let share_price_res = validate_share_price(&inputs.share_price, funds_asset_specs);
     let logo_url_res = validate_logo_url(&inputs.logo_url);
     let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
-    let investors_part_res = validate_investors_share(&inputs.investors_part);
+    let investors_share_res = validate_investors_share(&inputs.investors_share);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_err = dao_description_res.clone().err();
@@ -96,7 +96,7 @@ pub fn validate_dao_inputs(
     let share_price_err = share_price_res.clone().err();
     let logo_url_err = logo_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
-    let investors_part_err = investors_part_res.clone().err();
+    let investors_share_err = investors_share_res.clone().err();
 
     if [
         dao_name_err,
@@ -106,7 +106,7 @@ pub fn validate_dao_inputs(
         share_price_err,
         logo_url_err,
         social_media_url_err,
-        investors_part_err,
+        investors_share_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -117,7 +117,7 @@ pub fn validate_dao_inputs(
             creator: creator_address_res.err(),
             share_supply: share_supply_res.err(),
             share_price: share_price_res.err(),
-            investors_share: investors_part_res.err(),
+            investors_share: investors_share_res.err(),
             logo_url: logo_url_res.err(),
             social_media_url: social_media_url_res.err(),
         };
@@ -132,8 +132,8 @@ pub fn validate_dao_inputs(
         dao_description_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
     let creator_address =
         creator_address_res.map_err(|e| to_single_field_val_error("creator_address", e))?;
-    let investors_part =
-        investors_part_res.map_err(|e| to_single_field_val_error("investors_share", e))?;
+    let investors_share =
+        investors_share_res.map_err(|e| to_single_field_val_error("investors_share", e))?;
     let share_supply =
         share_supply_res.map_err(|e| to_single_field_val_error("share_supply", e))?;
     let share_price = share_price_res.map_err(|e| to_single_field_val_error("share_price", e))?;
@@ -155,7 +155,7 @@ pub fn validate_dao_inputs(
         token_name: asset_name,
         share_supply,
         share_price,
-        investors_part,
+        investors_share,
         logo_url,
         social_media_url,
     })
