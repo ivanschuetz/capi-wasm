@@ -52,7 +52,7 @@ impl UpdateAppProvider for UpdateAppProviderDef {
             &approval_template,
             dao.specs.shares.supply,
             PRECISION,
-            dao.specs.investors_part(),
+            dao.specs.investors_part,
             capi_deps.app_id,
             capi_deps.escrow_percentage,
             dao.specs.share_price,

@@ -8,6 +8,7 @@ use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use base::decimal_util::DecimalExt;
 use base::dependencies::algod;
 use base::flows::create_dao::storage::load_dao::load_dao;
 
@@ -46,7 +47,7 @@ impl ViewDaoProvider for ViewDaoProviderDef {
                 anyhow!("Invalid app state: Investor escrow doesn't have shares asset, Please contact support.")
             })?.amount;
 
-        let investos_share_formatted = format!("{} %", dao.specs.investors_part());
+        let investos_share_formatted = dao.specs.investors_part.value().format_percentage();
 
         let dao_view_data =
             dao_for_users_to_view_data(dao_to_dao_for_users(&dao, &dao_id)?, &funds_asset_specs);

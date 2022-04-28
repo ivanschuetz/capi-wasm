@@ -21,7 +21,6 @@ pub struct LoadInvestmentResJs {
     pub investor_percentage: String,
     pub investor_percentage_number: String, // relative to investor's share (part reserved to investors)
     pub investor_percentage_relative_to_total_number: String, // relative to all the dao's income
-    pub investors_share_number: String, // from Dao - copied here just for convenience (to retrieve all the display data from this struct)
     pub investor_already_retrieved_amount: String,
     pub investor_claimable_dividend: String,
     pub investor_claimable_dividend_microalgos: String, // passthrough

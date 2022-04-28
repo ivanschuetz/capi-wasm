@@ -5,7 +5,7 @@ use crate::{
     dependencies::{api, capi_deps, funds_asset_specs},
     service::{constants::PRECISION, str_to_algos::base_units_to_display_units_str},
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::{
     decimal_util::DecimalExt,
@@ -90,17 +90,11 @@ impl InvestmentProvider for InvestmentProviderDef {
             dao.specs.shares.supply,
             investor_shares,
             PRECISION,
-            dao.specs.investors_part(),
+            dao.specs.investors_part,
         )?;
 
-        let investors_share_normalized = dao
-            .specs
-            .investors_part()
-            .as_decimal()
-            .checked_div(100u8.into())
-            .ok_or_else(|| anyhow!("Unexpected: dividing returned None"))?;
         let investor_percentage_relative_to_total =
-            investor_percentage * investors_share_normalized;
+            investor_percentage * dao.specs.investors_part.value();
 
         log::info!("Determined claim amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_claim, central_state.received, withdrawable_customer_escrow_amount, investor_shares, dao.specs.shares.supply);
 
@@ -111,8 +105,6 @@ impl InvestmentProvider for InvestmentProviderDef {
             investor_percentage_number: investor_percentage.to_string(),
             investor_percentage_relative_to_total_number: investor_percentage_relative_to_total
                 .to_string(),
-
-            investors_share_number: investors_share_normalized.to_string(),
 
             investor_already_retrieved_amount: base_units_to_display_units_str(
                 already_retrieved,

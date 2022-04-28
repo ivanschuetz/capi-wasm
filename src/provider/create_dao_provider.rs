@@ -11,7 +11,6 @@ use base::flows::create_dao::model::CreateSharesSpecs;
 use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use base::flows::create_dao::share_amount::ShareAmount;
 use base::flows::create_dao::shares_percentage::SharesPercentage;
-use base::flows::create_dao::shares_specs::SharesDistributionSpecs;
 use base::funds::FundsAmount;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -35,7 +34,7 @@ pub struct ValidatedDaoInputs {
     pub token_name: String,
     pub share_supply: ShareAmount,
     pub share_price: FundsAmount,
-    pub investors_part: ShareAmount,
+    pub investors_part: SharesPercentage,
     pub logo_url: String,
     pub social_media_url: String,
 }
@@ -47,7 +46,7 @@ pub struct CreateDaoFormInputsJs {
     pub dao_description: String,
     pub share_count: String,
     pub share_price: String,
-    pub investors_share: String, // percentage
+    pub investors_part: String, // percentage (0..100), with decimals (max decimals number defined in validations)
     pub logo_url: String,
     pub social_media_url: String,
 }
@@ -58,24 +57,23 @@ impl CreateDaoFormInputsJs {
         funds_asset_specs: &FundsAssetSpecs,
     ) -> Result<SetupDaoSpecs, ValidateDaoInputsError> {
         let validated_inputs = validate_dao_inputs(self, funds_asset_specs)?;
-        validated_inputs_to_dao_specs(validated_inputs)
-            .map_err(|e| ValidateDaoInputsError::NonValidation(format!("Unexpected: {e:?}")))
+        Ok(validated_inputs_to_dao_specs(validated_inputs))
     }
 }
 
-fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
-    SetupDaoSpecs::new(
-        inputs.name,
-        inputs.description,
-        CreateSharesSpecs {
+fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> SetupDaoSpecs {
+    SetupDaoSpecs {
+        name: inputs.name,
+        description: inputs.description,
+        shares: CreateSharesSpecs {
             token_name: inputs.token_name,
             supply: inputs.share_supply,
         },
-        inputs.investors_part,
-        inputs.share_price,
-        inputs.logo_url,
-        inputs.social_media_url,
-    )
+        investors_part: inputs.investors_part,
+        share_price: inputs.share_price,
+        logo_url: inputs.logo_url,
+        social_media_url: inputs.social_media_url,
+    }
 }
 
 pub fn validate_dao_inputs(
@@ -89,7 +87,7 @@ pub fn validate_dao_inputs(
     let share_price_res = validate_share_price(&inputs.share_price, funds_asset_specs);
     let logo_url_res = validate_logo_url(&inputs.logo_url);
     let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
-    let investors_share_res = validate_investors_share(&inputs.investors_share);
+    let investors_part_res = validate_investors_share(&inputs.investors_part);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_err = dao_description_res.clone().err();
@@ -98,7 +96,7 @@ pub fn validate_dao_inputs(
     let share_price_err = share_price_res.clone().err();
     let logo_url_err = logo_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
-    let investors_share_err = investors_share_res.clone().err();
+    let investors_part_err = investors_part_res.clone().err();
 
     if [
         dao_name_err,
@@ -108,7 +106,7 @@ pub fn validate_dao_inputs(
         share_price_err,
         logo_url_err,
         social_media_url_err,
-        investors_share_err,
+        investors_part_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -119,7 +117,7 @@ pub fn validate_dao_inputs(
             creator: creator_address_res.err(),
             share_supply: share_supply_res.err(),
             share_price: share_price_res.err(),
-            investors_share: investors_share_res.err(),
+            investors_share: investors_part_res.err(),
             logo_url: logo_url_res.err(),
             social_media_url: social_media_url_res.err(),
         };
@@ -134,8 +132,8 @@ pub fn validate_dao_inputs(
         dao_description_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
     let creator_address =
         creator_address_res.map_err(|e| to_single_field_val_error("creator_address", e))?;
-    let investors_share =
-        investors_share_res.map_err(|e| to_single_field_val_error("investors_share", e))?;
+    let investors_part =
+        investors_part_res.map_err(|e| to_single_field_val_error("investors_share", e))?;
     let share_supply =
         share_supply_res.map_err(|e| to_single_field_val_error("share_supply", e))?;
     let share_price = share_price_res.map_err(|e| to_single_field_val_error("share_price", e))?;
@@ -149,15 +147,6 @@ pub fn validate_dao_inputs(
             "Error generating asset name, based on: {dao_name}"
         ))
     })?;
-    let investors_part = validate_investors_part(&investors_share, share_supply).map_err(|_| {
-        ValidateDaoInputsError::NonValidation(format!(
-            "Error calculating investors part, based on: {investors_share:?} and: {share_supply}"
-        ))
-    })?;
-
-    if investors_part > share_supply {
-        return Err(ValidateDaoInputsError::InvestorsPartIsGreaterThanShareSupply);
-    }
 
     Ok(ValidatedDaoInputs {
         name: dao_name,
@@ -194,7 +183,6 @@ pub struct CreateDaoResJs {
 #[derive(Debug, Clone, Serialize)]
 pub enum ValidateDaoInputsError {
     AllFieldsValidation(CreateAssetsInputErrors),
-    InvestorsPartIsGreaterThanShareSupply,
     SingleFieldValidation {
         field: String,
         error: ValidationError,
@@ -302,17 +290,6 @@ fn validate_investors_share(input: &str) -> Result<SharesPercentage, ValidationE
             ValidationError::Unexpected(format!("Couldn't divide {value} by 100").to_owned())
         })
     }
-}
-
-fn validate_investors_part(
-    investors_percentage: &SharesPercentage,
-    shares_supply: ShareAmount,
-) -> Result<ShareAmount> {
-    Ok(
-        // the creator's part is derived (supply - investor's part)
-        SharesDistributionSpecs::from_investors_percentage(investors_percentage, shares_supply)?
-            .investors(),
-    )
 }
 
 fn validate_logo_url(input: &str) -> Result<String, ValidationError> {
