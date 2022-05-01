@@ -1,5 +1,4 @@
 use algonaut::core::Address;
-use anyhow::Result;
 use base::{
     flows::create_dao::{
         model::Dao,
@@ -20,7 +19,7 @@ pub struct DaoForUsers {
     pub asset_name: String,
     pub share_supply: ShareAmount,
     pub investors_share: SharesPercentage,
-    pub logo_url: String,
+    pub image_url: Option<String>,
     pub social_media_url: String,
     pub shares_asset_id: u64,
     pub app_id: DaoAppId,
@@ -32,9 +31,9 @@ pub struct DaoForUsers {
     pub creator: Address,
 }
 
-pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId) -> Result<DaoForUsers> {
+pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId, image_url: Option<String>) -> DaoForUsers {
     let dao_id_str = dao_id.to_string();
-    Ok(DaoForUsers {
+    DaoForUsers {
         id: dao_id_str.clone(),
         name: dao.specs.name.clone(),
         description: dao.specs.description.clone(),
@@ -42,7 +41,7 @@ pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId) -> Result<DaoForUsers> {
         asset_name: dao.specs.shares.token_name.clone(),
         share_supply: dao.specs.shares.supply,
         investors_share: dao.specs.investors_share,
-        logo_url: dao.specs.logo_url.clone(),
+        image_url: image_url.to_owned(),
         social_media_url: dao.specs.social_media_url.clone(),
         shares_asset_id: dao.shares_asset_id,
         app_id: dao.app_id,
@@ -54,5 +53,5 @@ pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId) -> Result<DaoForUsers> {
         my_investment_link_rel: format!("investment/{}", dao_id_str),
         dao_link: format!("/{}", dao_id_str),
         creator: dao.owner,
-    })
+    }
 }

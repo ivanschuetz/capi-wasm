@@ -8,7 +8,10 @@ use crate::{
 };
 use anyhow::Result;
 use async_trait::async_trait;
-use base::{dependencies::algod, flows::create_dao::storage::load_dao::load_dao};
+use base::{
+    dependencies::{algod, image_api},
+    flows::create_dao::storage::load_dao::load_dao,
+};
 
 pub struct DaoUserViewProviderDef {}
 
@@ -19,6 +22,7 @@ impl DaoUserViewProvider for DaoUserViewProviderDef {
         log::debug!("load_dao, hash: {:?}", dao_id_str);
 
         let algod = algod();
+        let image_api = image_api();
         let api = api();
         let capi_deps = capi_deps()?;
 
@@ -27,7 +31,14 @@ impl DaoUserViewProvider for DaoUserViewProviderDef {
         let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
         Ok(dao_for_users_to_view_data(
-            dao_to_dao_for_users(&dao, &dao_id)?,
+            dao_to_dao_for_users(
+                &dao,
+                &dao_id,
+                dao.specs
+                    .image_hash
+                    .clone()
+                    .map(|h| h.as_api_url(&image_api)),
+            ),
             &funds_asset_specs()?,
         ))
     }

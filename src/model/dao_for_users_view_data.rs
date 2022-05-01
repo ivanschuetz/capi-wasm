@@ -14,7 +14,8 @@ pub struct DaoForUsersViewData {
     pub share_price: String,
     pub share_price_number_algo: String,
     pub shares_asset_id: String,
-    pub logo_url: String,
+    pub image_url: Option<String>,
+    // TODO this is optional too, make it optional everywhere
     pub social_media_url: String,
     pub app_id: String,
     pub customer_escrow_address: String,
@@ -39,7 +40,7 @@ pub fn dao_for_users_to_view_data(
             dao.share_price,
             funds_asset_specs,
         ),
-        logo_url: dao.logo_url,
+        image_url: dao.image_url,
         social_media_url: dao.social_media_url,
         shares_asset_id: dao.shares_asset_id.to_string(),
         app_id: dao.app_id.to_string(),

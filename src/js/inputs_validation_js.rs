@@ -13,6 +13,7 @@ pub fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
         ValidationError::NotAnInteger => "not_int",
         ValidationError::NotADecimal => "not_dec",
         ValidationError::TooManyFractionalDigits { .. } => "max_fractionals",
+        ValidationError::CompressedImageSize { .. } => "max_img_size",
         ValidationError::Unexpected(_) => "unexpected",
     }
     .to_owned();

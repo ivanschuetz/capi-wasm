@@ -30,6 +30,10 @@ pub enum ValidationError {
         max: String,
         actual: String,
     },
+    CompressedImageSize {
+        max: String,
+        actual: String,
+    },
     /// Related to validation but not directly attributable to the user (e.g. overflows when converting entered quantities to base units).
     /// Shouldn't happen normally - the conditions leading to these errors should be validated.
     Unexpected(String),

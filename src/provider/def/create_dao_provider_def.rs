@@ -4,23 +4,27 @@ use crate::dependencies::{api, capi_deps, funds_asset_specs};
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::common::to_my_algo_txs1;
 use crate::model::dao_for_users::dao_to_dao_for_users;
-use crate::model::dao_for_users_view_data::{dao_for_users_to_view_data, DaoForUsersViewData};
+use crate::model::dao_for_users_view_data::dao_for_users_to_view_data;
 use crate::provider::create_dao_provider::{
-    CreateDaoParJs, CreateDaoProvider, CreateDaoResJs, SubmitCreateDaoParJs,
+    CreateDaoParJs, CreateDaoProvider, CreateDaoRes, CreateDaoResJs, SubmitCreateDaoParJs,
     SubmitSetupDaoPassthroughParJs,
 };
 use crate::service::constants::PRECISION;
+use algonaut::algod::v2::Algod;
 use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::api::contract::Contract;
+use base::api::image_api::ImageApi;
 use base::api::teal_api::TealApi;
-use base::dependencies::algod;
+use base::dependencies::{algod, image_api};
 use base::flows::create_dao::model::{SetupDaoSigned, SetupDaoToSign};
 use base::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
 use base::flows::create_dao::setup_dao::{setup_dao_txs, submit_setup_dao};
 use base::flows::create_dao::setup_dao::{Escrows, Programs};
-use base::flows::create_dao::storage::load_dao::DaoAppId;
+use base::flows::create_dao::setup_dao_specs::{CompressedImage, ImageHash};
+use base::flows::create_dao::storage::load_dao::{DaoAppId, TxId};
+use base::network_util::wait_for_pending_transaction;
 
 pub struct CreateDaoProviderDef {}
 
@@ -100,14 +104,16 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 shares_asset_id: submit_assets_res.shares_asset_id,
                 customer_escrow: to_sign.customer_escrow.into(),
                 app_id: submit_assets_res.app_id.0,
+                compressed_image: pars.pt.inputs.compressed_image,
             },
         })
     }
 
-    async fn submit(&self, pars: SubmitCreateDaoParJs) -> Result<DaoForUsersViewData> {
+    async fn submit(&self, pars: SubmitCreateDaoParJs) -> Result<CreateDaoRes> {
         // log::debug!("in bridge_submit_create_dao, pars: {:?}", pars);
 
         let algod = algod();
+        let image_api = image_api();
         let funds_asset_specs = funds_asset_specs()?;
 
         if pars.txs.len() != 4 {
@@ -127,6 +133,9 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         let transfer_shares_to_app_tx = &pars.txs[3];
 
         log::debug!("Submitting the dao..");
+
+        // clone image_hash here to be able to use it after passing specs to signed struct
+        let image_hash = pars.pt.specs.image_hash.clone();
 
         let submit_dao_res = submit_setup_dao(
             &algod,
@@ -151,10 +160,28 @@ impl CreateDaoProvider for CreateDaoProviderDef {
 
         log::debug!("Submit dao res: {:?}", submit_dao_res);
 
-        Ok(dao_for_users_to_view_data(
-            dao_to_dao_for_users(&submit_dao_res.dao, &submit_dao_res.dao.id())?,
-            &funds_asset_specs,
-        ))
+        // Note that it's required to upload the image after DAO setup, because the image api checks the hash in the app's global state.
+        let (maybe_image_url, maybe_image_upload_error) = maybe_upload_image(
+            &algod,
+            &image_api,
+            submit_dao_res.tx_id,
+            DaoAppId(pars.pt.app_id),
+            pars.pt.compressed_image.map(|i| CompressedImage::new(i)),
+            image_hash,
+        )
+        .await?;
+
+        Ok(CreateDaoRes {
+            dao: dao_for_users_to_view_data(
+                dao_to_dao_for_users(
+                    &submit_dao_res.dao,
+                    &submit_dao_res.dao.id(),
+                    maybe_image_url,
+                ),
+                &funds_asset_specs,
+            ),
+            image_error: maybe_image_upload_error,
+        })
     }
 }
 
@@ -165,4 +192,58 @@ fn txs_to_sign(res: &SetupDaoToSign) -> Vec<Transaction> {
         res.fund_app_tx.clone(),
         res.transfer_shares_to_app_tx.clone(),
     ]
+}
+
+/// Returns: Url of the uploaded image (if upload was succesful), error message otherwise
+/// The error message is not an error as we don't want to abort the DAO setup (which with current implementation would leave the user in an incomplete state),
+/// we only show a message to the user and tell them to try again later from the settings
+/// this flow may be improved in the future
+pub async fn maybe_upload_image(
+    algod: &Algod,
+    image_api: &dyn ImageApi,
+    tx_id_to_wait: TxId,
+    app_id: DaoAppId,
+    image: Option<CompressedImage>,
+    image_hash: Option<ImageHash>,
+) -> Result<(Option<String>, Option<String>)> {
+    // Note that it's required to upload the image after DAO setup, because the image api checks that the hash is in the app's global state.
+    match (image, image_hash) {
+        (Some(image), Some(hash)) => {
+            // double checking that the hash which we stored in the DAO (passed to the setup dao tx when generating the txs)
+            // matches the just calculated hash of the image (which we get from passthrough data)
+            // no specific reason for why they should be different, but better more checks than less
+            if image.hash() != hash {
+                return Err(anyhow!("Passthrough image hash != image hash"));
+            }
+            upload_image(algod, image_api, tx_id_to_wait, app_id, hash, image).await
+        }
+        // user provided no image: no image url, no error
+        (None, None) => Ok((None, None)),
+        _ => Err(anyhow!(
+            "Invalid combination: either image and hash are set or none are set"
+        )),
+    }
+}
+
+/// Returns: Url of the uploaded image (if upload was succesful), error message otherwise
+/// The error message is not an error as we don't want to abort the DAO setup (which with current implementation would leave the user in an incomplete state),
+/// we only show a message to the user and tell them to try again later from the settings
+/// this flow may be improved in the future
+async fn upload_image(
+    algod: &Algod,
+    image_api: &dyn ImageApi,
+    tx_id_to_wait: TxId,
+    app_id: DaoAppId,
+    image_hash: ImageHash,
+    image: CompressedImage,
+) -> Result<(Option<String>, Option<String>)> {
+    wait_for_pending_transaction(&algod, &tx_id_to_wait).await?;
+    let (possible_image_url, possible_image_upload_error) = match image_api
+            .upload_image(app_id, image.bytes())
+            .await {
+                Ok(_) => (Some(image_hash.as_api_id()), None),
+                Err(e) => (None, Some(format!("Error storing image: {e}. Please try uploading it again from the project's settings.")))
+            };
+
+    Ok((possible_image_url, possible_image_upload_error))
 }

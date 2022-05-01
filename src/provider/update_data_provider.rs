@@ -30,7 +30,7 @@ pub struct UpdatableDataResJs {
     pub project_desc: String,
     pub share_price: String,
 
-    pub logo_url: String,
+    pub image_hash: Option<String>,
     pub social_media_url: String,
 }
 
@@ -51,19 +51,31 @@ pub struct UpdateDataParJs {
     pub project_desc: String,
     pub share_price: String,
 
-    pub logo_url: String,
+    pub image: Option<Vec<u8>>,
     pub social_media_url: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdateDataResJs {
     pub to_sign: Value,
+    pub pt: UpdateDataPassthroughJs,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitUpdateDataParJs {
     pub tx: SignedTxFromJs,
+    pub pt: UpdateDataPassthroughJs,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateDataPassthroughJs {
+    pub dao_id: String,
+    pub image: Option<Vec<u8>>,
+    pub image_hash: Option<Vec<u8>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct SubmitUpdateDataResJs {}
+pub struct SubmitUpdateDataResJs {
+    pub image_url: Option<String>,
+    pub image_upload_error: Option<String>,
+}

@@ -2,9 +2,8 @@ use super::{
     mock_contract_account, mock_dao_for_users_view_data, mock_js_txs, mock_msgpack_tx, req_delay,
 };
 use crate::dependencies::funds_asset_specs;
-use crate::model::dao_for_users_view_data::DaoForUsersViewData;
 use crate::provider::create_dao_provider::{
-    CreateDaoParJs, CreateDaoProvider, CreateDaoResJs, SubmitCreateDaoParJs,
+    CreateDaoParJs, CreateDaoProvider, CreateDaoRes, CreateDaoResJs, SubmitCreateDaoParJs,
     SubmitSetupDaoPassthroughParJs,
 };
 use anyhow::{Error, Result};
@@ -41,13 +40,17 @@ impl CreateDaoProvider for CreateDaoProviderMock {
                 shares_asset_id: 1234567890,
                 customer_escrow: mock_contract_account()?,
                 app_id: 121212121,
+                compressed_image: None,
             },
         })
     }
 
-    async fn submit(&self, _: SubmitCreateDaoParJs) -> Result<DaoForUsersViewData> {
+    async fn submit(&self, _: SubmitCreateDaoParJs) -> Result<CreateDaoRes> {
         req_delay().await;
 
-        mock_dao_for_users_view_data()
+        Ok(CreateDaoRes {
+            dao: mock_dao_for_users_view_data()?,
+            image_error: None,
+        })
     }
 }

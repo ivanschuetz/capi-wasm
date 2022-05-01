@@ -9,7 +9,7 @@ use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use base::decimal_util::DecimalExt;
-use base::dependencies::algod;
+use base::dependencies::{algod, image_api};
 use base::flows::create_dao::storage::load_dao::load_dao;
 
 pub struct ViewDaoProviderDef {}
@@ -20,6 +20,7 @@ impl ViewDaoProvider for ViewDaoProviderDef {
     async fn get(&self, pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
         let algod = algod();
         let api = api();
+        let image_api = image_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 
@@ -49,8 +50,17 @@ impl ViewDaoProvider for ViewDaoProviderDef {
 
         let investos_share_formatted = dao.specs.investors_share.value().format_percentage();
 
-        let dao_view_data =
-            dao_for_users_to_view_data(dao_to_dao_for_users(&dao, &dao_id)?, &funds_asset_specs);
+        let dao_view_data = dao_for_users_to_view_data(
+            dao_to_dao_for_users(
+                &dao,
+                &dao_id,
+                dao.specs
+                    .image_hash
+                    .clone()
+                    .map(|h| h.as_api_url(&image_api)),
+            ),
+            &funds_asset_specs,
+        );
 
         Ok(ViewDaoResJs {
             dao: dao_view_data,

@@ -8,6 +8,7 @@ use crate::{
 };
 use anyhow::Result;
 use async_trait::async_trait;
+use base::dependencies::image_api;
 use base::{dependencies::algod, flows::create_dao::storage::load_dao::load_dao};
 
 pub struct LoadDaoWithIdProviderDef {}
@@ -18,6 +19,7 @@ impl LoadDaoWithIdProvider for LoadDaoWithIdProviderDef {
     async fn get(&self, id_str: String) -> Result<DaoForUsersViewData> {
         let algod = algod();
         let api = api();
+        let image_api = image_api();
         let capi_deps = capi_deps()?;
 
         let dao_id = id_str.parse()?;
@@ -25,7 +27,14 @@ impl LoadDaoWithIdProvider for LoadDaoWithIdProviderDef {
         let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
         Ok(dao_for_users_to_view_data(
-            dao_to_dao_for_users(&dao, &dao_id)?,
+            dao_to_dao_for_users(
+                &dao,
+                &dao_id,
+                dao.specs
+                    .image_hash
+                    .clone()
+                    .map(|h| h.as_api_url(&image_api)),
+            ),
             &funds_asset_specs()?,
         ))
     }
