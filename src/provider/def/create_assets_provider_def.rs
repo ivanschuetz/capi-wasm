@@ -9,7 +9,7 @@ use crate::service::constants::PRECISION;
 use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::api::api::Api;
+use base::api::teal_api::TealApi;
 use base::api::contract::Contract;
 use base::dependencies::algod;
 use base::flows::create_dao::setup::create_shares::create_assets;

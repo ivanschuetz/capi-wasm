@@ -8,7 +8,7 @@ use algonaut::{algod::v2::Algod, core::Address, indexer::v2::Indexer};
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::{
-    api::api::Api,
+    api::teal_api::TealApi,
     capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     dependencies::{algod, indexer},
     flows::{create_dao::storage::load_dao::DaoId, withdraw::withdrawals::withdrawals},
@@ -52,7 +52,7 @@ pub async fn load_withdrawals(
     funds_asset_specs: &FundsAssetSpecs,
     dao_id: DaoId,
     creator: &Address,
-    api: &dyn Api,
+    api: &dyn TealApi,
     capi_deps: &CapiAssetDaoDeps,
 ) -> Result<Vec<WithdrawalViewData>> {
     let entries = withdrawals(

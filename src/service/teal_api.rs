@@ -2,8 +2,8 @@ use crate::teal::{customer_escrow, dao_app_approval, dao_app_clear};
 use anyhow::{anyhow, Result};
 use base::{
     api::{
-        api::Api,
         contract::Contract,
+        teal_api::TealApi,
         version::{Version, VersionedTealSourceTemplate, Versions},
     },
     teal::TealSourceTemplate,
@@ -11,7 +11,7 @@ use base::{
 
 pub struct TealStringsApi {}
 
-impl Api for TealStringsApi {
+impl TealApi for TealStringsApi {
     fn last_versions(&self) -> Versions {
         Versions {
             app_approval: Version(1),

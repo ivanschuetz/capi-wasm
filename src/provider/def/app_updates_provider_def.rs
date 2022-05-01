@@ -7,7 +7,7 @@ use crate::{
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::{
-    api::{api::Api, version::Version},
+    api::{teal_api::TealApi, version::Version},
     dependencies::algod,
     flows::create_dao::storage::load_dao::DaoId,
     state::dao_app_state::dao_global_state,

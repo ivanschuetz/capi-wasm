@@ -1,7 +1,7 @@
-use crate::service::api::TealStringsApi;
+use crate::service::teal_api::TealStringsApi;
 use anyhow::{anyhow, Error, Result};
 use base::{
-    api::api::Api,
+    api::teal_api::TealApi,
     capi_asset::{
         capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps, capi_asset_id::CapiAssetId,
     },
@@ -40,7 +40,7 @@ pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
     })
 }
 
-pub fn api() -> impl Api {
+pub fn api() -> impl TealApi {
     TealStringsApi {}
 }
 
