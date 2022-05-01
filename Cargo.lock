@@ -1681,7 +1681,6 @@ dependencies = [
  "data-encoding",
  "log",
  "my-algo",
- "reqwest",
  "rmp-serde",
  "rust_decimal",
  "serde",
