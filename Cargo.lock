@@ -202,6 +202,7 @@ dependencies = [
  "tealdbg",
  "tinytemplate",
  "url",
+ "urlencoding",
  "wasm-logger",
 ]
 
@@ -1688,7 +1689,6 @@ dependencies = [
  "rust_decimal",
  "serde",
  "serde_json",
- "urlencoding",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-logger",
