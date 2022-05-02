@@ -100,7 +100,7 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoForUsersViewData> {
         share_price: "100".to_owned(),
         share_price_number_algo: "100".to_owned(),
         shares_asset_id: "1231231231".to_owned(),
-        image_url: Some("https://foo.bar.com/mylogo_url200x300".to_owned()),
+        image_url: Some("https://placekitten.com/1000/400".to_owned()),
         social_media_url: "https://twitter.com/foobardoesntexist".to_owned(),
         app_id: "111112222".to_owned(),
         customer_escrow_address: mock_address()?.to_string(),
