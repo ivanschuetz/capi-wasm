@@ -23,6 +23,10 @@ impl InvestmentProvider for InvestmentProviderMock {
             investor_already_retrieved_amount: "11100".to_owned(),
             investor_claimable_dividend: "240".to_owned(),
             investor_claimable_dividend_microalgos: "0000".to_owned(),
+
+            available_shares: "1000".to_owned(),
+            investor_locked_shares: "20".to_owned(),
+            investor_unlocked_shares: "10".to_owned(),
         })
     }
 }

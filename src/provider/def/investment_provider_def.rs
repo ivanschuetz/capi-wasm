@@ -7,6 +7,8 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
+use base::state::account_state::asset_holdings;
+use base::state::dao_shares::dao_shares_with_dao_state;
 use base::{
     decimal_util::DecimalExt,
     dependencies::algod,
@@ -27,6 +29,7 @@ pub struct InvestmentProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl InvestmentProvider for InvestmentProviderDef {
+    // TODO parallelize requests if possible
     async fn get(&self, pars: LoadInvestmentParJs) -> Result<LoadInvestmentResJs> {
         log::debug!("bridge_load_investment, pars: {:?}", pars);
 
@@ -42,7 +45,8 @@ impl InvestmentProvider for InvestmentProviderDef {
         let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
         let investor_state_res = dao_investor_state(&algod, investor_address, dao.app_id).await;
-        let (investor_shares, investor_claimed, already_retrieved) = match investor_state_res {
+        let (investor_locked_shares, investor_claimed, already_retrieved) = match investor_state_res
+        {
             Ok(state) => (
                 state.shares,
                 state.claimed,
@@ -66,9 +70,12 @@ impl InvestmentProvider for InvestmentProviderDef {
         };
 
         let central_state = dao_global_state(&algod, dao.app_id).await?;
+        let dao_shares =
+            dao_shares_with_dao_state(&algod, dao_id.0, dao.shares_asset_id, &central_state)
+                .await?;
 
-        let investor_percentage =
-            investor_shares.as_decimal() / dao.specs.shares.supply.as_decimal();
+        let investor_locked_percentage =
+            investor_locked_shares.as_decimal() / dao.specs.shares.supply.as_decimal();
 
         let drain_amounts = drain_amounts(
             &algod,
@@ -88,21 +95,24 @@ impl InvestmentProvider for InvestmentProviderDef {
             received_total_including_customer_escrow_balance,
             investor_claimed,
             dao.specs.shares.supply,
-            investor_shares,
+            investor_locked_shares,
             PRECISION,
             dao.specs.investors_share,
         )?;
 
         let investor_percentage_relative_to_total =
-            investor_percentage * dao.specs.investors_share.value();
+            investor_locked_percentage * dao.specs.investors_share.value();
 
-        log::info!("Determined claim amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_claim, central_state.received, withdrawable_customer_escrow_amount, investor_shares, dao.specs.shares.supply);
+        log::info!("Determined claim amount: {}, from central_received_total: {}, withdrawable_customer_escrow_amount: {}, investor_shares_count: {}, share supply: {}", can_claim, central_state.received, withdrawable_customer_escrow_amount, investor_locked_shares, dao.specs.shares.supply);
+
+        let investor_holdings =
+            asset_holdings(&algod, investor_address, dao.shares_asset_id).await?;
 
         Ok(LoadInvestmentResJs {
-            investor_shares_count: investor_shares.to_string(),
+            investor_shares_count: investor_locked_shares.to_string(),
 
-            investor_percentage: investor_percentage.format_percentage(),
-            investor_percentage_number: investor_percentage.to_string(),
+            investor_percentage: investor_locked_percentage.format_percentage(),
+            investor_percentage_number: investor_locked_percentage.to_string(),
             investor_percentage_relative_to_total_number: investor_percentage_relative_to_total
                 .to_string(),
 
@@ -115,6 +125,9 @@ impl InvestmentProvider for InvestmentProviderDef {
                 &funds_asset_specs,
             ),
             investor_claimable_dividend_microalgos: can_claim.to_string(),
+            available_shares: dao_shares.available.to_string(),
+            investor_locked_shares: investor_locked_shares.to_string(),
+            investor_unlocked_shares: investor_holdings.to_string(),
         })
     }
 }

@@ -24,4 +24,7 @@ pub struct LoadInvestmentResJs {
     pub investor_already_retrieved_amount: String,
     pub investor_claimable_dividend: String,
     pub investor_claimable_dividend_microalgos: String, // passthrough
+    pub available_shares: String,                       // shares that can be purchased in the Dao
+    pub investor_locked_shares: String,
+    pub investor_unlocked_shares: String,
 }
