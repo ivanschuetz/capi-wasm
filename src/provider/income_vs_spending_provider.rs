@@ -15,20 +15,12 @@ pub struct IncomeVsSpendingParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct IncomeVsSpendingResJs {
-    // the data points used to draw the chart lines
-    pub chart_lines: ChartLines,
-    // the same data as in chart_lines, but flattened: the chart needs this to render the axes
-    pub flat_data_points: Vec<ChartDataPointJs>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ChartLines {
-    pub spending: Vec<ChartDataPointJs>,
-    pub income: Vec<ChartDataPointJs>,
+    pub points: Vec<ChartDataPointJs>,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ChartDataPointJs {
     pub date: String,
-    pub value: String,
+    pub income: String,
+    pub spending: String,
 }

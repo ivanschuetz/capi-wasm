@@ -1,7 +1,6 @@
 use crate::dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::provider::income_vs_spending_provider::{
-    ChartDataPointJs, ChartLines, IncomeVsSpendingParJs, IncomeVsSpendingProvider,
-    IncomeVsSpendingResJs,
+    ChartDataPointJs, IncomeVsSpendingParJs, IncomeVsSpendingProvider, IncomeVsSpendingResJs,
 };
 use crate::service::str_to_algos::base_units_to_display_units;
 use anyhow::{anyhow, Result};
@@ -59,6 +58,7 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             .map(|payment| ChartDataPoint {
                 date: payment.date,
                 value: payment.amount.val(),
+                is_income: true,
             })
             .collect();
 
@@ -67,21 +67,18 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             .map(|withdrawal| ChartDataPoint {
                 date: withdrawal.date,
                 value: withdrawal.amount.val(),
+                is_income: false,
             })
             .collect();
 
-        to_income_vs_spending_res(
-            &income_data_points,
-            &spending_data_points,
-            &funds_asset_specs,
-        )
+        to_income_vs_spending_res(income_data_points, spending_data_points, &funds_asset_specs)
     }
 }
 
 // pub to be shared with the mock provider
 pub fn to_income_vs_spending_res(
-    income: &[ChartDataPoint],
-    spending: &[ChartDataPoint],
+    income: Vec<ChartDataPoint>,
+    spending: Vec<ChartDataPoint>,
     funds_asset_specs: &FundsAssetSpecs,
 ) -> Result<IncomeVsSpendingResJs> {
     let income_bounds = determine_min_max_local_bounds(&income);
@@ -106,41 +103,23 @@ pub fn to_income_vs_spending_res(
                 max: bounds.max,
             };
 
-            let income_data_points_js = aggregate_and_format_data_points(
-                &income,
+            let mut all_points = income;
+            all_points.extend(spending);
+
+            let all_grouped_points_js = group_and_format_data_points(
+                &all_points,
                 bounds.min,
                 bounds.max,
                 grouping_interval,
                 &funds_asset_specs,
             )?;
-
-            let spending_data_points_js = aggregate_and_format_data_points(
-                &spending,
-                bounds.min,
-                bounds.max,
-                grouping_interval,
-                &funds_asset_specs,
-            )?;
-
-            let mut flattened_js = income_data_points_js.clone();
-            flattened_js.extend(spending_data_points_js.clone());
 
             Ok(IncomeVsSpendingResJs {
-                chart_lines: ChartLines {
-                    spending: spending_data_points_js,
-                    income: income_data_points_js,
-                },
-                flat_data_points: flattened_js,
+                points: all_grouped_points_js,
             })
         }
         // No min max dates -> nothing to display on the chart
-        None => Ok(IncomeVsSpendingResJs {
-            chart_lines: ChartLines {
-                spending: vec![],
-                income: vec![],
-            },
-            flat_data_points: vec![],
-        }),
+        None => Ok(IncomeVsSpendingResJs { points: vec![] }),
     }
 }
 
@@ -204,51 +183,78 @@ struct DateBounds {
     max: DateTime<Utc>,
 }
 
-pub fn aggregate_and_format_data_points(
+#[derive(Debug, Clone)]
+struct IncomeAndSpending {
+    income: u64,
+    spending: u64,
+}
+
+pub fn group_and_format_data_points(
     points: &[ChartDataPoint],
     start_time: DateTime<Utc>,
     end_time: DateTime<Utc>,
     interval_length: Duration,
     funds_asset_specs: &FundsAssetSpecs,
 ) -> Result<Vec<ChartDataPointJs>> {
-    let length = interval_count(end_time, start_time, interval_length)?;
-    let mut values: Vec<u64> = vec![0; length + 1]; // +1 -> inclusive range
+    let ticks_count = ticks_between(end_time, start_time, interval_length)?;
+    // ticks (indices) on x axis with their respective y value - 0 by default, so the chart shows 0 for dates that have no data
+    let mut ticks: Vec<IncomeAndSpending> = vec![
+        IncomeAndSpending {
+            income: 0,
+            spending: 0
+        };
+        ticks_count + 1
+    ]; // +1 -> inclusive range
 
     for point in points {
-        let interval_index = interval_count(point.date, start_time, interval_length)?;
-        values[interval_index] = values[interval_index]
-            .checked_add(point.value)
-            .ok_or(anyhow!(
-                "Overflow adding value and point.value: {:?}",
-                point.value
-            ))?;
+        // calculate tick (grouped date) on x-axis
+        let tick_index = ticks_between(point.date, start_time, interval_length)?;
+
+        // add value to sum tick (keeping income and spending separate)
+        let tick_value = &ticks[tick_index];
+        let curr_value = if point.is_income {
+            tick_value.income
+        } else {
+            tick_value.spending
+        };
+
+        let new_value = curr_value.checked_add(point.value).ok_or(anyhow!(
+            "Overflow adding value and point.value: {:?}",
+            point.value
+        ))?;
+
+        if point.is_income {
+            ticks[tick_index].income = new_value;
+        } else {
+            ticks[tick_index].spending = new_value;
+        };
     }
 
     let mut data_points = vec![];
 
-    for (index, value) in values.into_iter().enumerate() {
+    // map the ticks indices and values to chart points (dates and values)
+    for (index, value) in ticks.into_iter().enumerate() {
         let data_point_js = create_data_point_js(
             start_time,
             index.try_into()?,
             interval_length,
-            value,
+            &value,
             funds_asset_specs,
         )?;
-        log::debug!("mapped index: {index}, value: {value:?} to js point: {data_point_js:?}");
+        log::debug!("mapped tick index: {index}, value: {value:?} to js point: {data_point_js:?}");
         data_points.push(data_point_js);
     }
 
     Ok(data_points)
 }
 
-fn interval_count(
+/// returns tick count between start and date, given an interval length
+fn ticks_between(
     date: DateTime<Utc>,
     start: DateTime<Utc>,
     interval_length: Duration,
 ) -> Result<usize> {
-    log::debug!(
-        "calc inverval count: date: {date:?}, start: {start:?}, length: {interval_length:?}"
-    );
+    log::debug!("calc tick count: date: {date:?}, start: {start:?}, length: {interval_length:?}");
     Ok((date - start)
         .num_seconds()
         .div(interval_length.num_seconds())
@@ -259,9 +265,26 @@ fn create_data_point_js(
     start_time: DateTime<Utc>,
     interval_index: i64,
     interval: Duration,
-    value: u64,
+    value: &IncomeAndSpending,
     funds_asset_specs: &FundsAssetSpecs,
 ) -> Result<ChartDataPointJs> {
+    let date = to_data_point_date(start_time, interval_index, interval)?;
+    let income = base_units_to_display_units(FundsAmount::new(value.income), funds_asset_specs);
+    let spending = base_units_to_display_units(FundsAmount::new(value.spending), funds_asset_specs);
+
+    Ok(ChartDataPointJs {
+        // date: date.timestamp().to_string(),
+        date: date.to_rfc2822(),
+        income: income.to_string(),
+        spending: spending.to_string(),
+    })
+}
+
+fn to_data_point_date(
+    start_time: DateTime<Utc>,
+    interval_index: i64,
+    interval: Duration,
+) -> Result<DateTime<Utc>> {
     let date = start_time
         .checked_add_signed(Duration::seconds(
             interval
@@ -272,16 +295,13 @@ fn create_data_point_js(
                 ))?,
         ))
         .ok_or(anyhow!("Error adding duration to start time: {start_time}"))?;
-    let value = base_units_to_display_units(FundsAmount::new(value), funds_asset_specs);
-
-    Ok(ChartDataPointJs {
-        date: date.timestamp().to_string(),
-        value: value.to_string(),
-    })
+    Ok(date)
 }
 
+// TODO rename, specific to income vs. spending
 #[derive(Debug, Clone)]
 pub struct ChartDataPoint {
     pub date: DateTime<Utc>,
     pub value: u64,
+    pub is_income: bool, // false: spending
 }

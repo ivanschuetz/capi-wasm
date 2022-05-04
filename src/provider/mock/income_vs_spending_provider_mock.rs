@@ -24,11 +24,7 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderMock {
 
         req_delay().await;
 
-        to_income_vs_spending_res(
-            &income_data_points,
-            &spending_data_points,
-            &funds_asset_specs,
-        )
+        to_income_vs_spending_res(income_data_points, spending_data_points, &funds_asset_specs)
     }
 }
 
@@ -42,22 +38,27 @@ fn test_income_points() -> Vec<ChartDataPoint> {
         ChartDataPoint {
             date: create_test_date(2022, 2, 10, 10, 30),
             value: 1_000_000,
+            is_income: true,
         },
         ChartDataPoint {
             date: create_test_date(2022, 2, 12, 12, 0),
             value: 5_000_000,
+            is_income: true,
         },
         ChartDataPoint {
             date: create_test_date(2022, 2, 15, 9, 0),
             value: 3_000_000,
+            is_income: true,
         },
         ChartDataPoint {
             date: create_test_date(2022, 2, 15, 18, 30),
             value: 4_000_000,
+            is_income: true,
         },
         ChartDataPoint {
             date: create_test_date(2022, 2, 16, 20, 15),
             value: 5_000_000,
+            is_income: true,
         },
     ]
 }
@@ -68,22 +69,27 @@ fn test_spending_points() -> Vec<ChartDataPoint> {
         ChartDataPoint {
             date: create_test_date(2022, 2, 8, 10, 30),
             value: 1_000_000,
+            is_income: false,
         },
         ChartDataPoint {
             date: create_test_date(2022, 2, 8, 12, 0),
             value: 5_000_000,
+            is_income: false,
         },
         ChartDataPoint {
             date: create_test_date(2022, 2, 14, 9, 0), // appears as 13 10:30 UTC value 3, and then a 14 10:30 UTC wth value 0
             value: 3_000_000,
+            is_income: false,
         },
         ChartDataPoint {
             date: create_test_date(2022, 2, 15, 18, 30), // appears as 15 10:30 value 4
             value: 4_000_000,
+            is_income: false,
         },
         ChartDataPoint {
             date: create_test_date(2022, 2, 18, 20, 15),
             value: 5_000_000,
+            is_income: false,
         },
     ]
 }
