@@ -32,7 +32,7 @@ wasm-logger = "0.2"
 log = "0.4"
 data-encoding = "2.3.2"
 rmp-serde = "1.0.0"
-chrono = { version = "0.4.19", features = ["serde"] }
+chrono = { version = "0.4.19", features = ["serde", "wasmbind"] }
 async-trait = "0.1.51"
 
 [profile.release]

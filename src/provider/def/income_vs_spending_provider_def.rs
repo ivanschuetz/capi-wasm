@@ -1,6 +1,7 @@
 use crate::dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::provider::income_vs_spending_provider::{
-    ChartDataPointJs, IncomeVsSpendingParJs, IncomeVsSpendingProvider, IncomeVsSpendingResJs,
+    to_interval_data, ChartDataPointJs, IncomeVsSpendingParJs, IncomeVsSpendingProvider,
+    IncomeVsSpendingResJs,
 };
 use crate::service::str_to_algos::base_units_to_display_units;
 use anyhow::{anyhow, Result};
@@ -32,11 +33,14 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
 
         let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
+        let interval_data = to_interval_data(&pars.interval)?;
+
         let mut income = all_received_payments(
             &indexer,
             &dao.app_address(),
             dao.customer_escrow.address(),
             dao.funds_asset_id,
+            &Some(interval_data.start),
         )
         .await?;
         income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
@@ -49,6 +53,7 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             &api,
             funds_asset_specs.id,
             &capi_deps,
+            &Some(interval_data.start),
         )
         .await?;
         spending.sort_by(|p1, p2| p1.date.cmp(&p2.date));
@@ -71,7 +76,12 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             })
             .collect();
 
-        to_income_vs_spending_res(income_data_points, spending_data_points, &funds_asset_specs)
+        to_income_vs_spending_res(
+            income_data_points,
+            spending_data_points,
+            &funds_asset_specs,
+            interval_data.interval,
+        )
     }
 }
 
@@ -80,6 +90,7 @@ pub fn to_income_vs_spending_res(
     income: Vec<ChartDataPoint>,
     spending: Vec<ChartDataPoint>,
     funds_asset_specs: &FundsAssetSpecs,
+    grouping_interval: Duration,
 ) -> Result<IncomeVsSpendingResJs> {
     let income_bounds = determine_min_max_local_bounds(&income);
     let spending_bounds = determine_min_max_local_bounds(&spending);
@@ -88,10 +99,6 @@ pub fn to_income_vs_spending_res(
         .into_iter()
         .filter_map(|opt| opt)
         .collect();
-
-    // TODO determine dynamically based on min max bounds (e.g. if total time is ~1 month, 1 week interval)
-    // let grouping_interval = Duration::minutes(15);
-    let grouping_interval = Duration::days(1);
 
     match determine_min_max_bounds(&bounds_without_none) {
         Some(bounds) => {

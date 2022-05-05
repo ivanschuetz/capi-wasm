@@ -3,7 +3,7 @@ use crate::provider::def::income_vs_spending_provider_def::{
     to_income_vs_spending_res, ChartDataPoint,
 };
 use crate::provider::income_vs_spending_provider::{
-    IncomeVsSpendingParJs, IncomeVsSpendingProvider, IncomeVsSpendingResJs,
+    to_interval_data, IncomeVsSpendingParJs, IncomeVsSpendingProvider, IncomeVsSpendingResJs,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -16,15 +16,22 @@ pub struct IncomeVsSpendingProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl IncomeVsSpendingProvider for IncomeVsSpendingProviderMock {
-    async fn get(&self, _: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs> {
+    async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs> {
         let funds_asset_specs = funds_asset_specs()?;
 
         let income_data_points = test_income_points();
         let spending_data_points = test_spending_points();
 
+        let interval_data = to_interval_data(&pars.interval)?;
+
         req_delay().await;
 
-        to_income_vs_spending_res(income_data_points, spending_data_points, &funds_asset_specs)
+        to_income_vs_spending_res(
+            income_data_points,
+            spending_data_points,
+            &funds_asset_specs,
+            interval_data.interval,
+        )
     }
 }
 

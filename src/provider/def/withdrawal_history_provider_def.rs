@@ -63,6 +63,7 @@ pub async fn load_withdrawals(
         api,
         funds_asset_specs.id,
         capi_deps,
+        &None,
     )
     .await?;
     let mut reqs_view_data = vec![];
