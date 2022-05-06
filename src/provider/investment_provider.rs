@@ -2,6 +2,8 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
+use crate::dependencies::FundsAssetSpecs;
+
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait InvestmentProvider {
@@ -27,4 +29,19 @@ pub struct LoadInvestmentResJs {
     pub available_shares: String,                       // shares that can be purchased in the Dao
     pub investor_locked_shares: String,
     pub investor_unlocked_shares: String,
+    // basically the share price
+    // naming is UI oriented: it's the price we show at the beginning, before the user makes any inputs,
+    // which would update the shown price to the entered amount * price
+    pub init_share_price: String,
+    // percentage of profit corresponding to init share price,
+    // we act as if the user entered 1 share (price corresponds to 1 share) and show the profit % for that
+    // also updated when the user enters an amount
+    pub init_profit_percentage: String,
+    pub share_specs_msg_pack: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CalcPriceAndPercSpecs {
+    pub funds_specs: FundsAssetSpecs,
+    // pub funds_specs: FundsAssetSpecs,
 }

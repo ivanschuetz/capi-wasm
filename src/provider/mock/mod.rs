@@ -19,6 +19,7 @@ pub mod add_roadmap_item_provider_mock;
 pub mod app_updates_provider_mock;
 pub mod balance_provider_mock;
 pub mod buy_shares_provider_mock;
+pub mod calculate_total_price_mock;
 pub mod claim_provider_mock;
 pub mod create_assets_provider_mock;
 pub mod create_dao_provider_mock;
@@ -96,6 +97,7 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoForUsersViewData> {
         name: "Test name".to_owned(),
         description: "Test description".to_owned(),
         share_supply: "123123123".to_owned(),
+        investors_share: "0.4".to_owned(),
         share_asset_name: "My asset name".to_owned(),
         share_price: "100".to_owned(),
         share_price_number_algo: "100".to_owned(),

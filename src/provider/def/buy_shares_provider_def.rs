@@ -5,14 +5,14 @@ use crate::{
         BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
         SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
     },
-    service::invest_or_lock::submit_apps_optins_from_js,
+    service::{invest_or_lock::submit_apps_optins_from_js, str_to_algos::validate_share_count},
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::{
     dependencies::algod,
     flows::{
-        create_dao::{share_amount::ShareAmount, storage::load_dao::load_dao},
+        create_dao::storage::load_dao::load_dao,
         invest::{
             invest::{invest_txs, submit_invest},
             model::InvestSigned,
@@ -104,14 +104,4 @@ impl BuySharesProvider for BuySharesProviderDef {
             message: "Success, you bought some shares!".to_owned(),
         })
     }
-}
-
-fn validate_share_count(input: &str) -> Result<ShareAmount> {
-    // TODO < available shares (asset count in investing escrow).
-    // maybe we can allow investor to enter only a valid amount, e.g. with stepper or graphically
-    let share_count = input.parse()?;
-    if share_count == 0 {
-        return Err(anyhow!("Please enter a valid share count"));
-    }
-    Ok(ShareAmount::new(share_count))
 }

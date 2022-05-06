@@ -26,3 +26,4 @@ pub mod view_dao_provider_def;
 pub mod withdraw_provider_def;
 pub mod withdrawal_history_provider_def;
 pub mod load_dao_with_id_provider_def;
+pub mod calculate_total_price_def;

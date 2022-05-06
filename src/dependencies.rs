@@ -9,6 +9,7 @@ use base::{
     funds::FundsAssetId,
 };
 use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 use std::{convert::TryInto, str::FromStr};
 
 /// URL determined by environment variable
@@ -45,7 +46,7 @@ pub fn api() -> impl TealApi {
 }
 
 /// This is WASM-only as the decimals are needed only for formatting - we don't need this in core.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FundsAssetSpecs {
     pub id: FundsAssetId,
     // Technically (algonaut) decimals is u64, but Decimal wants u32 and realistically u32 is enough. + we currently hardcode this.

@@ -27,6 +27,11 @@ impl InvestmentProvider for InvestmentProviderMock {
             available_shares: "1000".to_owned(),
             investor_locked_shares: "20".to_owned(),
             investor_unlocked_shares: "10".to_owned(),
+
+            init_share_price: "123".to_owned(),
+            init_profit_percentage: "0.02 %".to_owned(),
+
+            share_specs_msg_pack: vec![],
         })
     }
 }

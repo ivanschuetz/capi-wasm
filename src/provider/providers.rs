@@ -3,6 +3,7 @@ use super::{
     app_updates_provider::AppUpdatesProvider,
     balance_provider::BalanceProvider,
     buy_shares::BuySharesProvider,
+    calculate_total_price::CalculateTotalPriceProvider,
     claim_provider::ClaimProvider,
     create_assets_provider::CreateAssetsProvider,
     create_dao_provider::CreateDaoProvider,
@@ -10,7 +11,8 @@ use super::{
     def::{
         add_roadmap_item_provider_def::AddRoadmapItemProviderDef,
         app_updates_provider_def::AppUpdatesProviderDef, balance_provider_def::BalanceProviderDef,
-        buy_shares_provider_def::BuySharesProviderDef, claim_provider_def::ClaimProviderDef,
+        buy_shares_provider_def::BuySharesProviderDef,
+        calculate_total_price_def::CalculateTotalPriceDef, claim_provider_def::ClaimProviderDef,
         create_assets_provider_def::CreateAssetsProviderDef,
         create_dao_provider_def::CreateDaoProviderDef,
         dao_user_view_provider_def::DaoUserViewProviderDef, drain_provider_def::DrainProviderDef,
@@ -41,7 +43,9 @@ use super::{
         add_roadmap_item_provider_mock::AddRoadmapItemProviderMock,
         app_updates_provider_mock::AppUpdatesProviderMock,
         balance_provider_mock::BalanceProviderMock,
-        buy_shares_provider_mock::BuySharesProviderMock, claim_provider_mock::ClaimProviderMock,
+        buy_shares_provider_mock::BuySharesProviderMock,
+        calculate_total_price_mock::CalculateTotalPriceMock,
+        claim_provider_mock::ClaimProviderMock,
         create_assets_provider_mock::CreateAssetsProviderMock,
         create_dao_provider_mock::CreateDaoProviderMock,
         dao_user_view_provider_mock::DaoUserViewProviderMock,
@@ -109,6 +113,7 @@ pub struct Providers<'a> {
     pub create_dao: &'a dyn CreateDaoProvider,
     pub create_assets: &'a dyn CreateAssetsProvider,
     pub dao_with_id: &'a dyn LoadDaoWithIdProvider,
+    pub calculate_total_price: &'a dyn CalculateTotalPriceProvider,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -152,6 +157,7 @@ fn def_providers<'a>() -> Providers<'a> {
         create_dao: &CreateDaoProviderDef {},
         create_assets: &CreateAssetsProviderDef {},
         dao_with_id: &LoadDaoWithIdProviderDef {},
+        calculate_total_price: &CalculateTotalPriceDef {},
     }
 }
 
@@ -185,5 +191,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         create_dao: &CreateDaoProviderMock {},
         create_assets: &CreateAssetsProviderMock {},
         dao_with_id: &LoadDaoWithIdProviderMock {},
+        calculate_total_price: &CalculateTotalPriceMock {},
     }
 }

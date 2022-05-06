@@ -1,7 +1,7 @@
 use crate::{dependencies::FundsAssetSpecs, inputs_validation::ValidationError};
 use algonaut::core::MicroAlgos;
-use anyhow::Result;
-use base::funds::FundsAmount;
+use anyhow::{anyhow, Result};
+use base::{flows::create_dao::share_amount::ShareAmount, funds::FundsAmount};
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 
 #[allow(dead_code)] // we might use Algo inputs in the future e.g. for fees
@@ -17,6 +17,15 @@ pub fn validate_funds_amount_input(
         s.parse().map_err(|_| ValidationError::NotADecimal)?,
         asset_specs,
     )
+}
+
+pub fn validate_share_count(input: &str) -> Result<ShareAmount> {
+    // TODO < available shares (asset count in investing escrow).
+    let share_count = input.parse()?;
+    if share_count == 0 {
+        return Err(anyhow!("Please enter a valid share count"));
+    }
+    Ok(ShareAmount::new(share_count))
 }
 
 #[allow(dead_code)] // we might use Algo inputs in the future e.g. for fees

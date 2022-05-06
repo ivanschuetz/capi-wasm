@@ -1,5 +1,6 @@
+use crate::calculate_profit_percentage;
 use crate::provider::investment_provider::{
-    InvestmentProvider, LoadInvestmentParJs, LoadInvestmentResJs,
+    CalcPriceAndPercSpecs, InvestmentProvider, LoadInvestmentParJs, LoadInvestmentResJs,
 };
 use crate::{
     dependencies::{api, capi_deps, funds_asset_specs},
@@ -108,6 +109,12 @@ impl InvestmentProvider for InvestmentProviderDef {
         let investor_holdings =
             asset_holdings(&algod, investor_address, dao.shares_asset_id).await?;
 
+        let one_share_profit_percentage = calculate_profit_percentage(
+            ShareAmount::new(1),
+            dao.specs.shares.supply,
+            dao.specs.investors_share,
+        )?;
+
         Ok(LoadInvestmentResJs {
             investor_shares_count: investor_locked_shares.to_string(),
 
@@ -128,6 +135,16 @@ impl InvestmentProvider for InvestmentProviderDef {
             available_shares: dao_shares.available.to_string(),
             investor_locked_shares: investor_locked_shares.to_string(),
             investor_unlocked_shares: investor_holdings.to_string(),
+
+            init_share_price: base_units_to_display_units_str(
+                central_state.share_price,
+                &funds_asset_specs,
+            ),
+            init_profit_percentage: one_share_profit_percentage.format_percentage(),
+
+            share_specs_msg_pack: rmp_serde::to_vec_named(&CalcPriceAndPercSpecs {
+                funds_specs: funds_asset_specs,
+            })?,
         })
     }
 }

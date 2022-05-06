@@ -10,6 +10,7 @@ pub struct DaoForUsersViewData {
     pub description: String,
     // TODO remove?
     pub share_supply: String,
+    pub investors_share: String,
     pub share_asset_name: String,
     pub share_price: String,
     pub share_price_number_algo: String,
@@ -34,6 +35,7 @@ pub fn dao_for_users_to_view_data(
         name: dao.name.clone(),
         description: dao.description.clone(),
         share_supply: dao.share_supply.to_string(),
+        investors_share: dao.investors_share.value().to_string(),
         share_asset_name: dao.asset_name,
         share_price: base_units_to_display_units_str(dao.share_price, funds_asset_specs),
         share_price_number_algo: base_units_to_display_units_str(
