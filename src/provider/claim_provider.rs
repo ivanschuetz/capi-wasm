@@ -14,7 +14,6 @@ pub trait ClaimProvider {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ClaimParJs {
     pub dao_id: String,
-    pub amount: String,
     pub investor_address: String,
 }
 
