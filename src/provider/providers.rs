@@ -30,8 +30,9 @@ use super::{
         unlock_provider_def::UnlockProviderDef, update_app_provider_def::UpdateAppProviderDef,
         update_data_provider_def::UpdateDataProviderDef, view_dao_provider_def::ViewDaoProviderDef,
         withdraw_provider_def::WithdrawProviderDef,
-        withdrawal_history_provider_def::WithdrawalHistoryProviderDef,
+        withdrawal_history_provider_def::WithdrawalHistoryProviderDef, dividends_provider_def::DividendsProviderDef,
     },
+    dividends_provider::DividendsProvider,
     drain_provider::DrainProvider,
     funds_activity_provider::FundsActivityProvider,
     holders_count_provider::HoldersCountProvider,
@@ -49,7 +50,7 @@ use super::{
         create_assets_provider_mock::CreateAssetsProviderMock,
         create_dao_provider_mock::CreateDaoProviderMock,
         dao_user_view_provider_mock::DaoUserViewProviderMock,
-        drain_provider_mock::DrainProviderMock,
+        dividends_provider_mock::DividendsProviderMock, drain_provider_mock::DrainProviderMock,
         funds_activity_provider_mock::FundsActivityProviderMock,
         holders_count_provider_mock::HoldersCountProviderMock,
         income_vs_spending_provider_mock::IncomeVsSpendingProviderMock,
@@ -114,6 +115,7 @@ pub struct Providers<'a> {
     pub create_assets: &'a dyn CreateAssetsProvider,
     pub dao_with_id: &'a dyn LoadDaoWithIdProvider,
     pub calculate_total_price: &'a dyn CalculateTotalPriceProvider,
+    pub dividend: &'a dyn DividendsProvider,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -158,6 +160,7 @@ fn def_providers<'a>() -> Providers<'a> {
         create_assets: &CreateAssetsProviderDef {},
         dao_with_id: &LoadDaoWithIdProviderDef {},
         calculate_total_price: &CalculateTotalPriceDef {},
+        dividend: &DividendsProviderDef {},
     }
 }
 
@@ -192,5 +195,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         create_assets: &CreateAssetsProviderMock {},
         dao_with_id: &LoadDaoWithIdProviderMock {},
         calculate_total_price: &CalculateTotalPriceMock {},
+        dividend: &DividendsProviderMock {},
     }
 }

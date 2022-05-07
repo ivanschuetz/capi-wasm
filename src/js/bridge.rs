@@ -326,3 +326,9 @@ pub async fn bridge_calculate_shares_price(pars: JsValue) -> Result<JsValue, JsV
             .await,
     )
 }
+
+#[wasm_bindgen]
+pub async fn bridge_my_dividend(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_my_dividend, pars: {:?}", pars);
+    to_bridge_res(providers()?.dividend.get(parse_bridge_pars(pars)?).await)
+}
