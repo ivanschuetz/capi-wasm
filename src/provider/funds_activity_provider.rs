@@ -26,8 +26,10 @@ unsafe impl Send for LoadFundsActivityResJs {}
 pub struct FundsActivityViewData {
     pub amount: String,
     pub is_income: String, // false: spending
+    pub type_label: String,
     pub description: String,
     pub date: String,
     pub tx_id: String,
     pub tx_link: String,
+    pub address: String,
 }

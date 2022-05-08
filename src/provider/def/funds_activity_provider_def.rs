@@ -15,6 +15,8 @@ use base::{
     queries::funds_activity::{funds_activity, FundsActivityEntryType},
 };
 
+use super::shares_distribution_provider_def::shorten_address;
+
 pub struct FundsActivityProviderDef {}
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
@@ -60,10 +62,17 @@ impl FundsActivityProvider for FundsActivityProviderDef {
                     FundsActivityEntryType::Spending => "false",
                 }
                 .to_owned(),
+                // TODO needs tx types (Income -> Invest, Payment)
+                type_label: match entry.type_ {
+                    FundsActivityEntryType::Income => "Income",
+                    FundsActivityEntryType::Spending => "Withdraw",
+                }
+                .to_owned(),
                 description: entry.description,
-                date: entry.date.to_rfc2822(),
+                date: entry.date.format("%a %b %e %Y").to_string(),
                 tx_id: entry.tx_id.to_string(),
                 tx_link: explorer_tx_id_link_env(&entry.tx_id),
+                address: shorten_address(&entry.address)?,
             });
         }
 
