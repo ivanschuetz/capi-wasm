@@ -40,6 +40,7 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             &dao.app_address(),
             dao.customer_escrow.address(),
             dao.funds_asset_id,
+            &None,
             &Some(interval_data.start),
         )
         .await?;
@@ -48,11 +49,11 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
         let mut spending = withdrawals(
             &algod,
             &indexer,
-            &dao.owner,
             dao_id,
             &api,
             funds_asset_specs.id,
             &capi_deps,
+            &None,
             &Some(interval_data.start),
         )
         .await?;

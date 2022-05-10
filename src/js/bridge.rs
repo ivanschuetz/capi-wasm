@@ -332,3 +332,14 @@ pub async fn bridge_my_dividend(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_my_dividend, pars: {:?}", pars);
     to_bridge_res(providers()?.dividend.get(parse_bridge_pars(pars)?).await)
 }
+
+#[wasm_bindgen]
+pub async fn get_balance_change(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("get_balance_change, pars: {:?}", pars);
+    to_bridge_res(
+        providers()?
+            .balance
+            .get_balance_change(parse_bridge_pars(pars)?)
+            .await,
+    )
+}

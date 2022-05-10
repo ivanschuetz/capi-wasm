@@ -7,7 +7,7 @@ use crate::{
     },
     service::str_to_algos::base_units_to_display_units_str,
 };
-use anyhow::{Error, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use base::{
     dependencies::{algod, indexer},
@@ -28,15 +28,12 @@ impl FundsActivityProvider for FundsActivityProviderDef {
         let indexer = indexer();
         let capi_deps = capi_deps()?;
 
-        let creator = pars.owner_address.parse().map_err(Error::msg)?;
-
         let dao_id = pars.dao_id.parse()?;
         let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
         let mut activity_entries = funds_activity(
             &algod,
             &indexer,
-            &creator,
             dao_id,
             dao.customer_escrow.address(),
             &api,

@@ -1,12 +1,18 @@
-use crate::provider::balance_provider::{BalanceParJs, BalanceProvider, BalanceResJs};
+use crate::dependencies::{api, capi_deps};
+use crate::provider::balance_provider::{
+    BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
+};
 use crate::service::str_to_algos::microalgos_to_algos_str;
 use crate::{
     dependencies::funds_asset_specs, service::str_to_algos::base_units_to_display_units_str,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
-use base::state::account_state::funds_holdings_from_account;
+use base::dependencies::{algod, indexer};
+use base::flows::create_dao::storage::load_dao::DaoId;
+use base::queries::historic::historic_dao_funds_balance;
+use base::state::account_state::{funds_holdings, funds_holdings_from_account};
+use chrono::{Duration, Utc};
 
 pub struct BalanceProviderDef {}
 
@@ -31,6 +37,51 @@ impl BalanceProvider for BalanceProviderDef {
                 funds_asset_holdings,
                 &funds_asset_specs,
             ),
+        })
+    }
+
+    // TODO move somewhere else thsi is for dao funds not user balance
+    async fn get_balance_change(&self, pars: BalanceChangeParJs) -> Result<BalanceChangeResJs> {
+        let algod = algod();
+        let indexer = indexer();
+        let api = api();
+        let capi_deps = capi_deps()?;
+        let funds_asset_specs = funds_asset_specs()?;
+
+        // let address = pars.address.parse().map_err(Error::msg)?;
+        let dao_id: DaoId = pars.dao_id.parse()?;
+        let customer_escrow_address = pars.customer_escrow.parse().map_err(Error::msg)?;
+
+        let dao_address = dao_id.0.address();
+
+        let date = Utc::now() - Duration::weeks(1); // account's balance a week ago
+                                                    // let date = Utc::now(); // debugging: use this to get current balance
+
+        let past_balance = historic_dao_funds_balance(
+            &algod,
+            &indexer,
+            &api,
+            funds_asset_specs.id,
+            &customer_escrow_address,
+            dao_id,
+            &capi_deps,
+            date,
+        )
+        .await?;
+        let current_balance = funds_holdings(&algod, &dao_address, funds_asset_specs.id).await?;
+        log::debug!("past balance: {past_balance:?}");
+        log::debug!("current balance: {current_balance:?}");
+
+        let change_str = if current_balance.val() > past_balance.val() {
+            "up"
+        } else if current_balance.val() < past_balance.val() {
+            "down"
+        } else {
+            "eq"
+        };
+
+        Ok(BalanceChangeResJs {
+            change: change_str.to_owned(),
         })
     }
 }

@@ -1,4 +1,6 @@
-use crate::provider::balance_provider::{BalanceParJs, BalanceProvider, BalanceResJs};
+use crate::provider::balance_provider::{
+    BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
+};
 use anyhow::Result;
 use async_trait::async_trait;
 
@@ -15,6 +17,12 @@ impl BalanceProvider for BalanceProviderMock {
         Ok(BalanceResJs {
             balance_algos: "123.45".to_owned(),
             balance_funds_asset: "111.22".to_owned(),
+        })
+    }
+
+    async fn get_balance_change(&self, _: BalanceChangeParJs) -> Result<BalanceChangeResJs> {
+        Ok(BalanceChangeResJs {
+            change: "up".to_owned(),
         })
     }
 }
