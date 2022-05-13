@@ -5,7 +5,7 @@ use algonaut::core::Address;
 use anyhow::Error;
 use anyhow::Result;
 use async_trait::async_trait;
-use base::funds::FundsAmount;
+use mbase::models::funds::FundsAmount;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;

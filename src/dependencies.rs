@@ -5,8 +5,10 @@ use base::{
     capi_asset::{
         capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps, capi_asset_id::CapiAssetId,
     },
+};
+use mbase::{
     dependencies::{network, DataType, Network},
-    funds::FundsAssetId,
+    models::funds::FundsAssetId,
 };
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};

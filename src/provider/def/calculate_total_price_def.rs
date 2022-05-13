@@ -11,9 +11,9 @@ use crate::service::str_to_algos::{
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::decimal_util::DecimalExt;
-use base::flows::create_dao::share_amount::ShareAmount;
-use base::funds::FundsAmount;
+use mbase::models::funds::FundsAmount;
+use mbase::models::share_amount::ShareAmount;
+use mbase::util::decimal_util::DecimalExt;
 use rust_decimal::Decimal;
 
 pub struct CalculateTotalPriceDef {}

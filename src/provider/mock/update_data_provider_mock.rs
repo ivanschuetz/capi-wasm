@@ -5,7 +5,7 @@ use crate::provider::update_data_provider::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
+use mbase::dependencies::algod;
 
 pub struct UpdateDataProviderMock {}
 

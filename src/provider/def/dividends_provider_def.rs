@@ -7,9 +7,10 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
-use base::flows::create_dao::storage::load_dao::{load_dao, DaoId};
+use base::flows::create_dao::storage::load_dao::load_dao;
 use base::state::dao_app_state::dao_global_state;
+use mbase::dependencies::algod;
+use mbase::models::dao_id::DaoId;
 
 pub struct DividendsProviderDef {}
 

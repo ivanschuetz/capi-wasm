@@ -194,6 +194,7 @@ dependencies = [
  "instant",
  "log",
  "log4rs",
+ "mbase",
  "reqwest",
  "rmp-serde",
  "rust_decimal",
@@ -819,6 +820,27 @@ name = "matches"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3e378b66a060d48947b590737b30a1be76706c8dd7b8ba0f2fe3989c68a853f"
+
+[[package]]
+name = "mbase"
+version = "0.1.0"
+dependencies = [
+ "algonaut",
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "data-encoding",
+ "futures",
+ "instant",
+ "log",
+ "reqwest",
+ "rmp-serde",
+ "rust_decimal",
+ "serde",
+ "sha2",
+ "url",
+ "urlencoding",
+]
 
 [[package]]
 name = "memchr"
@@ -1747,6 +1769,7 @@ dependencies = [
  "chrono",
  "data-encoding",
  "log",
+ "mbase",
  "my-algo",
  "rmp-serde",
  "rust_decimal",

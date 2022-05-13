@@ -1,7 +1,8 @@
 use crate::provider::shares_count_provider::{GetUserSharesCountParJs, SharesCountProvider};
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::{dependencies::algod, state::account_state::asset_holdings};
+use base::state::account_state::asset_holdings;
+use mbase::dependencies::algod;
 
 pub struct SharesCountProviderDef {}
 

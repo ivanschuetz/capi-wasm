@@ -9,10 +9,8 @@ use algonaut::{
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::{
-    dependencies::algod,
-    flows::{create_dao::storage::load_dao::DaoAppId, shared::app::optin_to_dao_app},
-};
+use base::flows::shared::app::optin_to_dao_app;
+use mbase::{dependencies::algod, models::dao_app_id::DaoAppId};
 
 pub struct OptinToAppProviderDef {}
 

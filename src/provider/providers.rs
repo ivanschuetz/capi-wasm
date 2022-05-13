@@ -15,7 +15,8 @@ use super::{
         calculate_total_price_def::CalculateTotalPriceDef, claim_provider_def::ClaimProviderDef,
         create_assets_provider_def::CreateAssetsProviderDef,
         create_dao_provider_def::CreateDaoProviderDef,
-        dao_user_view_provider_def::DaoUserViewProviderDef, drain_provider_def::DrainProviderDef,
+        dao_user_view_provider_def::DaoUserViewProviderDef,
+        dividends_provider_def::DividendsProviderDef, drain_provider_def::DrainProviderDef,
         funds_activity_provider_def::FundsActivityProviderDef,
         holders_count_provider_def::HoldersCountProviderDef,
         income_vs_spending_provider_def::IncomeVsSpendingProviderDef,
@@ -30,7 +31,7 @@ use super::{
         unlock_provider_def::UnlockProviderDef, update_app_provider_def::UpdateAppProviderDef,
         update_data_provider_def::UpdateDataProviderDef, view_dao_provider_def::ViewDaoProviderDef,
         withdraw_provider_def::WithdrawProviderDef,
-        withdrawal_history_provider_def::WithdrawalHistoryProviderDef, dividends_provider_def::DividendsProviderDef,
+        withdrawal_history_provider_def::WithdrawalHistoryProviderDef,
     },
     dividends_provider::DividendsProvider,
     drain_provider::DrainProvider,
@@ -82,7 +83,7 @@ use super::{
     withdrawal_history_provider::WithdrawalHistoryProvider,
 };
 use crate::{dependencies::data_type, js::common::to_js_value};
-use base::dependencies::DataType;
+use mbase::dependencies::DataType;
 use wasm_bindgen::JsValue;
 
 pub struct Providers<'a> {

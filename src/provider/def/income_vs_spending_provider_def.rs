@@ -6,14 +6,13 @@ use crate::provider::income_vs_spending_provider::{
 use crate::service::str_to_algos::base_units_to_display_units;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::dependencies::indexer;
-use base::funds::FundsAmount;
 use base::{
-    dependencies::algod,
     flows::{create_dao::storage::load_dao::load_dao, withdraw::withdrawals::withdrawals},
     queries::received_payments::all_received_payments,
 };
 use chrono::{DateTime, Duration, Timelike, Utc};
+use mbase::dependencies::{algod, indexer};
+use mbase::models::funds::FundsAmount;
 use std::convert::TryInto;
 use std::ops::Div;
 

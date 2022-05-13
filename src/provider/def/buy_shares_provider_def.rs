@@ -10,7 +10,6 @@ use crate::{
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::{
-    dependencies::algod,
     flows::{
         create_dao::storage::load_dao::load_dao,
         invest::{
@@ -20,6 +19,7 @@ use base::{
     },
     network_util::wait_for_pending_transaction,
 };
+use mbase::dependencies::algod;
 
 pub struct BuySharesProviderDef {}
 

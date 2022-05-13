@@ -9,14 +9,16 @@ use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::api::version::Version;
 use base::api::version::VersionedAddress;
-use base::dependencies::{algod, image_api};
-use base::flows::create_dao::setup_dao_specs::{CompressedImage, ImageHash};
-use base::flows::create_dao::storage::load_dao::DaoId;
+use base::dependencies::image_api;
+use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::flows::update_data::update_data::{
     submit_update_data, update_data, UpdatableDaoData, UpdateDaoDataSigned,
 };
-use base::funds::FundsAmount;
 use base::state::dao_app_state::dao_global_state;
+use mbase::dependencies::algod;
+use mbase::models::dao_id::DaoId;
+use mbase::models::funds::FundsAmount;
+use mbase::models::image_hash::ImageHash;
 
 pub struct UpdateDataProviderDef {}
 

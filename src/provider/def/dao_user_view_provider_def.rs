@@ -4,14 +4,12 @@ use crate::{
         dao_for_users::dao_to_dao_for_users,
         dao_for_users_view_data::{dao_for_users_to_view_data, DaoForUsersViewData},
     },
-    provider::dao_user_view_provider::DaoUserViewProvider,
+    provider::dao_user_view_provider::DaoUserViewProvider, ImageHashExt,
 };
 use anyhow::Result;
 use async_trait::async_trait;
-use base::{
-    dependencies::{algod, image_api},
-    flows::create_dao::storage::load_dao::load_dao,
-};
+use base::{dependencies::image_api, flows::create_dao::storage::load_dao::load_dao};
+use mbase::dependencies::algod;
 
 pub struct DaoUserViewProviderDef {}
 

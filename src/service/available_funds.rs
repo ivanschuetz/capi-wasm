@@ -1,10 +1,7 @@
 use algonaut::algod::v2::Algod;
 use anyhow::Result;
-use base::{
-    flows::create_dao::model::Dao,
-    funds::{FundsAmount, FundsAssetId},
-    state::account_state::funds_holdings,
-};
+use base::{flows::create_dao::model::Dao, state::account_state::funds_holdings};
+use mbase::models::funds::{FundsAssetId, FundsAmount};
 
 pub async fn available_funds(
     algod: &Algod,

@@ -8,12 +8,11 @@ use algonaut::core::Address;
 use anyhow::Result;
 use async_trait::async_trait;
 use base::flows::create_dao::model::CreateSharesSpecs;
+use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
-use base::flows::create_dao::share_amount::ShareAmount;
-use base::flows::create_dao::{
-    setup_dao_specs::CompressedImage, shares_percentage::SharesPercentage,
-};
-use base::funds::FundsAmount;
+use mbase::models::funds::FundsAmount;
+use mbase::models::share_amount::ShareAmount;
+use mbase::models::shares_percentage::SharesPercentage;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

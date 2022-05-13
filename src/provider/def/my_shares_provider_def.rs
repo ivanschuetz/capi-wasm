@@ -2,13 +2,13 @@ use crate::dependencies::{api, capi_deps};
 use crate::provider::my_shares_provider::{MySharesParJs, MySharesProvider, MySharesResJs};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
-use base::flows::create_dao::share_amount::ShareAmount;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::state::{
     account_state::asset_holdings, app_state::ApplicationLocalStateError,
     dao_app_state::dao_investor_state,
 };
+use mbase::dependencies::algod;
+use mbase::models::share_amount::ShareAmount;
 
 pub struct MySharesProviderDef {}
 

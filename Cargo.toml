@@ -17,6 +17,7 @@ wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"]  }
 algonaut = { path = "../../../algonaut" }
 
 base = { path = "../../core" }
+mbase = { path = "../../mbase" }
 # base = { git = "ssh://git@github.com/ivanschuetz/capi-core.git", branch = "main" }
 # base = { git = "https://github.com/ivanschuetz/capi-core", branch = "main" }
 

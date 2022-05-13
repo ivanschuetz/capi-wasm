@@ -9,9 +9,9 @@ use crate::{
 use anyhow::Error;
 use anyhow::Result;
 use async_trait::async_trait;
-use base::dependencies::algod;
 use base::flows::pay_dao::pay_dao::pay_dao;
 use base::flows::pay_dao::pay_dao::{submit_pay_dao, PayDaoSigned};
+use mbase::dependencies::algod;
 
 pub struct PayDaoProviderDef {}
 

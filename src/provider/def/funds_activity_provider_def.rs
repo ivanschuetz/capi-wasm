@@ -10,10 +10,10 @@ use crate::{
 use anyhow::Result;
 use async_trait::async_trait;
 use base::{
-    dependencies::{algod, indexer},
     flows::create_dao::storage::load_dao::load_dao,
     queries::funds_activity::{funds_activity, FundsActivityEntryType},
 };
+use mbase::dependencies::{algod, indexer};
 
 use super::shares_distribution_provider_def::shorten_address;
 

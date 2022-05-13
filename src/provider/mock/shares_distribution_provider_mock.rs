@@ -9,8 +9,9 @@ use crate::provider::shares_distribution_provider::{
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::flows::create_dao::share_amount::ShareAmount;
-use base::{decimal_util::DecimalExt, queries::shares_distribution::ShareHoldingPercentage};
+use base::queries::shares_distribution::ShareHoldingPercentage;
+use mbase::models::share_amount::ShareAmount;
+use mbase::util::decimal_util::DecimalExt;
 use rust_decimal::Decimal;
 
 pub struct SharesDistributionProviderMock {}

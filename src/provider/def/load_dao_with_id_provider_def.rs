@@ -1,3 +1,4 @@
+use crate::ImageHashExt;
 use crate::provider::load_dao_with_id_provider::LoadDaoWithIdProvider;
 use crate::{
     dependencies::{api, capi_deps, funds_asset_specs},
@@ -9,7 +10,8 @@ use crate::{
 use anyhow::Result;
 use async_trait::async_trait;
 use base::dependencies::image_api;
-use base::{dependencies::algod, flows::create_dao::storage::load_dao::load_dao};
+use base::flows::create_dao::storage::load_dao::load_dao;
+use mbase::dependencies::algod;
 
 pub struct LoadDaoWithIdProviderDef {}
 

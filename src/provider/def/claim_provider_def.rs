@@ -8,11 +8,11 @@ use crate::provider::claim_provider::{
 use crate::service::drain_if_needed::{drain_if_needed_txs, submit_drain};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
 use base::diagnostics::log_claim_diagnostics;
 use base::flows::claim::claim::{claim, submit_claim, ClaimSigned};
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::network_util::wait_for_pending_transaction;
+use mbase::dependencies::algod;
 
 pub struct ClaimProviderDef {}
 

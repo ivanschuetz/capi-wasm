@@ -16,13 +16,14 @@ use crate::{
 use crate::{js::common::signed_js_tx_to_signed_tx1, service::drain_if_needed::submit_drain};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
+use base::flows::create_dao::storage::load_dao::TxId;
 use base::flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned};
 use base::flows::{
     create_dao::storage::load_dao::load_dao,
     withdraw::withdraw::{withdraw, WithdrawalInputs},
 };
-use base::{flows::create_dao::storage::load_dao::TxId, funds::FundsAmount};
+use mbase::dependencies::algod;
+use mbase::models::funds::FundsAmount;
 
 pub struct WithdrawProviderDef {}
 

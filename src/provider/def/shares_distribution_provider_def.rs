@@ -6,12 +6,9 @@ use crate::provider::shares_distribution_provider::{
 use algonaut::core::Address;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
-use base::{
-    decimal_util::{AsDecimal, DecimalExt},
-    dependencies::indexer,
-    queries::shares_distribution::{shares_holders_distribution, ShareHoldingPercentage},
-};
+use base::queries::shares_distribution::{shares_holders_distribution, ShareHoldingPercentage};
+use mbase::dependencies::{algod, indexer};
+use mbase::util::decimal_util::{AsDecimal, DecimalExt};
 
 pub struct SharesDistributionProviderDef {}
 

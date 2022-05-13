@@ -4,7 +4,8 @@ use crate::provider::holders_count_provider::{
 use algonaut::core::to_app_address;
 use anyhow::Result;
 use async_trait::async_trait;
-use base::{dependencies::indexer, queries::shares_distribution::holders_count};
+use base::queries::shares_distribution::holders_count;
+use mbase::dependencies::indexer;
 
 pub struct HoldersCountProviderDef {}
 

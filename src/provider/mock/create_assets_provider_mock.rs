@@ -7,7 +7,7 @@ use crate::provider::create_dao_provider::validate_dao_inputs;
 use crate::provider::create_dao_provider::CreateDaoPassthroughParJs;
 use anyhow::Result;
 use async_trait::async_trait;
-use base::dependencies::algod;
+use mbase::dependencies::algod;
 
 pub struct CreateAssetsProviderMock {}
 

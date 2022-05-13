@@ -4,10 +4,8 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::{
-    dependencies::{algod, indexer},
-    queries::my_daos::my_daos,
-};
+use base::queries::my_daos::my_daos;
+use mbase::dependencies::{algod, indexer};
 
 pub struct MyDaosProviderDef {}
 

@@ -3,7 +3,7 @@ use crate::provider::lock_provider::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
+use mbase::dependencies::algod;
 
 use super::{mock_js_txs, req_delay};
 

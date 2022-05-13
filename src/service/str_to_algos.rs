@@ -1,7 +1,7 @@
 use crate::{dependencies::FundsAssetSpecs, inputs_validation::ValidationError};
 use algonaut::core::MicroAlgos;
 use anyhow::{anyhow, Result};
-use base::{flows::create_dao::share_amount::ShareAmount, funds::FundsAmount};
+use mbase::models::{funds::FundsAmount, share_amount::ShareAmount};
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 
 #[allow(dead_code)] // we might use Algo inputs in the future e.g. for fees

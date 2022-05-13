@@ -17,14 +17,17 @@ use async_trait::async_trait;
 use base::api::contract::Contract;
 use base::api::image_api::ImageApi;
 use base::api::teal_api::TealApi;
-use base::dependencies::{algod, image_api};
+use base::dependencies::image_api;
 use base::flows::create_dao::model::{SetupDaoSigned, SetupDaoToSign};
 use base::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
 use base::flows::create_dao::setup_dao::{setup_dao_txs, submit_setup_dao};
 use base::flows::create_dao::setup_dao::{Escrows, Programs};
-use base::flows::create_dao::setup_dao_specs::{CompressedImage, ImageHash};
-use base::flows::create_dao::storage::load_dao::{DaoAppId, TxId};
+use base::flows::create_dao::setup_dao_specs::CompressedImage;
+use base::flows::create_dao::storage::load_dao::TxId;
 use base::network_util::wait_for_pending_transaction;
+use mbase::dependencies::algod;
+use mbase::models::dao_app_id::DaoAppId;
+use mbase::models::image_hash::ImageHash;
 
 pub struct CreateDaoProviderDef {}
 

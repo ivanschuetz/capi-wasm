@@ -13,10 +13,10 @@ use base::{
             DrainCustomerEscrowToSign,
         },
     },
-    funds::FundsAssetId,
     network_util::wait_for_pending_transaction,
     state::account_state::funds_holdings,
 };
+use mbase::models::funds::FundsAssetId;
 
 /// Returns txs if needed to drain, None if not needed.
 pub async fn drain_if_needed_txs(

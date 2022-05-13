@@ -9,10 +9,10 @@ use crate::{
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::dependencies::algod;
-use base::flows::create_dao::share_amount::ShareAmount;
 use base::flows::lock::lock::{submit_lock, LockSigned};
 use base::flows::{create_dao::storage::load_dao::load_dao, lock::lock::lock};
+use mbase::dependencies::algod;
+use mbase::models::share_amount::ShareAmount;
 
 pub struct LockProviderDef {}
 

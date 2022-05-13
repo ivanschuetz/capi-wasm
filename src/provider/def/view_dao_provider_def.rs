@@ -4,13 +4,15 @@ use crate::model::dao_for_users_view_data::dao_for_users_to_view_data;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::available_funds;
 use crate::service::str_to_algos::base_units_to_display_units;
+use crate::ImageHashExt;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::decimal_util::DecimalExt;
-use base::dependencies::{algod, image_api};
+use base::dependencies::image_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
+use mbase::dependencies::algod;
+use mbase::util::decimal_util::DecimalExt;
 
 pub struct ViewDaoProviderDef {}
 
