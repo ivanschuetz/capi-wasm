@@ -11,7 +11,6 @@ pub trait FundsActivityProvider {
 #[derive(Debug, Clone, Deserialize)]
 pub struct LoadFundsActivityParJs {
     pub dao_id: String,
-    pub owner_address: String,
     pub max_results: Option<String>,
 }
 
