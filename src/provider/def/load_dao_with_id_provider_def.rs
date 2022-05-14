@@ -1,5 +1,5 @@
-use crate::ImageHashExt;
 use crate::provider::load_dao_with_id_provider::LoadDaoWithIdProvider;
+use crate::ImageHashExt;
 use crate::{
     dependencies::{api, capi_deps, funds_asset_specs},
     model::{

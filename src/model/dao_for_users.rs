@@ -1,8 +1,8 @@
 use algonaut::core::Address;
 use base::flows::create_dao::model::Dao;
 use mbase::models::{
-    dao_app_id::DaoAppId, funds::FundsAmount, share_amount::ShareAmount,
-    shares_percentage::SharesPercentage, dao_id::DaoId,
+    dao_app_id::DaoAppId, dao_id::DaoId, funds::FundsAmount, share_amount::ShareAmount,
+    shares_percentage::SharesPercentage,
 };
 use serde::{Deserialize, Serialize};
 
