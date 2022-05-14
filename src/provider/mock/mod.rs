@@ -24,6 +24,7 @@ pub mod claim_provider_mock;
 pub mod create_assets_provider_mock;
 pub mod create_dao_provider_mock;
 pub mod dao_user_view_provider_mock;
+pub mod dividends_provider_mock;
 pub mod drain_provider_mock;
 pub mod funds_activity_provider_mock;
 pub mod holders_count_provider_mock;
@@ -44,7 +45,6 @@ pub mod update_data_provider_mock;
 pub mod view_dao_provider_mock;
 pub mod withdraw_provider_mock;
 pub mod withdrawal_history_provider_mock;
-pub mod dividends_provider_mock;
 
 /// Arbitrary minimal tx for flows that return a tx to be signed in js
 /// `address` should (unless trying to cause a signing error) belong to the user using the UI, so they can sign and continue the flow
