@@ -52,7 +52,7 @@ pub fn not_owned_shares_holdings(
     holders: &[ShareHoldingPercentage],
     supply: u64,
 ) -> Result<ShareHoldingPercentageJs> {
-    let total_holders_amount: u64 = holders.into_iter().map(|h| h.amount.val()).sum();
+    let total_holders_amount: u64 = holders.iter().map(|h| h.amount.val()).sum();
 
     let not_owned_amount: u64 = supply - total_holders_amount;
     let not_owned_percentage = not_owned_amount

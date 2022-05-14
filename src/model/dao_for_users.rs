@@ -37,7 +37,7 @@ pub fn dao_to_dao_for_users(dao: &Dao, dao_id: &DaoId, image_url: Option<String>
         asset_name: dao.specs.shares.token_name.clone(),
         share_supply: dao.specs.shares.supply,
         investors_share: dao.specs.investors_share,
-        image_url: image_url.to_owned(),
+        image_url,
         social_media_url: dao.specs.social_media_url.clone(),
         shares_asset_id: dao.shares_asset_id,
         app_id: dao.app_id,

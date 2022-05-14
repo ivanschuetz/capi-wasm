@@ -81,7 +81,7 @@ impl ClaimProvider for ClaimProviderDef {
             let capi_share_tx = &pars.pt.maybe_capi_share_tx_msg_pack
             .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed capi share tx"))?;
 
-            submit_drain(&algod, drain_tx, &pars.txs[1], &capi_share_tx, &pars.txs[2]).await?;
+            submit_drain(&algod, drain_tx, &pars.txs[1], capi_share_tx, &pars.txs[2]).await?;
         }
 
         let app_call_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;

@@ -205,6 +205,7 @@ pub struct CreateDaoResJs {
     pub pt: SubmitSetupDaoPassthroughParJs, // passthrough
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Serialize)]
 pub enum ValidateDaoInputsError {
     AllFieldsValidation(CreateAssetsInputErrors),
@@ -346,9 +347,9 @@ fn validate_investors_share(input: &str) -> Result<SharesPercentage, ValidationE
         })
     } else {
         // from here we use (0..1) percentage - 100 based is just for user friendliness
-        (value / Decimal::from(100u8)).try_into().map_err(|_| {
-            ValidationError::Unexpected(format!("Couldn't divide {value} by 100").to_owned())
-        })
+        (value / Decimal::from(100u8))
+            .try_into()
+            .map_err(|_| ValidationError::Unexpected(format!("Couldn't divide {value} by 100")))
     }
 }
 

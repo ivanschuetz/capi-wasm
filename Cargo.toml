@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 path = "src/lib.rs"
 
 [dependencies]
-wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"]  }
+wasm-bindgen = { version = "0.2.80", features = ["serde-serialize"]  }
 
 # algonaut = { git = "https://github.com/manuelmauro/algonaut", branch = "main", features = ["rustls"] }
 algonaut = { path = "../../../algonaut" }

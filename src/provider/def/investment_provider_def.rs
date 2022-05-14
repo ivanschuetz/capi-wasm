@@ -132,7 +132,7 @@ pub async fn investor_local_state_view_data(
     investor_address: &Address,
     app_id: DaoAppId,
 ) -> Result<InvestorLocalStateViewData> {
-    let investor_state_res = dao_investor_state(&algod, investor_address, app_id).await;
+    let investor_state_res = dao_investor_state(algod, investor_address, app_id).await;
     let (locked_shares, claimed, retrieved) = match investor_state_res {
         Ok(state) => (
             state.shares,
@@ -170,6 +170,7 @@ pub struct InvestorLocalStateViewData {
     pub retrieved: FundsAmount,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn fetch_claimable_dividend(
     algod: &Algod,
 
@@ -186,7 +187,7 @@ pub async fn fetch_claimable_dividend(
     app_state: &CentralAppGlobalState,
 ) -> Result<FundsAmount> {
     let drain_amounts = drain_amounts(
-        &algod,
+        algod,
         capi_deps.escrow_percentage,
         funds_specs.id,
         dao.customer_escrow.address(),

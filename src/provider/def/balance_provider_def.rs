@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::dependencies::{api, capi_deps};
 use crate::provider::balance_provider::{
     BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
@@ -72,12 +74,10 @@ impl BalanceProvider for BalanceProviderDef {
         log::debug!("past balance: {past_balance:?}");
         log::debug!("current balance: {current_balance:?}");
 
-        let change_str = if current_balance.val() > past_balance.val() {
-            "up"
-        } else if current_balance.val() < past_balance.val() {
-            "down"
-        } else {
-            "eq"
+        let change_str = match current_balance.val().cmp(&past_balance.val()) {
+            Ordering::Less => "down",
+            Ordering::Equal => "eq",
+            Ordering::Greater => "up",
         };
 
         Ok(BalanceChangeResJs {

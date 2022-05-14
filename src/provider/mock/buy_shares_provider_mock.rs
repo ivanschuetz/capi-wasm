@@ -23,9 +23,9 @@ impl BuySharesProvider for BuySharesProviderMock {
         req_delay().await;
 
         Ok(InvestResJs {
-            to_sign: mock_js_txs(&algod, &investor_address).await?,
+            to_sign: mock_js_txs(&algod, investor_address).await?,
             pt: SubmitBuySharesPassthroughParJs {
-                dao_msg_pack: mock_msgpack_tx(&algod, &investor_address).await?,
+                dao_msg_pack: mock_msgpack_tx(&algod, investor_address).await?,
             },
         })
     }

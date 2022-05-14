@@ -97,7 +97,7 @@ pub fn to_income_vs_spending_res(
 
     let bounds_without_none: Vec<DateBounds> = vec![income_bounds, spending_bounds]
         .into_iter()
-        .filter_map(|opt| opt)
+        .flatten()
         .collect();
 
     match determine_min_max_bounds(&bounds_without_none) {
@@ -118,7 +118,7 @@ pub fn to_income_vs_spending_res(
                 bounds.min,
                 bounds.max,
                 grouping_interval,
-                &funds_asset_specs,
+                funds_asset_specs,
             )?;
 
             Ok(IncomeVsSpendingResJs {
@@ -162,26 +162,24 @@ fn determine_min_max_bounds(local_bounds: &[DateBounds]) -> Option<DateBounds> {
 
 #[allow(dead_code)]
 fn start_of_day(date: DateTime<Utc>) -> Result<DateTime<Utc>> {
-    Ok(date
-        .with_hour(0)
+    date.with_hour(0)
         .ok_or_else(|| anyhow!("Unexpected: couldn't set day 0 on date"))?
         .with_minute(0)
         .ok_or_else(|| anyhow!("Unexpected: couldn't set min 0 on date"))?
         .with_second(0)
         .ok_or_else(|| anyhow!("Unexpected: couldn't set second 0 on date"))?
         .with_nanosecond(0)
-        .ok_or_else(|| anyhow!("Unexpected: couldn't set nanosecond 0 on date"))?)
+        .ok_or_else(|| anyhow!("Unexpected: couldn't set nanosecond 0 on date"))
 }
 
 #[allow(dead_code)]
 fn start_of_hour(date: DateTime<Utc>) -> Result<DateTime<Utc>> {
-    Ok(date
-        .with_minute(0)
+    date.with_minute(0)
         .ok_or_else(|| anyhow!("Unexpected: couldn't set min 0 on date"))?
         .with_second(0)
         .ok_or_else(|| anyhow!("Unexpected: couldn't set second 0 on date"))?
         .with_nanosecond(0)
-        .ok_or_else(|| anyhow!("Unexpected: couldn't set nanosecond 0 on date"))?)
+        .ok_or_else(|| anyhow!("Unexpected: couldn't set nanosecond 0 on date"))
 }
 
 #[derive(Debug, Clone)]
@@ -225,10 +223,9 @@ pub fn group_and_format_data_points(
             tick_value.spending
         };
 
-        let new_value = curr_value.checked_add(point.value).ok_or(anyhow!(
-            "Overflow adding value and point.value: {:?}",
-            point.value
-        ))?;
+        let new_value = curr_value
+            .checked_add(point.value)
+            .ok_or_else(|| anyhow!("Overflow adding value and point.value: {:?}", point.value))?;
 
         if point.is_income {
             ticks[tick_index].income = new_value;

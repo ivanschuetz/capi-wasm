@@ -40,7 +40,7 @@ impl AppUpdatesProvider for AppUpdatesProviderDef {
         Ok(CheckForUpdatesResJs {
             current_approval_version: state.app_approval_version.0.to_string(),
             current_clear_version: state.app_clear_version.0.to_string(),
-            update_data: update_data.map(|d| update_data_to_js(d)),
+            update_data: update_data.map(update_data_to_js),
         })
     }
 }

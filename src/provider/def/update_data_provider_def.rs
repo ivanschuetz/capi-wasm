@@ -56,7 +56,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         // and use this version to retrieve the program
         // the teal has to be updated to store the version, either in the same field as the address or a separate field with all the escrow's versions
 
-        let image = pars.image.map(|i| CompressedImage::new(i));
+        let image = pars.image.map(CompressedImage::new);
         let image_hash = image.as_ref().map(|i| i.hash());
 
         let to_sign = update_data(
@@ -93,7 +93,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         let image_api = image_api();
 
         let dao_id = pars.pt.dao_id.parse::<DaoId>().map_err(Error::msg)?;
-        let image = pars.pt.image.map(|i| CompressedImage::new(i));
+        let image = pars.pt.image.map(CompressedImage::new);
         let image_hash = match pars.pt.image_hash {
             Some(bytes) => Some(ImageHash::from_bytes(bytes)?),
             None => None,

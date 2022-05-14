@@ -122,14 +122,7 @@ impl WithdrawProvider for WithdrawProviderDef {
             let capi_share_tx = &pars.pt.maybe_capi_share_tx_msg_pack
                 .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed capi share tx"))?;
 
-            submit_drain(
-                &algod,
-                &drain_tx,
-                &pars.txs[1],
-                &capi_share_tx,
-                &pars.txs[2],
-            )
-            .await?;
+            submit_drain(&algod, drain_tx, &pars.txs[1], capi_share_tx, &pars.txs[2]).await?;
         }
 
         let withdraw_tx_id = submit_withdraw(

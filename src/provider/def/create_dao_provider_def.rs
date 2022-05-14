@@ -169,7 +169,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             &image_api,
             submit_dao_res.tx_id,
             DaoAppId(pars.pt.app_id),
-            pars.pt.compressed_image.map(|i| CompressedImage::new(i)),
+            pars.pt.compressed_image.map(CompressedImage::new),
             image_hash,
         )
         .await?;
@@ -240,7 +240,7 @@ async fn upload_image(
     image_hash: ImageHash,
     image: CompressedImage,
 ) -> Result<(Option<String>, Option<String>)> {
-    wait_for_pending_transaction(&algod, &tx_id_to_wait).await?;
+    wait_for_pending_transaction(algod, &tx_id_to_wait).await?;
     let (possible_image_url, possible_image_upload_error) = match image_api
             .upload_image(app_id, image.bytes())
             .await {
