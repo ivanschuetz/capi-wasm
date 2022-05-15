@@ -43,7 +43,6 @@ impl ClaimProvider for ClaimProviderDef {
         let mut maybe_capi_share_tx_msg_pack = None;
         if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {
             to_sign.push(to_sign_for_drain.app_call_tx);
-            to_sign.push(to_sign_for_drain.capi_app_call_tx);
             maybe_drain_tx_msg_pack = Some(rmp_serde::to_vec_named(&to_sign_for_drain.drain_tx)?);
             maybe_capi_share_tx_msg_pack =
                 Some(rmp_serde::to_vec_named(&to_sign_for_drain.capi_share_tx)?);
@@ -63,8 +62,8 @@ impl ClaimProvider for ClaimProviderDef {
         let api = api();
         let capi_deps = capi_deps()?;
 
-        // 1 tx if only claim, 3 if claim + 2 drain
-        if pars.txs.len() != 1 && pars.txs.len() != 3 {
+        // 1 tx if only claim, 2 if claim + 1 drain
+        if pars.txs.len() != 1 && pars.txs.len() != 2 {
             return Err(anyhow!("Unexpected claim txs length: {}", pars.txs.len()));
         }
         // sanity check
@@ -74,14 +73,14 @@ impl ClaimProvider for ClaimProviderDef {
             ));
         }
 
-        if pars.txs.len() == 3 {
+        if pars.txs.len() == 2 {
             let drain_tx = &pars.pt.maybe_drain_tx_msg_pack
             .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?;
 
             let capi_share_tx = &pars.pt.maybe_capi_share_tx_msg_pack
             .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed capi share tx"))?;
 
-            submit_drain(&algod, drain_tx, &pars.txs[1], capi_share_tx, &pars.txs[2]).await?;
+            submit_drain(&algod, drain_tx, &pars.txs[1], capi_share_tx).await?;
         }
 
         let app_call_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;

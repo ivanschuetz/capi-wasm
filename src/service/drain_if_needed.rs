@@ -5,7 +5,6 @@ use crate::{
 use algonaut::{algod::v2::Algod, core::Address};
 use anyhow::Result;
 use base::{
-    capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
     flows::{
         create_dao::model::Dao,
         drain::drain::{
@@ -14,7 +13,7 @@ use base::{
         },
     },
     network_util::wait_for_pending_transaction,
-    state::account_state::funds_holdings,
+    state::account_state::funds_holdings, capi_deps::CapiAssetDaoDeps,
 };
 use mbase::models::funds::FundsAssetId;
 
@@ -53,14 +52,12 @@ pub async fn submit_drain(
     drain_passthrough_tx: &[u8],
     drain_app_call_tx: &SignedTxFromJs,
     capi_share_tx: &[u8],
-    capi_app_call_tx_signed: &SignedTxFromJs,
 ) -> Result<()> {
     log::debug!("Submit drain txs..");
 
     let drain_tx = rmp_serde::from_slice(drain_passthrough_tx)?;
     let drain_app_call_tx = signed_js_tx_to_signed_tx1(drain_app_call_tx)?;
     let capi_share_tx = rmp_serde::from_slice(capi_share_tx)?;
-    let capi_app_call_tx_signed = signed_js_tx_to_signed_tx1(capi_app_call_tx_signed)?;
 
     let drain_tx_id = submit_drain_customer_escrow(
         algod,
@@ -68,7 +65,6 @@ pub async fn submit_drain(
             drain_tx,
             app_call_tx_signed: drain_app_call_tx,
             capi_share_tx,
-            capi_app_call_tx_signed,
         },
     )
     .await?;

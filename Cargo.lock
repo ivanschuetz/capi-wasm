@@ -838,6 +838,7 @@ dependencies = [
  "rust_decimal",
  "serde",
  "sha2",
+ "tealdbg",
  "url",
  "urlencoding",
 ]

@@ -8,8 +8,7 @@ use algonaut::{algod::v2::Algod, indexer::v2::Indexer};
 use anyhow::Result;
 use async_trait::async_trait;
 use base::{
-    api::teal_api::TealApi, capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps,
-    flows::withdraw::withdrawals::withdrawals,
+    api::teal_api::TealApi, capi_deps::CapiAssetDaoDeps, flows::withdraw::withdrawals::withdrawals,
 };
 use mbase::{
     dependencies::{algod, indexer},

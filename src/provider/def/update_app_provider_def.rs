@@ -53,7 +53,7 @@ impl UpdateAppProvider for UpdateAppProviderDef {
             dao.specs.shares.supply,
             PRECISION,
             dao.specs.investors_share,
-            capi_deps.app_id,
+            &capi_deps.address,
             capi_deps.escrow_percentage,
             dao.specs.share_price,
         )

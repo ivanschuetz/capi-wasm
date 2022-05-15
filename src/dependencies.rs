@@ -2,9 +2,7 @@ use crate::service::teal_api::TealStringsApi;
 use anyhow::{anyhow, Error, Result};
 use base::{
     api::teal_api::TealApi,
-    capi_asset::{
-        capi_app_id::CapiAppId, capi_asset_dao_specs::CapiAssetDaoDeps, capi_asset_id::CapiAssetId,
-    },
+    capi_deps::{CapiAddress, CapiAssetDaoDeps},
 };
 use mbase::{
     dependencies::{network, DataType, Network},
@@ -38,8 +36,7 @@ pub fn funds_asset_specs() -> Result<FundsAssetSpecs> {
 pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
     Ok(CapiAssetDaoDeps {
         escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
-        app_id: capi_app_id()?,
-        asset_id: capi_asset_id()?,
+        address: capi_address()?,
     })
 }
 
@@ -62,18 +59,11 @@ pub fn funds_asset_id() -> Result<FundsAssetId> {
     Ok(FundsAssetId(str.parse().map_err(Error::msg)?))
 }
 
-pub fn capi_app_id() -> Result<CapiAppId> {
-    let str = option_env!("CAPI_APP_ID").ok_or_else(|| anyhow!("Please pass CAPI_APP_ID"))?;
-    log::debug!("Capi app id: {:?}", str);
+pub fn capi_address() -> Result<CapiAddress> {
+    let str = option_env!("CAPI_ADDRESS").ok_or_else(|| anyhow!("Please pass CAPI_ADDRESS"))?;
+    log::debug!("Capi address: {:?}", str);
 
-    Ok(CapiAppId(str.parse().map_err(Error::msg)?))
-}
-
-pub fn capi_asset_id() -> Result<CapiAssetId> {
-    let str = option_env!("CAPI_ASSET_ID").ok_or_else(|| anyhow!("Please pass CAPI_ASSET_ID"))?;
-    log::debug!("Capi asset id: {:?}", str);
-
-    Ok(CapiAssetId(str.parse().map_err(Error::msg)?))
+    Ok(CapiAddress(str.parse().map_err(Error::msg)?))
 }
 
 pub fn data_type() -> Result<DataType> {

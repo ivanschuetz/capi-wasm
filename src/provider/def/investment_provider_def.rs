@@ -11,7 +11,7 @@ use algonaut::algod::v2::Algod;
 use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::capi_asset::capi_asset_dao_specs::CapiAssetDaoDeps;
+use base::capi_deps::CapiAssetDaoDeps;
 use base::flows::create_dao::model::Dao;
 use base::state::account_state::asset_holdings;
 use base::state::dao_app_state::CentralAppGlobalState;

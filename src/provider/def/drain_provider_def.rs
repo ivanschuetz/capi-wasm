@@ -39,7 +39,7 @@ impl DrainProvider for DrainProviderDef {
         .await?;
 
         Ok(DrainResJs {
-            to_sign: to_my_algo_txs1(&vec![to_sign.app_call_tx, to_sign.capi_app_call_tx])?,
+            to_sign: to_my_algo_txs1(&vec![to_sign.app_call_tx])?,
             pt: SubmitDrainPassthroughParJs {
                 drain_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.drain_tx)?,
                 capi_share_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.capi_share_tx)?,
@@ -60,7 +60,6 @@ impl DrainProvider for DrainProviderDef {
             &DrainCustomerEscrowSigned {
                 drain_tx: rmp_serde::from_slice(&pars.pt.drain_tx_msg_pack)?,
                 capi_share_tx: rmp_serde::from_slice(&pars.pt.capi_share_tx_msg_pack)?,
-                capi_app_call_tx_signed: signed_js_tx_to_signed_tx1(app_call_tx)?,
                 app_call_tx_signed: signed_js_tx_to_signed_tx1(app_call_tx)?,
             },
         )

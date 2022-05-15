@@ -8,9 +8,13 @@ gtxn 0 OnCompletion
 int 4
 ==
 bnz main_l21
+gtxn 0 TypeEnum
+int axfer
+==
 global GroupSize
 int 3
 ==
+&&
 bnz main_l20
 gtxn 0 ApplicationID
 int 0
@@ -124,7 +128,7 @@ int 1
 return
 main_l14:
 global GroupSize
-int 4
+int 3
 ==
 assert
 gtxn 0 TypeEnum
@@ -139,33 +143,34 @@ gtxn 0 OnCompletion
 int NoOp
 ==
 assert
-gtxn 0 Sender
-gtxn 1 Sender
-==
-assert
 gtxn 1 TypeEnum
-int appl
+int axfer
 ==
 assert
-gtxn 1 ApplicationID
-int TMPL_CAPI_APP_ID
+gtxn 1 AssetAmount
+int 0
+>
+assert
+gtxn 1 Sender
+byte "CustomerEscrowAddress"
+app_global_get
 ==
 assert
-gtxn 1 OnCompletion
-int NoOp
+gtxn 1 XferAsset
+byte "FundsAssetId"
+app_global_get
+==
+assert
+gtxn 1 AssetReceiver
+global CurrentApplicationAddress
+==
+assert
+gtxn 1 Sender
+gtxn 2 Sender
 ==
 assert
 gtxn 2 TypeEnum
 int axfer
-==
-assert
-gtxn 2 AssetAmount
-int 0
->
-assert
-gtxn 2 Sender
-byte "CustomerEscrowAddress"
-app_global_get
 ==
 assert
 gtxn 2 XferAsset
@@ -174,28 +179,15 @@ app_global_get
 ==
 assert
 gtxn 2 AssetReceiver
-global CurrentApplicationAddress
-==
-assert
-gtxn 3 TypeEnum
-int axfer
-==
-assert
-gtxn 3 XferAsset
-byte "FundsAssetId"
-app_global_get
-==
-assert
-gtxn 3 AssetReceiver
 addr TMPL_CAPI_ESCROW_ADDRESS
 ==
 assert
-gtxn 2 Sender
-gtxn 2 XferAsset
+gtxn 1 Sender
+gtxn 1 XferAsset
 asset_holding_get AssetBalance
 store 1
 store 0
-gtxn 3 AssetAmount
+gtxn 2 AssetAmount
 load 0
 int TMPL_PRECISION__
 *
@@ -208,7 +200,7 @@ assert
 byte "CentralReceivedTotal"
 byte "CentralReceivedTotal"
 app_global_get
-gtxn 2 AssetAmount
+gtxn 1 AssetAmount
 +
 app_global_put
 int 1

@@ -79,7 +79,6 @@ impl WithdrawProvider for WithdrawProviderDef {
         let mut maybe_capi_share_tx_msg_pack = None;
         if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {
             to_sign.push(to_sign_for_drain.app_call_tx);
-            to_sign.push(to_sign_for_drain.capi_app_call_tx);
             maybe_drain_tx_msg_pack = Some(rmp_serde::to_vec_named(&to_sign_for_drain.drain_tx)?);
             maybe_capi_share_tx_msg_pack =
                 Some(rmp_serde::to_vec_named(&to_sign_for_drain.capi_share_tx)?);
@@ -101,8 +100,8 @@ impl WithdrawProvider for WithdrawProviderDef {
 
         let withdrawal_inputs = validate_withdrawal_inputs(&pars.pt.inputs, &funds_asset_specs)?;
 
-        // 1 tx if only withdrawal, 3 if withdrawal with drain
-        if pars.txs.len() != 1 && pars.txs.len() != 3 {
+        // 1 tx if only withdrawal, 2 if withdrawal with drain
+        if pars.txs.len() != 1 && pars.txs.len() != 2 {
             return Err(anyhow!(
                 "Unexpected withdraw txs length: {}",
                 pars.txs.len()
@@ -115,14 +114,14 @@ impl WithdrawProvider for WithdrawProviderDef {
             ));
         }
 
-        if pars.txs.len() == 3 {
+        if pars.txs.len() == 2 {
             let drain_tx = &pars.pt.maybe_drain_tx_msg_pack
                 .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?;
 
             let capi_share_tx = &pars.pt.maybe_capi_share_tx_msg_pack
                 .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed capi share tx"))?;
 
-            submit_drain(&algod, drain_tx, &pars.txs[1], capi_share_tx, &pars.txs[2]).await?;
+            submit_drain(&algod, drain_tx, &pars.txs[1], capi_share_tx).await?;
         }
 
         let withdraw_tx_id = submit_withdraw(

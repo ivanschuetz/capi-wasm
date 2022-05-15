@@ -10,4 +10,4 @@
 # 
 # note that we don't update the WASM TEAL here, as it's not used
 #
-NETWORK=test ENV=test DATA_TYPE=mock FUNDS_ASSET_ID=123 CAPI_APP_ID=123 CAPI_ASSET_ID=123 wasm-pack build --out-dir ../wasm-build --debug
+NETWORK=test ENV=test DATA_TYPE=mock FUNDS_ASSET_ID=123 CAPI_ADDRESS=NIKGABIQLRCPJYCNCFZWR7GUIC3NA66EBVR65JKHKLGLIYQ4KO3YYPV67Q wasm-pack build --out-dir ../wasm-build --debug
