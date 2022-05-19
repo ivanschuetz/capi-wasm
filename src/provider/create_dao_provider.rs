@@ -13,6 +13,7 @@ use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use mbase::models::funds::FundsAmount;
 use mbase::models::share_amount::ShareAmount;
 use mbase::models::shares_percentage::SharesPercentage;
+use mbase::models::timestamp::Timestamp;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -39,6 +40,8 @@ pub struct ValidatedDaoInputs {
     pub investors_share: SharesPercentage,
     pub image: Option<CompressedImage>,
     pub social_media_url: String,
+    pub min_raise_target: FundsAmount,
+    pub min_raise_target_end_date: Timestamp,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,6 +55,8 @@ pub struct CreateDaoFormInputsJs {
     pub investors_share: String, // percentage (0..100), with decimals (max decimals number defined in validations)
     pub compressed_image: Option<Vec<u8>>,
     pub social_media_url: String,
+    pub min_raise_target: String,
+    pub min_raise_target_end_date: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -86,6 +91,8 @@ fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<SetupDaoS
         inputs.image.map(|i| i.hash()),
         inputs.social_media_url,
         inputs.shares_for_investors,
+        inputs.min_raise_target,
+        inputs.min_raise_target_end_date,
     )
 }
 
@@ -102,6 +109,9 @@ pub fn validate_dao_inputs(
     let compressed_image_res = validate_compressed_image_opt(&inputs.compressed_image);
     let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
     let investors_share_res = validate_investors_share(&inputs.investors_share);
+    let min_raise_target_res = validate_min_raised_target(&inputs.min_raise_target);
+    let min_raised_target_end_date_res =
+        validate_min_raised_target_end_date(&inputs.min_raise_target_end_date);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_err = dao_description_res.clone().err();
@@ -112,6 +122,8 @@ pub fn validate_dao_inputs(
     let compressed_image_err = compressed_image_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
     let investors_share_err = investors_share_res.clone().err();
+    let min_raise_target_err = min_raise_target_res.clone().err();
+    let validate_min_raised_target_end_date_err = min_raised_target_end_date_res.clone().err();
 
     if [
         dao_name_err,
@@ -123,6 +135,8 @@ pub fn validate_dao_inputs(
         compressed_image_err,
         social_media_url_err,
         investors_share_err,
+        min_raise_target_err,
+        validate_min_raised_target_end_date_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -137,6 +151,8 @@ pub fn validate_dao_inputs(
             compressed_image: compressed_image_res.err(),
             social_media_url: social_media_url_res.err(),
             investors_share: investors_share_res.err(),
+            min_raise_target: min_raise_target_res.err(),
+            min_raise_target_end_date: min_raised_target_end_date_res.err(),
         };
         return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
     }
@@ -160,6 +176,10 @@ pub fn validate_dao_inputs(
         compressed_image_res.map_err(|e| to_single_field_val_error("compressed_image", e))?;
     let social_media_url =
         social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
+    let min_raise_target =
+        min_raise_target_res.map_err(|e| to_single_field_val_error("min_raise_target", e))?;
+    let min_raise_target_end_date = min_raised_target_end_date_res
+        .map_err(|e| to_single_field_val_error("min_raise_target_end_date", e))?;
 
     // derived from other fields
     let asset_name = generate_asset_name(&dao_name).map_err(|_| {
@@ -183,6 +203,8 @@ pub fn validate_dao_inputs(
         investors_share,
         image: compressed_image,
         social_media_url,
+        min_raise_target,
+        min_raise_target_end_date,
     })
 }
 
@@ -229,6 +251,8 @@ pub struct CreateAssetsInputErrors {
     pub investors_share: Option<ValidationError>,
     pub compressed_image: Option<ValidationError>,
     pub social_media_url: Option<ValidationError>,
+    pub min_raise_target: Option<ValidationError>,
+    pub min_raise_target_end_date: Option<ValidationError>,
 }
 
 fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
@@ -363,6 +387,16 @@ fn validate_social_media_url(input: &str) -> Result<String, ValidationError> {
         });
     }
     Ok(input.to_owned())
+}
+
+fn validate_min_raised_target(input: &str) -> Result<FundsAmount, ValidationError> {
+    let amount: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
+    Ok(FundsAmount::new(amount))
+}
+
+fn validate_min_raised_target_end_date(input: &str) -> Result<Timestamp, ValidationError> {
+    let timestamp: u64 = input.parse().map_err(|_| ValidationError::NotTimestamp)?;
+    Ok(Timestamp(timestamp))
 }
 
 fn to_single_field_val_error(field_name: &str, e: ValidationError) -> ValidateDaoInputsError {

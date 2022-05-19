@@ -12,6 +12,7 @@ pub fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
         ValidationError::Address => "address",
         ValidationError::NotAnInteger => "not_int",
         ValidationError::NotADecimal => "not_dec",
+        ValidationError::NotTimestamp => "not_timestamp",
         ValidationError::TooManyFractionalDigits { .. } => "max_fractionals",
         ValidationError::CompressedImageSize { .. } => "max_img_size",
         ValidationError::Unexpected(_) => "unexpected",

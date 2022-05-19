@@ -7,8 +7,8 @@ use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::unlock::unlock::{submit_unlock, unlock, UnlockSigned};
-use base::state::dao_app_state::dao_investor_state;
 use mbase::dependencies::algod;
+use mbase::state::dao_app_state::dao_investor_state;
 
 pub struct UnlockProviderDef {}
 

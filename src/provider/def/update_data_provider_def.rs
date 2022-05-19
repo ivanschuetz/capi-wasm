@@ -7,18 +7,16 @@ use crate::provider::update_data_provider::{
 use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::api::version::Version;
-use base::api::version::VersionedAddress;
 use base::dependencies::image_api;
 use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::flows::update_data::update_data::{
     submit_update_data, update_data, UpdatableDaoData, UpdateDaoDataSigned,
 };
-use base::state::dao_app_state::dao_global_state;
+use mbase::api::version::{Version, VersionedAddress};
 use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
-use mbase::models::funds::FundsAmount;
 use mbase::models::image_hash::ImageHash;
+use mbase::state::dao_app_state::dao_global_state;
 
 pub struct UpdateDataProviderDef {}
 
@@ -70,7 +68,6 @@ impl UpdateDataProvider for UpdateDataProviderDef {
                 ),
                 project_name: pars.project_name,
                 project_desc: pars.project_desc,
-                share_price: FundsAmount::new(pars.share_price.parse().map_err(Error::msg)?),
                 image_hash: image_hash.clone(),
                 social_media_url: pars.social_media_url,
                 owner,

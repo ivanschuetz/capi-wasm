@@ -6,11 +6,11 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::{
-    api::{teal_api::TealApi, version::Version},
+use base::api::teal_api::TealApi;
+use mbase::{
+    api::version::Version, dependencies::algod, models::dao_id::DaoId,
     state::dao_app_state::dao_global_state,
 };
-use mbase::{dependencies::algod, models::dao_id::DaoId};
 
 pub struct AppUpdatesProviderDef {}
 

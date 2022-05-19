@@ -25,6 +25,8 @@ pub enum ValidationError {
     },
     Address,
     NotAnInteger,
+    // note that this is not caused by the user, but programmatic error - js should always pass a valid date input
+    NotTimestamp,
     NotADecimal,
     TooManyFractionalDigits {
         max: String,

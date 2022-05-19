@@ -3,11 +3,11 @@ pub const SRC: &str = r#"
 global GroupSize
 int 5
 ==
-bnz main_l22
+bnz main_l24
 gtxn 0 OnCompletion
 int 4
 ==
-bnz main_l21
+bnz main_l23
 gtxn 0 TypeEnum
 int axfer
 ==
@@ -15,41 +15,110 @@ global GroupSize
 int 3
 ==
 &&
-bnz main_l20
+bnz main_l22
 gtxn 0 ApplicationID
 int 0
 ==
-bnz main_l19
+bnz main_l21
 gtxna 0 ApplicationArgs 0
 byte "optin"
 ==
-bnz main_l18
+bnz main_l20
 gtxna 0 ApplicationArgs 0
 byte "unlock"
 ==
-bnz main_l17
+bnz main_l19
 gtxna 0 ApplicationArgs 0
 byte "claim"
 ==
-bnz main_l16
+bnz main_l18
 gtxna 0 ApplicationArgs 0
 byte "lock"
 ==
-bnz main_l15
+bnz main_l17
 gtxna 0 ApplicationArgs 0
 byte "drain"
 ==
-bnz main_l14
+bnz main_l16
 gtxna 0 ApplicationArgs 0
 byte "update_data"
 ==
-bnz main_l13
+bnz main_l15
 gtxna 0 ApplicationArgs 0
 byte "withdraw"
 ==
-bnz main_l12
+bnz main_l14
+gtxna 0 ApplicationArgs 0
+byte "reclaim"
+==
+bnz main_l13
 err
-main_l12:
+main_l13:
+global GroupSize
+int 2
+==
+assert
+gtxn 0 TypeEnum
+int appl
+==
+assert
+gtxn 0 ApplicationID
+global CurrentApplicationID
+==
+assert
+gtxn 0 OnCompletion
+int NoOp
+==
+assert
+gtxn 1 TypeEnum
+int axfer
+==
+assert
+gtxn 1 XferAsset
+byte "SharesAssetId"
+app_global_get
+==
+assert
+gtxn 1 AssetReceiver
+global CurrentApplicationAddress
+==
+assert
+gtxn 1 AssetAmount
+int 0
+>
+assert
+gtxn 1 Sender
+gtxn 0 Sender
+==
+assert
+global LatestTimestamp
+byte "TargetEndDate"
+app_global_get
+>
+assert
+byte "Raised"
+app_global_get
+byte "Target"
+app_global_get
+<
+assert
+itxn_begin
+int axfer
+itxn_field TypeEnum
+gtxn 1 AssetAmount
+byte "SharePrice"
+app_global_get
+*
+itxn_field AssetAmount
+gtxn 0 Sender
+itxn_field AssetReceiver
+byte "FundsAssetId"
+app_global_get
+itxn_field XferAsset
+itxn_submit
+int 1
+return
+main_l14:
 global GroupSize
 int 1
 ==
@@ -58,6 +127,11 @@ gtxn 0 Sender
 byte "Owner"
 app_global_get
 ==
+assert
+global LatestTimestamp
+byte "TargetEndDate"
+app_global_get
+>
 assert
 itxn_begin
 int axfer
@@ -73,7 +147,7 @@ itxn_field XferAsset
 itxn_submit
 int 1
 return
-main_l13:
+main_l15:
 global GroupSize
 int 1
 ==
@@ -91,7 +165,7 @@ int NoOp
 ==
 assert
 gtxn 0 NumAppArgs
-int 9
+int 8
 ==
 assert
 gtxn 0 Sender
@@ -108,25 +182,21 @@ app_global_put
 byte "DaoDesc"
 gtxna 0 ApplicationArgs 3
 app_global_put
-byte "SharePrice"
-gtxna 0 ApplicationArgs 4
-btoi
-app_global_put
 byte "LogoUrl"
-gtxna 0 ApplicationArgs 5
+gtxna 0 ApplicationArgs 4
 app_global_put
 byte "SocialMediaUrl"
-gtxna 0 ApplicationArgs 6
+gtxna 0 ApplicationArgs 5
 app_global_put
 byte "Owner"
-gtxna 0 ApplicationArgs 7
+gtxna 0 ApplicationArgs 6
 app_global_put
 byte "Versions"
-gtxna 0 ApplicationArgs 8
+gtxna 0 ApplicationArgs 7
 app_global_put
 int 1
 return
-main_l14:
+main_l16:
 global GroupSize
 int 3
 ==
@@ -205,7 +275,7 @@ gtxn 1 AssetAmount
 app_global_put
 int 1
 return
-main_l15:
+main_l17:
 global GroupSize
 int 2
 ==
@@ -256,7 +326,7 @@ global CurrentApplicationID
 app_local_put
 int 1
 return
-main_l16:
+main_l18:
 global GroupSize
 int 1
 ==
@@ -328,7 +398,7 @@ app_local_get
 app_local_put
 int 1
 return
-main_l17:
+main_l19:
 global GroupSize
 int 1
 ==
@@ -370,7 +440,7 @@ app_local_get
 app_global_put
 int 1
 return
-main_l18:
+main_l20:
 global GroupSize
 int 1
 ==
@@ -389,14 +459,14 @@ int OptIn
 assert
 int 1
 return
-main_l19:
+main_l21:
 gtxn 0 TypeEnum
 int appl
 ==
 assert
 int 1
 return
-main_l20:
+main_l22:
 gtxn 0 TypeEnum
 int axfer
 ==
@@ -462,6 +532,12 @@ gtxna 1 ApplicationArgs 1
 btoi
 ==
 assert
+byte "Raised"
+byte "Raised"
+app_global_get
+gtxn 2 AssetAmount
++
+app_global_put
 gtxn 2 AssetAmount
 int TMPL_SHARE_PRICE
 /
@@ -473,7 +549,7 @@ global CurrentApplicationID
 app_local_put
 int 1
 return
-main_l21:
+main_l23:
 global GroupSize
 int 1
 ==
@@ -489,7 +565,7 @@ app_global_get
 assert
 int 1
 return
-main_l22:
+main_l24:
 gtxn 0 TypeEnum
 int pay
 ==
@@ -511,7 +587,7 @@ int NoOp
 ==
 assert
 gtxn 1 NumAppArgs
-int 12
+int 14
 ==
 assert
 gtxn 1 Sender
@@ -589,6 +665,17 @@ app_global_put
 byte "SharesForInvestors"
 gtxna 1 ApplicationArgs 11
 btoi
+app_global_put
+byte "Target"
+gtxna 1 ApplicationArgs 12
+btoi
+app_global_put
+byte "TargetEndDate"
+gtxna 1 ApplicationArgs 13
+btoi
+app_global_put
+byte "Raised"
+int 0
 app_global_put
 itxn_begin
 int axfer
