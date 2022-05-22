@@ -343,3 +343,15 @@ pub async fn get_balance_change(pars: JsValue) -> Result<JsValue, JsValue> {
             .await,
     )
 }
+
+#[wasm_bindgen]
+pub async fn bridge_reclaim(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_reclaim, pars: {:?}", pars);
+    to_bridge_res(providers()?.reclaim.txs(parse_bridge_pars(pars)?).await)
+}
+
+#[wasm_bindgen]
+pub async fn bridge_submit_reclaim(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_submit_reclaim, pars: {:?}", pars);
+    to_bridge_res(providers()?.reclaim.submit(parse_bridge_pars(pars)?).await)
+}
