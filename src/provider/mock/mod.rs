@@ -12,7 +12,7 @@ use crate::{
         common::to_my_algo_tx1,
         js_types_workarounds::{ContractAccountJs, VersionedContractAccountJs},
     },
-    model::dao_for_users_view_data::DaoForUsersViewData,
+    model::dao_js::DaoJs,
 };
 
 pub mod add_roadmap_item_provider_mock;
@@ -93,8 +93,8 @@ pub fn mock_tx_id() -> String {
     "3CUYREVXKFMJOSWJRC3GY6UEAJ3BA36RGN4PKSL7CYRLCWZSIT3A".to_string()
 }
 
-pub fn mock_dao_for_users_view_data() -> Result<DaoForUsersViewData> {
-    Ok(DaoForUsersViewData {
+pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
+    Ok(DaoJs {
         name: "Test name".to_owned(),
         description: "Test description".to_owned(),
         share_supply: "123123123".to_owned(),

@@ -3,8 +3,7 @@ use std::convert::TryInto;
 use crate::dependencies::{api, capi_deps, funds_asset_specs};
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::common::to_my_algo_txs1;
-use crate::model::dao_for_users::dao_to_dao_for_users;
-use crate::model::dao_for_users_view_data::dao_for_users_to_view_data;
+use crate::model::dao_js::ToDaoJs;
 use crate::provider::create_dao_provider::{
     CreateDaoParJs, CreateDaoProvider, CreateDaoRes, CreateDaoResJs, SubmitCreateDaoParJs,
     SubmitSetupDaoPassthroughParJs,
@@ -175,14 +174,9 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         .await?;
 
         Ok(CreateDaoRes {
-            dao: dao_for_users_to_view_data(
-                dao_to_dao_for_users(
-                    &submit_dao_res.dao,
-                    &submit_dao_res.dao.id(),
-                    maybe_image_url,
-                ),
-                &funds_asset_specs,
-            ),
+            dao: submit_dao_res
+                .dao
+                .to_js(maybe_image_url, &funds_asset_specs),
             image_error: maybe_image_upload_error,
         })
     }

@@ -2,7 +2,7 @@ use crate::dependencies::FundsAssetSpecs;
 use crate::inputs_validation::ValidationError;
 use crate::js::common::SignedTxFromJs;
 use crate::js::js_types_workarounds::VersionedContractAccountJs;
-use crate::model::dao_for_users_view_data::DaoForUsersViewData;
+use crate::model::dao_js::DaoJs;
 use crate::service::str_to_algos::validate_funds_amount_input;
 use algonaut::core::Address;
 use anyhow::Result;
@@ -61,7 +61,7 @@ pub struct CreateDaoFormInputsJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDaoRes {
-    pub dao: DaoForUsersViewData,
+    pub dao: DaoJs,
     // set if there was an error uploading the image
     // note that this does not affect anything else - if storing the image fails, the dao is still saved successfully
     pub image_error: Option<String>,

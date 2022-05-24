@@ -1,6 +1,5 @@
 use crate::dependencies::{api, capi_deps, funds_asset_specs};
-use crate::model::dao_for_users::dao_to_dao_for_users;
-use crate::model::dao_for_users_view_data::dao_for_users_to_view_data;
+use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::available_funds;
 use crate::service::str_to_algos::base_units_to_display_units;
@@ -52,15 +51,11 @@ impl ViewDaoProvider for ViewDaoProviderDef {
 
         let investos_share_formatted = dao.specs.investors_share.value().format_percentage();
 
-        let dao_view_data = dao_for_users_to_view_data(
-            dao_to_dao_for_users(
-                &dao,
-                &dao_id,
-                dao.specs
-                    .image_hash
-                    .clone()
-                    .map(|h| h.as_api_url(&image_api)),
-            ),
+        let dao_view_data = dao.to_js(
+            dao.specs
+                .image_hash
+                .clone()
+                .map(|h| h.as_api_url(&image_api)),
             &funds_asset_specs,
         );
 

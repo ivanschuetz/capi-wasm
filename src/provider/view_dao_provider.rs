@@ -1,4 +1,4 @@
-use crate::model::dao_for_users_view_data::DaoForUsersViewData;
+use crate::model::dao_js::DaoJs;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::Deserialize;
@@ -18,7 +18,7 @@ pub struct ViewDaoParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ViewDaoResJs {
-    pub dao: DaoForUsersViewData,
+    pub dao: DaoJs,
     // pub shares_supply: String,
     pub shares_available: String,
     pub investors_share: String,
