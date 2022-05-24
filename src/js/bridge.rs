@@ -68,14 +68,9 @@ pub async fn bridge_get_user_shares_count(pars: JsValue) -> Result<JsValue, JsVa
 }
 
 #[wasm_bindgen]
-pub async fn bridge_load_dao_user_view(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_load_dao_user_view, pars: {:?}", pars);
-    to_bridge_res(
-        providers()?
-            .dao_user_view
-            .get(parse_bridge_pars(pars)?)
-            .await,
-    )
+pub async fn bridge_load_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_load_dao, pars: {:?}", pars);
+    to_bridge_res(providers()?.dao.get(parse_bridge_pars(pars)?).await)
 }
 
 #[wasm_bindgen]

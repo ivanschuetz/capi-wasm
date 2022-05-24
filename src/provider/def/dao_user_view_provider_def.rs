@@ -1,7 +1,7 @@
 use crate::{
     dependencies::{api, capi_deps, funds_asset_specs},
     model::dao_js::{DaoJs, ToDaoJs},
-    provider::dao_user_view_provider::DaoUserViewProvider,
+    provider::dao_user_view_provider::DaoProvider,
     ImageHashExt,
 };
 use anyhow::Result;
@@ -13,7 +13,7 @@ pub struct DaoUserViewProviderDef {}
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-impl DaoUserViewProvider for DaoUserViewProviderDef {
+impl DaoProvider for DaoUserViewProviderDef {
     async fn get(&self, dao_id_str: String) -> Result<DaoJs> {
         let algod = algod();
         let image_api = image_api();
