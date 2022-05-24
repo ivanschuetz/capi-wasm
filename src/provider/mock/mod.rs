@@ -30,12 +30,12 @@ pub mod funds_activity_provider_mock;
 pub mod holders_count_provider_mock;
 pub mod income_vs_spending_provider_mock;
 pub mod investment_provider_mock;
-pub mod load_dao_with_id_provider_mock;
 pub mod lock_provider_mock;
 pub mod my_daos_provider_mock;
 pub mod my_shares_provider_mock;
 pub mod optin_to_app_provider_mock;
 pub mod pay_dao_provider_mock;
+pub mod reclaim_provider_mock;
 pub mod roadmap_provider_mock;
 pub mod shares_count_provider_mock;
 pub mod shares_distribution_provider_mock;
@@ -45,7 +45,6 @@ pub mod update_data_provider_mock;
 pub mod view_dao_provider_mock;
 pub mod withdraw_provider_mock;
 pub mod withdrawal_history_provider_mock;
-pub mod reclaim_provider_mock;
 
 /// Arbitrary minimal tx for flows that return a tx to be signed in js
 /// `address` should (unless trying to cause a signing error) belong to the user using the UI, so they can sign and continue the flow

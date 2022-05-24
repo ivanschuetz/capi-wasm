@@ -288,12 +288,6 @@ pub async fn bridge_view_dao(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 #[wasm_bindgen]
-pub async fn bridge_load_dao_user_view_with_id(pars: JsValue) -> Result<JsValue, JsValue> {
-    log::debug!("bridge_load_dao_user_view_with_id, pars: {:?}", pars);
-    to_bridge_res(providers()?.dao_with_id.get(parse_bridge_pars(pars)?).await)
-}
-
-#[wasm_bindgen]
 pub async fn bridge_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_withdraw, pars: {:?}", pars);
     to_bridge_res(providers()?.withdraw.txs(parse_bridge_pars(pars)?).await)
