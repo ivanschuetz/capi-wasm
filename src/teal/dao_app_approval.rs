@@ -133,6 +133,12 @@ byte "TargetEndDate"
 app_global_get
 >
 assert
+byte "Raised"
+app_global_get
+byte "Target"
+app_global_get
+>=
+assert
 itxn_begin
 int axfer
 itxn_field TypeEnum
