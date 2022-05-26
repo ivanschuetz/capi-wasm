@@ -27,7 +27,7 @@ pub struct UpdatableDataResJs {
     pub customer_escrow_version: String,
 
     pub project_name: String,
-    pub project_desc: String,
+    pub project_desc: Option<String>,
     pub share_price: String,
 
     pub image_hash: Option<String>,
@@ -48,7 +48,7 @@ pub struct UpdateDataParJs {
     pub customer_escrow_version: String,
 
     pub project_name: String,
-    pub project_desc: String,
+    pub project_desc: Option<String>,
     pub share_price: String,
 
     pub image: Option<Vec<u8>>,

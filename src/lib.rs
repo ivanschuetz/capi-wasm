@@ -10,7 +10,7 @@ use anyhow::{anyhow, Result};
 use base::api::image_api::ImageApi;
 use mbase::{
     models::{
-        image_hash::ImageHash, share_amount::ShareAmount, shares_percentage::SharesPercentage,
+        hash::GlobalStateHash, share_amount::ShareAmount, shares_percentage::SharesPercentage,
     },
     util::decimal_util::AsDecimal,
 };
@@ -39,12 +39,12 @@ fn calculate_profit_percentage(
     Ok(perc)
 }
 
-pub trait ImageHashExt {
-    fn as_api_url(&self, image_api: &dyn ImageApi) -> String;
+pub trait GlobalStateHashExt {
+    fn as_api_url(&self, api: &dyn ImageApi) -> String;
 }
 
-impl ImageHashExt for ImageHash {
-    fn as_api_url(&self, image_api: &dyn ImageApi) -> String {
-        image_api.image_url(&self.as_api_id())
+impl GlobalStateHashExt for GlobalStateHash {
+    fn as_api_url(&self, api: &dyn ImageApi) -> String {
+        api.image_url(&self.as_api_id())
     }
 }

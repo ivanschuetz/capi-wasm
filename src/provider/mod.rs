@@ -31,5 +31,6 @@ pub mod update_data_provider;
 pub mod view_dao_provider;
 pub mod withdraw_provider;
 pub mod withdrawal_history_provider;
+pub mod description_provider;
 
 pub use providers::providers;

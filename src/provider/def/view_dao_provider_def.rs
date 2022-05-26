@@ -3,7 +3,7 @@ use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::available_funds;
 use crate::service::str_to_algos::base_units_to_display_units;
-use crate::ImageHashExt;
+use crate::GlobalStateHashExt;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
@@ -52,6 +52,7 @@ impl ViewDaoProvider for ViewDaoProviderDef {
         let investos_share_formatted = dao.specs.investors_share.value().format_percentage();
 
         let dao_view_data = dao.to_js(
+            dao.specs.descr_hash.clone().map(|h| h.as_str()),
             dao.specs
                 .image_hash
                 .clone()

@@ -344,3 +344,9 @@ pub async fn bridge_submit_reclaim(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_submit_reclaim, pars: {:?}", pars);
     to_bridge_res(providers()?.reclaim.submit(parse_bridge_pars(pars)?).await)
 }
+
+#[wasm_bindgen]
+pub async fn bridge_description(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_description, pars: {:?}", pars);
+    to_bridge_res(providers()?.description.get(parse_bridge_pars(pars)?).await)
+}

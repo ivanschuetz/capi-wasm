@@ -40,6 +40,7 @@ impl CreateDaoProvider for CreateDaoProviderMock {
                 shares_asset_id: 1234567890,
                 customer_escrow: mock_contract_account()?,
                 app_id: 121212121,
+                description: Some("Test description...".to_owned()),
                 compressed_image: None,
             },
         })
@@ -50,6 +51,7 @@ impl CreateDaoProvider for CreateDaoProviderMock {
 
         Ok(CreateDaoRes {
             dao: mock_dao_for_users_view_data()?,
+            descr_error: None,
             image_error: None,
         })
     }

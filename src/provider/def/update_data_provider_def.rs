@@ -8,14 +8,14 @@ use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::dependencies::image_api;
-use base::flows::create_dao::setup_dao_specs::CompressedImage;
+use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
 use base::flows::update_data::update_data::{
     submit_update_data, update_data, UpdatableDaoData, UpdateDaoDataSigned,
 };
 use mbase::api::version::{Version, VersionedAddress};
 use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
-use mbase::models::image_hash::ImageHash;
+use mbase::models::hash::GlobalStateHash;
 use mbase::state::dao_app_state::dao_global_state;
 
 pub struct UpdateDataProviderDef {}
@@ -35,7 +35,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
             customer_escrow: app_state.customer_escrow.address.to_string(),
             customer_escrow_version: app_state.customer_escrow.version.0.to_string(),
             project_name: app_state.project_name,
-            project_desc: app_state.project_desc,
+            project_desc: app_state.project_desc.map(|h| h.as_str()),
             share_price: app_state.share_price.to_string(),
             image_hash: app_state.image_hash.map(|h| h.as_str()),
             social_media_url: app_state.social_media_url,
@@ -67,7 +67,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
                     parse_int(pars.customer_escrow_version)?,
                 ),
                 project_name: pars.project_name,
-                project_desc: pars.project_desc,
+                project_desc: pars.project_desc.map(|d| d.hash()),
                 image_hash: image_hash.clone(),
                 social_media_url: pars.social_media_url,
                 owner,
@@ -92,7 +92,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         let dao_id = pars.pt.dao_id.parse::<DaoId>().map_err(Error::msg)?;
         let image = pars.pt.image.map(CompressedImage::new);
         let image_hash = match pars.pt.image_hash {
-            Some(bytes) => Some(ImageHash::from_bytes(bytes)?),
+            Some(bytes) => Some(GlobalStateHash::from_bytes(bytes)?),
             None => None,
         };
 

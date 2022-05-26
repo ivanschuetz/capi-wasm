@@ -16,6 +16,7 @@ use super::{
         create_assets_provider_def::CreateAssetsProviderDef,
         create_dao_provider_def::CreateDaoProviderDef,
         dao_user_view_provider_def::DaoUserViewProviderDef,
+        description_provider_def::DescriptionProviderDef,
         dividends_provider_def::DividendsProviderDef, drain_provider_def::DrainProviderDef,
         funds_activity_provider_def::FundsActivityProviderDef,
         holders_count_provider_def::HoldersCountProviderDef,
@@ -31,6 +32,7 @@ use super::{
         withdraw_provider_def::WithdrawProviderDef,
         withdrawal_history_provider_def::WithdrawalHistoryProviderDef,
     },
+    description_provider::DescriptionProvider,
     dividends_provider::DividendsProvider,
     drain_provider::DrainProvider,
     funds_activity_provider::FundsActivityProvider,
@@ -48,6 +50,7 @@ use super::{
         create_assets_provider_mock::CreateAssetsProviderMock,
         create_dao_provider_mock::CreateDaoProviderMock,
         dao_user_view_provider_mock::DaoUserViewProviderMock,
+        description_provider_mock::DescriptionProviderMock,
         dividends_provider_mock::DividendsProviderMock, drain_provider_mock::DrainProviderMock,
         funds_activity_provider_mock::FundsActivityProviderMock,
         holders_count_provider_mock::HoldersCountProviderMock,
@@ -114,6 +117,7 @@ pub struct Providers<'a> {
     pub calculate_total_price: &'a dyn CalculateTotalPriceProvider,
     pub dividend: &'a dyn DividendsProvider,
     pub reclaim: &'a dyn ReclaimProvider,
+    pub description: &'a dyn DescriptionProvider,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -159,6 +163,7 @@ fn def_providers<'a>() -> Providers<'a> {
         calculate_total_price: &CalculateTotalPriceDef {},
         dividend: &DividendsProviderDef {},
         reclaim: &ReclaimProviderDef {},
+        description: &DescriptionProviderDef {},
     }
 }
 
@@ -194,5 +199,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         calculate_total_price: &CalculateTotalPriceMock {},
         dividend: &DividendsProviderMock {},
         reclaim: &ReclaimProviderMock {},
+        description: &DescriptionProviderMock {},
     }
 }

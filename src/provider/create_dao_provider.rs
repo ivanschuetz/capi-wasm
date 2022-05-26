@@ -9,6 +9,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use base::flows::create_dao::model::CreateSharesSpecs;
 use base::flows::create_dao::setup_dao_specs::CompressedImage;
+use base::flows::create_dao::setup_dao_specs::HashableString;
 use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use mbase::models::funds::FundsAmount;
 use mbase::models::share_amount::ShareAmount;
@@ -31,7 +32,7 @@ pub trait CreateDaoProvider {
 
 pub struct ValidatedDaoInputs {
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     pub creator: Address,
     pub token_name: String,
     pub share_supply: ShareAmount,
@@ -48,7 +49,7 @@ pub struct ValidatedDaoInputs {
 pub struct CreateDaoFormInputsJs {
     pub creator: String, // not strictly a form input ("field"), but for purpose here it can be
     pub dao_name: String,
-    pub dao_description: String,
+    pub dao_description: Option<String>,
     pub share_count: String,
     pub shares_for_investors: String,
     pub share_price: String,
@@ -62,6 +63,9 @@ pub struct CreateDaoFormInputsJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDaoRes {
     pub dao: DaoJs,
+    // set if there was an error uploading the description
+    // note that this does not affect anything else - if storing the description fails, the dao is still saved successfully
+    pub descr_error: Option<String>,
     // set if there was an error uploading the image
     // note that this does not affect anything else - if storing the image fails, the dao is still saved successfully
     pub image_error: Option<String>,
@@ -81,7 +85,7 @@ impl CreateDaoFormInputsJs {
 fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
     SetupDaoSpecs::new(
         inputs.name,
-        inputs.description,
+        inputs.description.map(|d| d.hash()),
         CreateSharesSpecs {
             token_name: inputs.token_name,
             supply: inputs.share_supply,
@@ -101,7 +105,7 @@ pub fn validate_dao_inputs(
     funds_asset_specs: &FundsAssetSpecs,
 ) -> Result<ValidatedDaoInputs, ValidateDaoInputsError> {
     let dao_name_res = validate_dao_name(&inputs.dao_name);
-    let dao_description_res = validate_dao_description(&inputs.dao_description);
+    let dao_description_res = validate_dao_description_opt(&inputs.dao_description);
     let creator_address_res = validate_address(&inputs.creator);
     let share_supply_res = validate_share_supply(&inputs.share_count);
     let shares_for_investors_res = validate_shares_for_investors(&inputs.shares_for_investors);
@@ -257,6 +261,13 @@ pub struct CreateAssetsInputErrors {
 
 fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
     validate_text_min_max_length(name, 2, 40)
+}
+
+fn validate_dao_description_opt(descr: &Option<String>) -> Result<Option<String>, ValidationError> {
+    match descr {
+        Some(d) => Ok(Some(validate_dao_description(&d)?)),
+        None => Ok(None),
+    }
 }
 
 fn validate_dao_description(descr: &str) -> Result<String, ValidationError> {
@@ -427,6 +438,7 @@ pub struct SubmitSetupDaoPassthroughParJs {
     pub shares_asset_id: u64,
     pub customer_escrow: VersionedContractAccountJs,
     pub app_id: u64,
+    pub description: Option<String>,
     pub compressed_image: Option<Vec<u8>>,
 }
 

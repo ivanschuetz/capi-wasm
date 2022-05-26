@@ -2,7 +2,7 @@ use crate::{
     dependencies::{api, capi_deps, funds_asset_specs},
     model::dao_js::{DaoJs, ToDaoJs},
     provider::dao_user_view_provider::DaoProvider,
-    ImageHashExt,
+    GlobalStateHashExt,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -25,6 +25,7 @@ impl DaoProvider for DaoUserViewProviderDef {
         let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
         Ok(dao.to_js(
+            dao.specs.descr_hash.clone().map(|h| h.as_str()),
             dao.specs
                 .image_hash
                 .clone()

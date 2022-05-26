@@ -24,6 +24,7 @@ pub mod claim_provider_mock;
 pub mod create_assets_provider_mock;
 pub mod create_dao_provider_mock;
 pub mod dao_user_view_provider_mock;
+pub mod description_provider_mock;
 pub mod dividends_provider_mock;
 pub mod drain_provider_mock;
 pub mod funds_activity_provider_mock;
@@ -96,7 +97,7 @@ pub fn mock_tx_id() -> String {
 pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
     Ok(DaoJs {
         name: "Test name".to_owned(),
-        description: "Test description".to_owned(),
+        description_id: Some("123".to_owned()),
         share_supply: "123123123".to_owned(),
         investors_share: "0.4".to_owned(),
         share_asset_name: "My asset name".to_owned(),

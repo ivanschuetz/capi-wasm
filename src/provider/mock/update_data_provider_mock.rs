@@ -23,7 +23,7 @@ impl UpdateDataProvider for UpdateDataProviderMock {
             customer_escrow: mock_address()?.to_string(),
             customer_escrow_version: "1".to_owned(),
             project_name: mock_dao.name,
-            project_desc: "My project description".to_owned(),
+            project_desc: Some("My project description".to_owned()),
             share_price: "1_000".to_owned(),
             image_hash: Some("123".to_owned()),
             social_media_url: "https://twitter.com/foobardoesntexist".to_owned(),

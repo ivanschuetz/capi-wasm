@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DaoJs {
     pub name: String,
-    pub description: String,
+    pub description_id: Option<String>,
     // TODO remove?
     pub share_supply: String,
     pub investors_share: String,
@@ -28,15 +28,25 @@ pub struct DaoJs {
 }
 
 pub trait ToDaoJs {
-    fn to_js(&self, image_url: Option<String>, funds_asset_specs: &FundsAssetSpecs) -> DaoJs;
+    fn to_js(
+        &self,
+        description_id: Option<String>,
+        image_url: Option<String>,
+        funds_asset_specs: &FundsAssetSpecs,
+    ) -> DaoJs;
 }
 
 impl ToDaoJs for Dao {
-    fn to_js(&self, image_url: Option<String>, funds_asset_specs: &FundsAssetSpecs) -> DaoJs {
+    fn to_js(
+        &self,
+        description_id: Option<String>,
+        image_url: Option<String>,
+        funds_asset_specs: &FundsAssetSpecs,
+    ) -> DaoJs {
         let dao_id_str = self.id().to_string();
         DaoJs {
             name: self.specs.name.clone(),
-            description: self.specs.description.clone(),
+            description_id,
             share_price: base_units_to_display_units_str(self.specs.share_price, funds_asset_specs),
             share_asset_name: self.specs.shares.token_name.clone(),
             share_supply: self.specs.shares.supply.to_string(),
