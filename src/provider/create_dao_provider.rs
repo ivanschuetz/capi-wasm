@@ -271,7 +271,7 @@ fn validate_dao_description_opt(descr: &Option<String>) -> Result<Option<String>
 }
 
 fn validate_dao_description(descr: &str) -> Result<String, ValidationError> {
-    validate_text_min_max_length(descr, 0, 200)
+    validate_text_min_max_length(descr, 0, 2000)
 }
 
 fn validate_address(str: &str) -> Result<Address, ValidationError> {
