@@ -289,7 +289,7 @@ pub async fn maybe_upload_descr(
         // user provided no image: no image url, no error
         (None, None) => Ok((None, None)),
         _ => Err(anyhow!(
-            "Invalid combination: either image and hash are set or none are set"
+            "Invalid combination: either descr and hash are set or none are set"
         )),
     }
 }
@@ -309,7 +309,7 @@ async fn upload_descr(
 ) -> Result<(Option<String>, Option<String>)> {
     wait_for_pending_transaction(algod, &tx_id_to_wait).await?;
     let (possible_image_url, possible_image_upload_error) = match api
-            .upload_image(app_id, descr.as_bytes().to_vec())
+            .upload_descr(app_id, descr.as_bytes().to_vec())
             .await {
                 Ok(_) => (Some(descr_hash.as_api_id()), None),
                 Err(e) => (None, Some(format!("Error storing image: {e}. Please try uploading it again from the project's settings.")))
