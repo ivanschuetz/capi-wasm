@@ -19,6 +19,7 @@ use base::flows::{
 };
 use base::state::account_state::asset_holdings;
 use base::state::dao_shares::dao_shares_with_dao_state;
+use mbase::checked::{CheckedAdd, CheckedSub};
 use mbase::dependencies::algod;
 use mbase::models::dao_app_id::DaoAppId;
 use mbase::models::funds::FundsAmount;
@@ -132,7 +133,7 @@ pub async fn investor_local_state_view_data(
         Ok(state) => (
             state.shares,
             state.claimed,
-            state.claimed - state.claimed_init,
+            state.claimed.sub(&state.claimed_init)?,
         ),
         Err(e) => {
             if e == ApplicationLocalStateError::NotOptedIn {
@@ -194,8 +195,9 @@ pub async fn fetch_claimable_dividend(
     // This is basically "simulate that the customer escrow was already drained"
     // we use this value, as harvesting will drain the customer escrow if it has a balance (> MIN_BALANCE + FIXED_FEE)
     // and the draining step is invisible to the user (aside of adding more txs to the claiming txs to sign)
-    let received_total_including_customer_escrow_balance =
-        app_state.received + withdrawable_customer_escrow_amount;
+    let received_total_including_customer_escrow_balance = app_state
+        .received
+        .add(&withdrawable_customer_escrow_amount)?;
 
     let can_claim = claimable_dividend(
         received_total_including_customer_escrow_balance,

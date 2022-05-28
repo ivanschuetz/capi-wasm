@@ -8,6 +8,7 @@ pub mod create_assets_provider;
 pub mod create_dao_provider;
 pub mod dao_user_view_provider;
 mod def;
+pub mod description_provider;
 pub mod dividends_provider;
 pub mod drain_provider;
 pub mod funds_activity_provider;
@@ -31,6 +32,5 @@ pub mod update_data_provider;
 pub mod view_dao_provider;
 pub mod withdraw_provider;
 pub mod withdrawal_history_provider;
-pub mod description_provider;
 
 pub use providers::providers;

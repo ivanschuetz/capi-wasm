@@ -5,6 +5,7 @@ use crate::{
 use algonaut::{algod::v2::Algod, core::Address};
 use anyhow::Result;
 use base::{
+    capi_deps::CapiAssetDaoDeps,
     flows::{
         create_dao::model::Dao,
         drain::drain::{
@@ -13,7 +14,7 @@ use base::{
         },
     },
     network_util::wait_for_pending_transaction,
-    state::account_state::funds_holdings, capi_deps::CapiAssetDaoDeps,
+    state::account_state::funds_holdings,
 };
 use mbase::models::funds::FundsAssetId;
 

@@ -4,6 +4,7 @@ use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::state::account_state::asset_holdings;
+use mbase::checked::CheckedAdd;
 use mbase::dependencies::algod;
 use mbase::models::share_amount::ShareAmount;
 use mbase::state::app_state::ApplicationLocalStateError;
@@ -38,12 +39,8 @@ impl MySharesProvider for MySharesProviderDef {
             Err(e) => return Err(Error::msg(e)),
         };
 
-        let total_shares = ShareAmount::new(
-            locked_shares
-                .val()
-                .checked_add(free_shares.val())
-                .ok_or(anyhow!("Invalid state: locked shares: {locked_shares} + fee_shares: {free_shares} caused an overflow. This is expected to be <= asset supply, which is an u64"))?,
-        );
+        let total_shares = locked_shares.add(&free_shares)
+            .map_err(|e| anyhow!("Invalid state: locked shares: {locked_shares} + fee_shares: {free_shares} caused an overflow. This is expected to be <= asset supply, which is an u64. e: {e:?}"))?;
 
         Ok(MySharesResJs {
             total: total_shares.0.to_string(),
