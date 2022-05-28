@@ -41,6 +41,7 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             dao.funds_asset_id,
             &None,
             &Some(interval_data.start),
+            &capi_deps
         )
         .await?;
         income.sort_by(|p1, p2| p1.date.cmp(&p2.date));
