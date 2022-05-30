@@ -13,7 +13,10 @@ use base::{
     flows::create_dao::storage::load_dao::load_dao,
     queries::funds_activity::{funds_activity, FundsActivityEntryType},
 };
-use mbase::{dependencies::{algod, indexer}, checked::CheckedSub};
+use mbase::{
+    checked::CheckedSub,
+    dependencies::{algod, indexer},
+};
 
 use super::shares_distribution_provider_def::shorten_address;
 
@@ -55,7 +58,10 @@ impl FundsActivityProvider for FundsActivityProviderDef {
             view_data_entries.push(FundsActivityViewData {
                 amount: base_units_to_display_units_str(entry.amount, &funds_asset_specs()?),
                 fee: base_units_to_display_units_str(entry.fee, &funds_asset_specs()?),
-                amount_without_fee: base_units_to_display_units_str(entry.amount.sub(&entry.fee)?, &funds_asset_specs()?),
+                amount_without_fee: base_units_to_display_units_str(
+                    entry.amount.sub(&entry.fee)?,
+                    &funds_asset_specs()?,
+                ),
                 is_income: match entry.type_ {
                     FundsActivityEntryType::Income => "true",
                     FundsActivityEntryType::Spending => "false",

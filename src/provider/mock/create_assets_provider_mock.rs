@@ -3,8 +3,8 @@ use crate::dependencies::funds_asset_specs;
 use crate::provider::create_assets_provider::{
     CreateAssetsProvider, CreateDaoAssetsParJs, CreateDaoAssetsResJs,
 };
-use crate::provider::create_dao_provider::validate_dao_inputs;
 use crate::provider::create_dao_provider::CreateDaoPassthroughParJs;
+use crate::provider::create_dao_provider::{validate_dao_inputs, ValidationDaoInputsOrAnyhowError};
 use anyhow::Result;
 use async_trait::async_trait;
 use mbase::dependencies::algod;
@@ -14,7 +14,10 @@ pub struct CreateAssetsProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl CreateAssetsProvider for CreateAssetsProviderMock {
-    async fn txs(&self, pars: CreateDaoAssetsParJs) -> Result<CreateDaoAssetsResJs> {
+    async fn txs(
+        &self,
+        pars: CreateDaoAssetsParJs,
+    ) -> Result<CreateDaoAssetsResJs, ValidationDaoInputsOrAnyhowError> {
         let algod = algod();
 
         let funds_asset_specs = funds_asset_specs()?;

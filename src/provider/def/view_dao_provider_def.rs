@@ -36,7 +36,8 @@ impl ViewDaoProvider for ViewDaoProviderDef {
                 .build()
                 .as_url();
 
-        let available_funds = available_funds(&algod, &dao, funds_asset_specs.id, &capi_deps).await?;
+        let available_funds =
+            available_funds(&algod, &dao, funds_asset_specs.id, &capi_deps).await?;
 
         // TODO!! not-locked shares (use global function to get not-locked (name prob. "available" shares))
         let shares_available = algod
