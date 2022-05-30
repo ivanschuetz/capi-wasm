@@ -10,7 +10,7 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::queries::historic::historic_dao_funds_balance;
+use base::queries::historic_balance::historic_dao_funds_balance;
 use base::state::account_state::{funds_holdings, funds_holdings_from_account};
 use chrono::{Duration, Utc};
 use mbase::dependencies::{algod, indexer};
