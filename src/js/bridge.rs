@@ -1,5 +1,5 @@
 use crate::{
-    js::common::{parse_bridge_pars, to_bridge_res},
+    js::common::{parse_bridge_pars, to_bridge_res, to_js_res},
     provider::providers,
 };
 use anyhow::Result;
@@ -8,12 +8,12 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub async fn bridge_create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_create_dao_assets, pars: {:?}", pars);
-    to_bridge_res(
-        providers()?
-            .create_assets
-            .txs(parse_bridge_pars(pars)?)
-            .await,
-    )
+    providers()?
+        .create_assets
+        .txs(parse_bridge_pars(pars)?)
+        .await
+        .map_err(|e| e.into())
+        .and_then(|r| to_js_res(&r))
 }
 
 #[wasm_bindgen]

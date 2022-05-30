@@ -3,7 +3,7 @@ use crate::js::common::to_my_algo_txs1;
 use crate::provider::create_assets_provider::{
     CreateAssetsProvider, CreateDaoAssetsParJs, CreateDaoAssetsResJs,
 };
-use crate::provider::create_dao_provider::validate_dao_inputs;
+use crate::provider::create_dao_provider::{validate_dao_inputs, ValidationDaoInputsOrAnyhowError};
 use crate::provider::create_dao_provider::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs};
 use crate::service::constants::PRECISION;
 use algonaut::core::Address;
@@ -20,14 +20,17 @@ pub struct CreateAssetsProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl CreateAssetsProvider for CreateAssetsProviderDef {
-    async fn txs(&self, pars: CreateDaoAssetsParJs) -> Result<CreateDaoAssetsResJs> {
+    async fn txs(
+        &self,
+        pars: CreateDaoAssetsParJs,
+    ) -> Result<CreateDaoAssetsResJs, ValidationDaoInputsOrAnyhowError> {
         let funds_asset_specs = funds_asset_specs()?;
 
         // Note: partly redundant validation here (to_dao_specs validates everything again)
         let validated_inputs = validate_dao_inputs(&pars.inputs, &funds_asset_specs)?;
         let dao_specs = pars.inputs.to_dao_specs(&funds_asset_specs)?;
 
-        create_dao_assets_txs(&dao_specs, &validated_inputs.creator, pars.inputs).await
+        Ok(create_dao_assets_txs(&dao_specs, &validated_inputs.creator, pars.inputs).await?)
     }
 }
 

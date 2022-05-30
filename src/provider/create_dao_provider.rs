@@ -1,5 +1,6 @@
 use crate::dependencies::FundsAssetSpecs;
 use crate::inputs_validation::ValidationError;
+use crate::js::common::to_js_value;
 use crate::js::common::SignedTxFromJs;
 use crate::js::js_types_workarounds::VersionedContractAccountJs;
 use crate::model::dao_js::DaoJs;
@@ -20,6 +21,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::convert::TryInto;
 use std::fmt::Debug;
+use wasm_bindgen::JsValue;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -69,6 +71,33 @@ pub struct CreateDaoRes {
     // set if there was an error uploading the image
     // note that this does not affect anything else - if storing the image fails, the dao is still saved successfully
     pub image_error: Option<String>,
+}
+
+#[derive(Debug)]
+pub enum ValidationDaoInputsOrAnyhowError {
+    Validation(ValidateDaoInputsError),
+    Anyhow(anyhow::Error),
+}
+
+impl From<anyhow::Error> for ValidationDaoInputsOrAnyhowError {
+    fn from(e: anyhow::Error) -> Self {
+        ValidationDaoInputsOrAnyhowError::Anyhow(e)
+    }
+}
+
+impl From<ValidateDaoInputsError> for ValidationDaoInputsOrAnyhowError {
+    fn from(e: ValidateDaoInputsError) -> Self {
+        ValidationDaoInputsOrAnyhowError::Validation(e)
+    }
+}
+
+impl From<ValidationDaoInputsOrAnyhowError> for JsValue {
+    fn from(e: ValidationDaoInputsOrAnyhowError) -> Self {
+        match e {
+            ValidationDaoInputsOrAnyhowError::Validation(e) => e.into(),
+            ValidationDaoInputsOrAnyhowError::Anyhow(e) => to_js_value(e),
+        }
+    }
 }
 
 impl CreateDaoFormInputsJs {
