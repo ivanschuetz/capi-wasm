@@ -103,7 +103,7 @@ impl From<ValidateBuySharesInputsError> for JsValue {
             ValidateBuySharesInputsError::Validation(e) => {
                 let error_js = SharesInputErrorsJs {
                     type_identifier: "input_errors".to_owned(),
-                    amount: to_validation_error_js(e)
+                    amount: to_validation_error_js(e),
                 };
                 
                 match JsValue::from_serde(&error_js) {

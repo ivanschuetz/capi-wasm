@@ -30,7 +30,7 @@ pub struct UpdatableDataResJs {
     pub project_desc: Option<String>,
     pub share_price: String,
 
-    pub image_hash: Option<String>,
+    pub image_bytes: Option<String>, // base64 - js image cropper library expects it
     pub social_media_url: String,
 }
 

@@ -1,3 +1,4 @@
+use crate::dependencies::{api, capi_deps};
 use crate::js::common::{signed_js_tx_to_signed_tx1, to_my_algo_tx1};
 use crate::provider::def::create_dao_provider_def::maybe_upload_image;
 use crate::provider::update_data_provider::{
@@ -7,11 +8,14 @@ use crate::provider::update_data_provider::{
 use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
+use base::api::image_api::ImageApi;
 use base::dependencies::image_api;
 use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
+use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::update_data::update_data::{
     submit_update_data, update_data, UpdatableDaoData, UpdateDaoDataSigned,
 };
+use data_encoding::BASE64;
 use mbase::api::version::{Version, VersionedAddress};
 use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
@@ -25,19 +29,36 @@ pub struct UpdateDataProviderDef {}
 impl UpdateDataProvider for UpdateDataProviderDef {
     async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
         let algod = algod();
+        let api = api();
+        let image_api = image_api();
+        let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse::<DaoId>().map_err(Error::msg)?;
 
         let app_state = dao_global_state(&algod, dao_id.0).await?;
 
+        let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
+
+        let image_bytes = match dao.specs.image_hash  {
+            Some(hash) => {
+                let bytes = image_api.get_image(&hash.as_api_id()).await?;
+                let base64 = BASE64.encode(&bytes);
+                Some(base64)
+            },
+            None => None
+        };
+
         Ok(UpdatableDataResJs {
             owner: app_state.owner.to_string(),
+
             customer_escrow: app_state.customer_escrow.address.to_string(),
             customer_escrow_version: app_state.customer_escrow.version.0.to_string(),
+
             project_name: app_state.project_name,
             project_desc: app_state.project_desc.map(|h| h.as_str()),
             share_price: app_state.share_price.to_string(),
-            image_hash: app_state.image_hash.map(|h| h.as_str()),
+
+            image_bytes,
             social_media_url: app_state.social_media_url,
         })
     }
