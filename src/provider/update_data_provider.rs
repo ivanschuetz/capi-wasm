@@ -41,10 +41,7 @@ pub struct UpdateDataParJs {
     pub dao_id: String,
     pub owner: String,
 
-    pub central_escrow: String,
     pub customer_escrow: String,
-
-    pub central_escrow_version: String,
     pub customer_escrow_version: String,
 
     pub project_name: String,
