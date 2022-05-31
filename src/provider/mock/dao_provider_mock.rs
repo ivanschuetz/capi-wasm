@@ -1,5 +1,5 @@
 use super::{mock_dao_for_users_view_data, req_delay};
-use crate::{model::dao_js::DaoJs, provider::dao_user_view_provider::DaoProvider};
+use crate::{model::dao_js::DaoJs, provider::dao_provider::DaoProvider};
 use anyhow::Result;
 use async_trait::async_trait;
 

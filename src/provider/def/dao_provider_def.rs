@@ -1,7 +1,7 @@
 use crate::{
     dependencies::{api, capi_deps, funds_asset_specs},
     model::dao_js::{DaoJs, ToDaoJs},
-    provider::dao_user_view_provider::DaoProvider,
+    provider::dao_provider::DaoProvider,
     GlobalStateHashExt,
 };
 use anyhow::Result;

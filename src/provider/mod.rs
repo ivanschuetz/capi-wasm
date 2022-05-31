@@ -6,7 +6,7 @@ pub mod calculate_total_price;
 mod claim_provider;
 pub mod create_assets_provider;
 pub mod create_dao_provider;
-pub mod dao_user_view_provider;
+pub mod dao_provider;
 mod def;
 pub mod description_provider;
 pub mod dividends_provider;

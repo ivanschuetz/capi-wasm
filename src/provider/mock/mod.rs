@@ -23,7 +23,7 @@ pub mod calculate_total_price_mock;
 pub mod claim_provider_mock;
 pub mod create_assets_provider_mock;
 pub mod create_dao_provider_mock;
-pub mod dao_user_view_provider_mock;
+pub mod dao_provider_mock;
 pub mod description_provider_mock;
 pub mod dividends_provider_mock;
 pub mod drain_provider_mock;
