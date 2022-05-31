@@ -6,7 +6,7 @@ use crate::provider::calculate_total_price::{
     CalculateTotalPriceParJs, CalculateTotalPriceProvider, CalculateTotalPriceResJs,
 };
 use crate::provider::investment_provider::CalcPriceAndPercSpecs;
-use crate::service::str_to_algos::{
+use crate::service::number_formats::{
     base_units_to_display_units_str, validate_funds_amount_input, validate_share_count,
 };
 use anyhow::{anyhow, Error, Result};

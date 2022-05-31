@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::FundsAssetSpecs, service::str_to_algos::base_units_to_display_units_str,
+    dependencies::FundsAssetSpecs, service::number_formats::base_units_to_display_units_str,
 };
 use base::flows::create_dao::model::Dao;
 use serde::{Deserialize, Serialize};

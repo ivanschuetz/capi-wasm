@@ -7,7 +7,7 @@ use crate::provider::withdraw_provider::{
 };
 use crate::{
     dependencies::FundsAssetSpecs, provider::withdrawal_history_provider::WithdrawalViewData,
-    service::str_to_algos::base_units_to_display_units_str,
+    service::number_formats::base_units_to_display_units_str,
 };
 use crate::{
     dependencies::{api, capi_deps, funds_asset_specs},

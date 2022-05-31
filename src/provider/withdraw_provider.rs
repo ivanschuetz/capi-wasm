@@ -1,6 +1,6 @@
 use crate::dependencies::FundsAssetSpecs;
 use crate::js::common::SignedTxFromJs;
-use crate::service::str_to_algos::validate_funds_amount_input;
+use crate::service::number_formats::validate_funds_amount_input;
 use algonaut::core::Address;
 use anyhow::Error;
 use anyhow::Result;

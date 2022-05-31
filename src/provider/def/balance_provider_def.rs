@@ -4,9 +4,9 @@ use crate::dependencies::{api, capi_deps};
 use crate::provider::balance_provider::{
     BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
 };
-use crate::service::str_to_algos::microalgos_to_algos_str;
+use crate::service::number_formats::microalgos_to_algos_str;
 use crate::{
-    dependencies::funds_asset_specs, service::str_to_algos::base_units_to_display_units_str,
+    dependencies::funds_asset_specs, service::number_formats::base_units_to_display_units_str,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;

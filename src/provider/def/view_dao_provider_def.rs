@@ -2,7 +2,7 @@ use crate::dependencies::{api, capi_deps, funds_asset_specs};
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::available_funds;
-use crate::service::str_to_algos::base_units_to_display_units;
+use crate::service::number_formats::base_units_to_display_units;
 use crate::GlobalStateHashExt;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;

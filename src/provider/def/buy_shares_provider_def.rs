@@ -5,7 +5,7 @@ use crate::{
         BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
         SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
     },
-    service::{invest_or_lock::submit_apps_optins_from_js, str_to_algos::validate_share_count},
+    service::{invest_or_lock::submit_apps_optins_from_js, number_formats::validate_share_count},
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;

@@ -24,8 +24,10 @@ unsafe impl Send for LoadFundsActivityResJs {}
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct FundsActivityViewData {
     pub amount: String,
+    pub short_amount: String,
     pub fee: String,
     pub amount_without_fee: String,
+    pub short_amount_without_fee: String,
     pub is_income: String, // false: spending
     pub type_label: String,
     pub description: String,

@@ -41,7 +41,11 @@ pub fn base_units_to_display_units_str(
     funds: FundsAmount,
     asset_specs: &FundsAssetSpecs,
 ) -> String {
-    format!("{:.2}", base_units_to_display_units(funds, asset_specs))
+    format_display_units(base_units_to_display_units(funds, asset_specs))
+}
+
+pub fn format_display_units(display_units: Decimal) -> String {
+    format!("{:.2}", display_units)
 }
 
 pub fn base_units_to_display_units(funds: FundsAmount, asset_specs: &FundsAssetSpecs) -> Decimal {
@@ -109,4 +113,53 @@ fn to_base_units(decimal: Decimal, base_10_exp: u32) -> Result<u64, ValidationEr
     base_units.to_u64().ok_or_else(|| {
         ValidationError::Unexpected(format!("Couldn't convert decimal: {} to u64", decimal))
     })
+}
+
+pub fn format_short(d: Decimal) -> Result<String> {
+    let thousand = 1_000.into();
+    let million = 1_000_000.into();
+    let billion = 1_000_000_000.into();
+    let trillion = 1_000_000_000_000u64.into();
+
+    if d < thousand {
+        format_one_fractional_with_suffix(d, "")
+    } else if d >= thousand && d < million {
+        let r = d.checked_div(thousand).unwrap();
+        format_one_fractional_with_suffix(r, "K")
+    } else if d >= million && d < billion {
+        let r = d.checked_div(million).unwrap();
+        format_one_fractional_with_suffix(r, "B")
+    } else {
+        let r = d.checked_div(trillion).unwrap();
+        format_one_fractional_with_suffix(r, "T")
+    }
+}
+
+fn format_one_fractional_with_suffix(d: Decimal, suffix: &str) -> Result<String> {
+    // we want to format amount with x decimals and *skipping trailing zeros*
+    // rust currently doesn't have a built in format to skip trailing zeros ({:.N} doesn't)
+    // see also https://stackoverflow.com/questions/59506403/how-to-format-a-float-without-trailing-zeros-in-rust
+    // so we do this arithmetic: multiplying, rounding and dividing by decimals_multiplier gives us the x decimals,
+    // and since we're using Decimal we've to call normalize() to remove the trailing zeros
+
+    let one_fractional_multiplier = 10.into();
+
+    // "part1" is an operand, isolated only for logging
+    let part1 = (d.checked_mul(one_fractional_multiplier))
+        .ok_or(anyhow!(
+            "Error multiplying: {} * {}",
+            d,
+            one_fractional_multiplier
+        ))?
+        .round();
+    let y = part1
+        .checked_div(one_fractional_multiplier)
+        .ok_or(anyhow!(
+            "Error dividing: {} / {}",
+            part1,
+            one_fractional_multiplier
+        ))?
+        .normalize();
+
+    Ok(format!("{}{}", y, suffix))
 }

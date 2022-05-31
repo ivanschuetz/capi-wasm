@@ -5,7 +5,7 @@ use crate::provider::drain_provider::{
     DrainParJs, DrainProvider, DrainResJs, SubmitDrainParJs, SubmitDrainPassthroughParJs,
     SubmitDrainResJs,
 };
-use crate::service::str_to_algos::microalgos_to_algos;
+use crate::service::number_formats::microalgos_to_algos;
 use anyhow::Error;
 use anyhow::Result;
 use async_trait::async_trait;

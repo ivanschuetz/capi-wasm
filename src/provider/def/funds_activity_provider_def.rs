@@ -5,7 +5,10 @@ use crate::{
         FundsActivityProvider, FundsActivityViewData, LoadFundsActivityParJs,
         LoadFundsActivityResJs,
     },
-    service::str_to_algos::base_units_to_display_units_str,
+    service::number_formats::{
+        base_units_to_display_units, base_units_to_display_units_str, format_display_units,
+        format_short,
+    },
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -55,13 +58,17 @@ impl FundsActivityProvider for FundsActivityProviderDef {
 
         let mut view_data_entries = vec![];
         for entry in activity_entries {
+            let amount_display_units =
+                base_units_to_display_units(entry.amount, &funds_asset_specs()?);
+            let amount_without_fee_display_units =
+                base_units_to_display_units(entry.amount.sub(&entry.fee)?, &funds_asset_specs()?);
+
             view_data_entries.push(FundsActivityViewData {
-                amount: base_units_to_display_units_str(entry.amount, &funds_asset_specs()?),
+                amount: format_display_units(amount_display_units),
+                short_amount: format_short(amount_display_units)?,
                 fee: base_units_to_display_units_str(entry.fee, &funds_asset_specs()?),
-                amount_without_fee: base_units_to_display_units_str(
-                    entry.amount.sub(&entry.fee)?,
-                    &funds_asset_specs()?,
-                ),
+                amount_without_fee: format_display_units(amount_without_fee_display_units),
+                short_amount_without_fee: format_short(amount_without_fee_display_units)?,
                 is_income: match entry.type_ {
                     FundsActivityEntryType::Income => "true",
                     FundsActivityEntryType::Spending => "false",

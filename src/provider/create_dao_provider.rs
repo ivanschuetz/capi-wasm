@@ -4,7 +4,7 @@ use crate::js::common::to_js_value;
 use crate::js::common::SignedTxFromJs;
 use crate::js::js_types_workarounds::VersionedContractAccountJs;
 use crate::model::dao_js::DaoJs;
-use crate::service::str_to_algos::validate_funds_amount_input;
+use crate::service::number_formats::validate_funds_amount_input;
 use algonaut::core::Address;
 use anyhow::Result;
 use async_trait::async_trait;

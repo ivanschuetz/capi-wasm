@@ -3,7 +3,7 @@ use crate::provider::income_vs_spending_provider::{
     to_interval_data, ChartDataPointJs, IncomeVsSpendingParJs, IncomeVsSpendingProvider,
     IncomeVsSpendingResJs,
 };
-use crate::service::str_to_algos::base_units_to_display_units;
+use crate::service::number_formats::base_units_to_display_units;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use base::{

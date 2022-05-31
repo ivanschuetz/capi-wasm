@@ -4,7 +4,7 @@ use crate::provider::pay_dao_provider::{
 };
 use crate::{
     dependencies::funds_asset_specs, js::common::to_my_algo_tx1,
-    service::str_to_algos::validate_funds_amount_input,
+    service::number_formats::validate_funds_amount_input,
 };
 use anyhow::Error;
 use anyhow::Result;

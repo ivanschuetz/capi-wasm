@@ -3,7 +3,7 @@ use crate::dependencies::{api, capi_deps};
 use crate::provider::dividends_provider::{DividendsParJs, DividendsProvider};
 use crate::service::constants::PRECISION;
 use crate::{
-    dependencies::funds_asset_specs, service::str_to_algos::base_units_to_display_units_str,
+    dependencies::funds_asset_specs, service::number_formats::base_units_to_display_units_str,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
