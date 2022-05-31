@@ -26,8 +26,6 @@ impl BuySharesProvider for BuySharesProviderMock {
         let algod = algod();
 
         let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
-
-        log::debug!("????? shares: {}", pars.share_count);
         
         // validate to show error messages in mock
         validate_share_count(&pars.share_count)?;
