@@ -4,6 +4,7 @@ use crate::{
     provider::buy_shares::{
         BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
         SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
+        ValidationBuySharesInputsOrAnyhowError,
     },
     service::{invest_or_lock::submit_apps_optins_from_js, number_formats::validate_share_count},
 };
@@ -26,7 +27,10 @@ pub struct BuySharesProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl BuySharesProvider for BuySharesProviderDef {
-    async fn txs(&self, pars: InvestParJs) -> Result<InvestResJs> {
+    async fn txs(
+        &self,
+        pars: InvestParJs,
+    ) -> Result<InvestResJs, ValidationBuySharesInputsOrAnyhowError> {
         let algod = algod();
         let api = api();
         let capi_deps = capi_deps()?;
@@ -64,7 +68,7 @@ impl BuySharesProvider for BuySharesProviderDef {
         Ok(InvestResJs {
             to_sign: to_my_algo_txs1(&to_sign_txs).map_err(Error::msg)?,
             pt: SubmitBuySharesPassthroughParJs {
-                dao_msg_pack: rmp_serde::to_vec_named(&dao)?,
+                dao_msg_pack: rmp_serde::to_vec_named(&dao).map_err(Error::msg)?,
             },
         })
     }

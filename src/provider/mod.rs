@@ -1,7 +1,7 @@
 pub mod add_roadmap_item_provider;
 pub mod app_updates_provider;
 pub mod balance_provider;
-mod buy_shares;
+pub mod buy_shares;
 pub mod calculate_total_price;
 mod claim_provider;
 pub mod create_assets_provider;

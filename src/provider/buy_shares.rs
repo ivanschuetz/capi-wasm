@@ -1,13 +1,23 @@
-use crate::js::common::SignedTxFromJs;
+use crate::{
+    inputs_validation::ValidationError,
+    js::{
+        common::{to_js_value, SignedTxFromJs},
+        inputs_validation_js::{to_validation_error_js, ValidationErrorJs},
+    },
+};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use wasm_bindgen::JsValue;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait BuySharesProvider {
-    async fn txs(&self, pars: InvestParJs) -> Result<InvestResJs>;
+    async fn txs(
+        &self,
+        pars: InvestParJs,
+    ) -> Result<InvestResJs, ValidationBuySharesInputsOrAnyhowError>;
     async fn submit(&self, pars: SubmitBuySharesParJs) -> Result<SubmitBuySharesResJs>;
 }
 
@@ -41,4 +51,67 @@ pub struct SubmitBuySharesPassthroughParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct SubmitBuySharesResJs {
     pub message: String,
+}
+
+// validation
+
+#[derive(Debug)]
+pub enum ValidationBuySharesInputsOrAnyhowError {
+    Validation(ValidateBuySharesInputsError),
+    Anyhow(anyhow::Error),
+}
+
+impl From<anyhow::Error> for ValidationBuySharesInputsOrAnyhowError {
+    fn from(e: anyhow::Error) -> Self {
+        ValidationBuySharesInputsOrAnyhowError::Anyhow(e)
+    }
+}
+
+impl From<ValidateBuySharesInputsError> for ValidationBuySharesInputsOrAnyhowError {
+    fn from(e: ValidateBuySharesInputsError) -> Self {
+        ValidationBuySharesInputsOrAnyhowError::Validation(e)
+    }
+}
+
+impl From<ValidationBuySharesInputsOrAnyhowError> for JsValue {
+    fn from(e: ValidationBuySharesInputsOrAnyhowError) -> Self {
+        match e {
+            ValidationBuySharesInputsOrAnyhowError::Validation(e) => e.into(),
+            ValidationBuySharesInputsOrAnyhowError::Anyhow(e) => to_js_value(e),
+        }
+    }
+}
+
+#[allow(clippy::large_enum_variant)]
+#[derive(Debug, Clone, Serialize)]
+pub enum ValidateBuySharesInputsError {
+    Validation(ValidationError),
+    NonValidation(String),
+}
+
+/// Errors to be shown next to the respective input fields
+#[derive(Debug, Clone, Serialize)]
+pub struct SharesInputErrorsJs {
+    // just some string to identify the struct in js
+    pub type_identifier: String,
+    pub amount: ValidationErrorJs,
+}
+
+impl From<ValidateBuySharesInputsError> for JsValue {
+    fn from(error: ValidateBuySharesInputsError) -> JsValue {
+        match error {
+            ValidateBuySharesInputsError::Validation(e) => {
+                let error_js = SharesInputErrorsJs {
+                    type_identifier: "input_errors".to_owned(),
+                    amount: to_validation_error_js(e)
+                };
+                
+                match JsValue::from_serde(&error_js) {
+                    Ok(js) => js,
+                    Err(e) => to_js_value(e),
+                }
+            }
+            _ => to_js_value(format!("Error processing inputs: {error:?}")),
+        }
+    }
 }

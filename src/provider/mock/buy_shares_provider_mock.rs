@@ -1,10 +1,14 @@
 use super::{mock_js_txs, req_delay};
-use crate::provider::{
-    buy_shares::{
-        BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
-        SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
+use crate::{
+    provider::{
+        buy_shares::{
+            BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
+            SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
+            ValidationBuySharesInputsOrAnyhowError,
+        },
+        mock::mock_msgpack_tx,
     },
-    mock::mock_msgpack_tx,
+    service::number_formats::validate_share_count,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -15,10 +19,18 @@ pub struct BuySharesProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl BuySharesProvider for BuySharesProviderMock {
-    async fn txs(&self, pars: InvestParJs) -> Result<InvestResJs> {
+    async fn txs(
+        &self,
+        pars: InvestParJs,
+    ) -> Result<InvestResJs, ValidationBuySharesInputsOrAnyhowError> {
         let algod = algod();
 
         let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
+
+        log::debug!("????? shares: {}", pars.share_count);
+        
+        // validate to show error messages in mock
+        validate_share_count(&pars.share_count)?;
 
         req_delay().await;
 

@@ -53,7 +53,12 @@ pub async fn bridge_balance(pars: JsValue) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_buy_shares, pars: {:?}", pars);
-    to_bridge_res(providers()?.buy_shares.txs(parse_bridge_pars(pars)?).await)
+    providers()?
+        .buy_shares
+        .txs(parse_bridge_pars(pars)?)
+        .await
+        .map_err(|e| e.into())
+        .and_then(|r| to_js_res(&r))
 }
 
 #[wasm_bindgen]
@@ -308,12 +313,12 @@ pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> 
 #[wasm_bindgen]
 pub async fn bridge_calculate_shares_price(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_calculate_shares_price, pars: {:?}", pars);
-    to_bridge_res(
-        providers()?
-            .calculate_total_price
-            .get(parse_bridge_pars(pars)?)
-            .await,
-    )
+    providers()?
+        .calculate_total_price
+        .get(parse_bridge_pars(pars)?)
+        .await
+        .map_err(|e| e.into())
+        .and_then(|r| to_js_res(&r))
 }
 
 #[wasm_bindgen]

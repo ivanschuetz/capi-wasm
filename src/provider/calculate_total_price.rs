@@ -2,10 +2,15 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
+use super::def::calculate_total_price_def::ValidationCalcTotalPriceOrAnyhowError;
+
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait CalculateTotalPriceProvider {
-    async fn get(&self, pars: CalculateTotalPriceParJs) -> Result<CalculateTotalPriceResJs>;
+    async fn get(
+        &self,
+        pars: CalculateTotalPriceParJs,
+    ) -> Result<CalculateTotalPriceResJs, ValidationCalcTotalPriceOrAnyhowError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

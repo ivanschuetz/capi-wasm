@@ -11,6 +11,7 @@ pub fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
         ValidationError::Max { .. } => "max",
         ValidationError::Address => "address",
         ValidationError::NotAnInteger => "not_int",
+        ValidationError::NotPositive => "not_pos",
         ValidationError::NotADecimal => "not_dec",
         ValidationError::NotTimestamp => "not_timestamp",
         ValidationError::TooManyFractionalDigits { .. } => "max_fractionals",

@@ -1,4 +1,7 @@
-use crate::{dependencies::FundsAssetSpecs, inputs_validation::ValidationError};
+use crate::{
+    dependencies::FundsAssetSpecs, inputs_validation::ValidationError,
+    provider::buy_shares::ValidateBuySharesInputsError,
+};
 use algonaut::core::MicroAlgos;
 use anyhow::{anyhow, Result};
 use mbase::models::{funds::FundsAmount, share_amount::ShareAmount};
@@ -20,11 +23,16 @@ pub fn validate_funds_amount_input(
     )
 }
 
-pub fn validate_share_count(input: &str) -> Result<ShareAmount> {
+pub fn validate_share_count(input: &str) -> Result<ShareAmount, ValidateBuySharesInputsError> {
     // TODO < available shares (asset count in investing escrow).
-    let share_count = input.parse()?;
+    let share_count = input
+        .parse()
+        .map_err(|_| ValidateBuySharesInputsError::Validation(ValidationError::NotAnInteger))?;
+
     if share_count == 0 {
-        return Err(anyhow!("Please enter a valid share count"));
+        return Err(ValidateBuySharesInputsError::Validation(
+            ValidationError::NotPositive,
+        ));
     }
     Ok(ShareAmount::new(share_count))
 }
