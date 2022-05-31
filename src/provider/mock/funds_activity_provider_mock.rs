@@ -1,12 +1,15 @@
 use super::req_delay;
-use crate::{provider::{
-    def::shares_distribution_provider_def::shorten_address,
-    funds_activity_provider::{
-        FundsActivityProvider, FundsActivityViewData, LoadFundsActivityParJs,
-        LoadFundsActivityResJs,
+use crate::{
+    provider::{
+        def::shares_distribution_provider_def::shorten_address,
+        funds_activity_provider::{
+            FundsActivityProvider, FundsActivityViewData, LoadFundsActivityParJs,
+            LoadFundsActivityResJs,
+        },
     },
-}, service::number_formats::format_short};
-use anyhow::{Result};
+    service::number_formats::{format_display_units_readable, format_short},
+};
+use anyhow::Result;
 use async_trait::async_trait;
 
 pub struct FundsActivityProviderMock {}
@@ -193,7 +196,7 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
             fee: "1.2".to_owned(),
-            amount_without_fee: "111".to_owned(),
+            amount_without_fee: "123000".to_owned(),
             is_income: "true".to_owned(), 
             type_label: "Income".to_owned(),
             description: "".to_owned(),
@@ -206,7 +209,7 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
             fee: "1.2".to_owned(),
-            amount_without_fee: "111".to_owned(),
+            amount_without_fee: "123".to_owned(),
             is_income: "true".to_owned(), 
             type_label: "Income".to_owned(),
             description: "".to_owned(),
@@ -219,7 +222,7 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
             fee: "1.2".to_owned(),
-            amount_without_fee: "111".to_owned(),
+            amount_without_fee: "4.9".to_owned(),
             is_income: "false".to_owned(), 
             type_label: "Withdraw".to_owned(),
             description: "Bought supplies and services, Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".to_owned(),
@@ -232,7 +235,7 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
             fee: "1.2".to_owned(),
-            amount_without_fee: "111".to_owned(),
+            amount_without_fee: "489".to_owned(),
             is_income: "true".to_owned(), 
             type_label: "Income".to_owned(),
             description: "".to_owned(),
@@ -245,7 +248,7 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
             fee: "1.2".to_owned(),
-            amount_without_fee: "111".to_owned(),
+            amount_without_fee: "1110".to_owned(),
             is_income: "false".to_owned(), 
             type_label: "Withdraw".to_owned(),
             description: "Bought supplies and services, Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".to_owned(),
@@ -267,11 +270,11 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             address: shorten_address(&"7XSZQUQ2GJB25W37LVM5R4CMKKVC4VNSMIPCIWJYWM5ORA5VA4JRCNOJ4Y".parse().unwrap())?,
             tx_link: "https://testnet.algoexplorer.io/tx/Y3SL4S6K5LKGTHI2QFVZTBAAW75FG3YF3HIPROKZRRF3FVF2RVFQ".to_owned(),
         }, FundsActivityViewData {
-            amount: "550".to_owned(),
+            amount: "550.123".to_owned(),
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
             fee: "1.2".to_owned(),
-            amount_without_fee: "111".to_owned(),
+            amount_without_fee: "548.123".to_owned(),
             is_income: "true".to_owned(), 
             type_label: "Income".to_owned(),
             description: "".to_owned(),
@@ -284,7 +287,7 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
             fee: "1.2".to_owned(),
-            amount_without_fee: "111".to_owned(),
+            amount_without_fee: "1211".to_owned(),
             is_income: "true".to_owned(), 
             type_label: "Income".to_owned(),
             description: "".to_owned(),
@@ -293,11 +296,11 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             address: shorten_address(&"7XSZQUQ2GJB25W37LVM5R4CMKKVC4VNSMIPCIWJYWM5ORA5VA4JRCNOJ4Y".parse().unwrap())?,
             tx_link: "https://testnet.algoexplorer.io/tx/CFCHQBSHOPE6A5QTZ7KN3QYGME6WWIYJUBBNFCYE6DDYSJI4SD6A".to_owned(),
         }, FundsActivityViewData {
-            amount: "88".to_owned(),
+            amount: "88.123137899".to_owned(),
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
             fee: "1.2".to_owned(),
-            amount_without_fee: "111".to_owned(),
+            amount_without_fee: "84.123137899".to_owned(),
             is_income: "true".to_owned(), 
             type_label: "Income".to_owned(),
             description: "".to_owned(),
@@ -322,19 +325,27 @@ impl FundsActivityProvider for FundsActivityProviderMock {
 
         let mut entries = vec![];
 
-        // set short amount
+        // set short and readable amount
         for e in raw_entries {
             let amount = e.amount.parse()?;
+            let readable_amount = format_display_units_readable(amount)?;
             let short_amount = format_short(amount)?;
             // log::debug!("{} -> {}", amount, short_amount);
-            
+
             let amount_without_fee = e.amount_without_fee.parse()?;
+            let readable_amount_without_fee = format_display_units_readable(amount_without_fee)?;
             let short_amount_without_fee = format_short(amount_without_fee)?;
-            log::debug!("{} -> {}", amount_without_fee, short_amount_without_fee);
+            // log::debug!("{} -> {}", amount_without_fee, short_amount_without_fee);
 
             entries.push(FundsActivityViewData {
+                // overwrite the dummy empty with short amounts (note that they can be equal to original, if no need to shorten)
                 short_amount,
                 short_amount_without_fee,
+
+                // overwrite amount with readable amount
+                amount: readable_amount,
+                amount_without_fee: readable_amount_without_fee,
+
                 ..e
             });
         }

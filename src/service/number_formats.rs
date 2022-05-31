@@ -2,6 +2,7 @@ use crate::{dependencies::FundsAssetSpecs, inputs_validation::ValidationError};
 use algonaut::core::MicroAlgos;
 use anyhow::{anyhow, Result};
 use mbase::models::{funds::FundsAmount, share_amount::ShareAmount};
+use num_format::{Locale, ToFormattedString};
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 
 #[allow(dead_code)] // we might use Algo inputs in the future e.g. for fees
@@ -30,7 +31,7 @@ pub fn validate_share_count(input: &str) -> Result<ShareAmount> {
 
 #[allow(dead_code)] // we might use Algo inputs in the future e.g. for fees
 pub fn microalgos_to_algos_str(micro_algos: MicroAlgos) -> String {
-    format!("{:.2}", microalgos_to_algos(micro_algos))
+    format_display_units(microalgos_to_algos(micro_algos))
 }
 
 pub fn microalgos_to_algos(micro_algos: MicroAlgos) -> Decimal {
@@ -46,6 +47,39 @@ pub fn base_units_to_display_units_str(
 
 pub fn format_display_units(display_units: Decimal) -> String {
     format!("{:.2}", display_units)
+}
+
+/// Format number in a readable format (basically with readability separators e.g. 1,000,000 instead of 1000000)
+pub fn format_display_units_readable(display_units: Decimal) -> Result<String> {
+    // num_format doesn't support fractionals, so we use it to format only the whole part and append the decimals manually
+    // this is hacky and probably has a better solution
+    // note that it's also potentially problematic if we were to make the locale dynamic,
+    // as the "." we append for the decimals might conflict with the locale-specific separator.
+    let dec_formatted = one_fractional_skip_zeros(display_units)?;
+    let whole = dec_formatted.trunc();
+    let fractionals: Decimal = dec_formatted.fract();
+
+    // fractionals is 0,... - we need then as an integer to append to the whole part
+    let base = 10u32;
+    let multiplier = base.checked_pow(dec_formatted.scale()).ok_or(anyhow!(
+        "Failed pow: {} pow {}",
+        base,
+        dec_formatted.scale()
+    ))?;
+    let fractionals_as_whole: Decimal = (fractionals * Decimal::from(multiplier)).normalize();
+    // log::debug!("display_units: {}, dec_formatted: {}, whole: {}, fractionals: {}, fractionals_as_whole: {}", display_units, dec_formatted, whole, fractionals, fractionals_as_whole);
+
+    let str = whole
+        .to_u128()
+        .ok_or(anyhow!("Invalid state: couldn't convert decimal to u128"))?
+        // for now always english format
+        .to_formatted_string(&Locale::en);
+
+    Ok(if fractionals.is_zero() {
+        format!("{}", str)
+    } else {
+        format!("{}.{}", str, fractionals_as_whole)
+    })
 }
 
 pub fn base_units_to_display_units(funds: FundsAmount, asset_specs: &FundsAssetSpecs) -> Decimal {
@@ -142,6 +176,11 @@ fn format_one_fractional_with_suffix(d: Decimal, suffix: &str) -> Result<String>
     // so we do this arithmetic: multiplying, rounding and dividing by decimals_multiplier gives us the x decimals,
     // and since we're using Decimal we've to call normalize() to remove the trailing zeros
 
+    let new_d = one_fractional_skip_zeros(d)?;
+    Ok(format!("{}{}", new_d, suffix))
+}
+
+fn one_fractional_skip_zeros(d: Decimal) -> Result<Decimal> {
     let one_fractional_multiplier = 10.into();
 
     // "part1" is an operand, isolated only for logging
@@ -152,7 +191,7 @@ fn format_one_fractional_with_suffix(d: Decimal, suffix: &str) -> Result<String>
             one_fractional_multiplier
         ))?
         .round();
-    let y = part1
+    let res = part1
         .checked_div(one_fractional_multiplier)
         .ok_or(anyhow!(
             "Error dividing: {} / {}",
@@ -161,5 +200,5 @@ fn format_one_fractional_with_suffix(d: Decimal, suffix: &str) -> Result<String>
         ))?
         .normalize();
 
-    Ok(format!("{}{}", y, suffix))
+    Ok(res)
 }
