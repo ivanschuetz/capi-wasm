@@ -105,7 +105,7 @@ impl From<ValidateBuySharesInputsError> for JsValue {
                     type_identifier: "input_errors".to_owned(),
                     amount: to_validation_error_js(e),
                 };
-                
+
                 match JsValue::from_serde(&error_js) {
                     Ok(js) => js,
                     Err(e) => to_js_value(e),

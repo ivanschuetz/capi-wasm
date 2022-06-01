@@ -1,8 +1,8 @@
 use crate::teal::{customer_escrow, dao_app_approval, dao_app_clear};
 use anyhow::{anyhow, Result};
-use base::api::{contract::Contract, teal_api::TealApi};
 use mbase::{
     api::version::{Version, VersionedTealSourceTemplate, Versions},
+    api::{contract::Contract, teal_api::TealApi},
     teal::TealSourceTemplate,
 };
 

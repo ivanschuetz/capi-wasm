@@ -1,9 +1,7 @@
 use crate::service::teal_api::TealStringsApi;
 use anyhow::{anyhow, Error, Result};
-use base::{
-    api::teal_api::TealApi,
-    capi_deps::{CapiAddress, CapiAssetDaoDeps},
-};
+use base::capi_deps::{CapiAddress, CapiAssetDaoDeps};
+use mbase::api::teal_api::TealApi;
 use mbase::{
     dependencies::{network, DataType, Network},
     models::funds::FundsAssetId,

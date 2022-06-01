@@ -7,13 +7,13 @@ use crate::provider::update_app_provider::{
 use crate::service::constants::PRECISION;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::api::contract::Contract;
-use base::api::teal_api::TealApi;
 use base::flows::create_dao::setup::create_app::{
     render_and_compile_app_approval, render_and_compile_app_clear,
 };
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::update_app::update::{submit_update, update, UpdateAppSigned};
+use mbase::api::contract::Contract;
+use mbase::api::teal_api::TealApi;
 use mbase::api::version::Version;
 use mbase::dependencies::algod;
 

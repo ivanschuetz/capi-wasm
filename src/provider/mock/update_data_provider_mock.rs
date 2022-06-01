@@ -16,7 +16,7 @@ pub struct UpdateDataProviderMock {}
 impl UpdateDataProvider for UpdateDataProviderMock {
     async fn get(&self, _: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
         let image_api = image_api();
-        
+
         req_delay().await;
 
         // just a convienient source for our data

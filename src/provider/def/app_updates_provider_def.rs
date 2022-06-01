@@ -6,9 +6,8 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::api::teal_api::TealApi;
 use mbase::{
-    api::version::Version, dependencies::algod, models::dao_id::DaoId,
+    api::teal_api::TealApi, api::version::Version, dependencies::algod, models::dao_id::DaoId,
     state::dao_app_state::dao_global_state,
 };
 
