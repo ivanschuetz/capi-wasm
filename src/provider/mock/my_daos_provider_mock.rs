@@ -28,7 +28,7 @@ impl MyDaosProvider for MyDaosProviderMock {
                 },
                 MyDaoJs {
                     url_rel: "/123".to_owned(),
-                    name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua".to_owned(),
+                    name: "Lorem ipsum dolor sit amet, consectetur".to_owned(),
                     created_by_me: "false".to_owned(),
                     invested_by_me: "true".to_owned(),
                 },
