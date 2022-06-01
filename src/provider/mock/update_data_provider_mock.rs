@@ -5,7 +5,7 @@ use crate::provider::update_data_provider::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::{dependencies::image_api, api::image_api::ImageApi};
+use base::{api::image_api::ImageApi, dependencies::image_api};
 use data_encoding::BASE64;
 use mbase::dependencies::algod;
 
@@ -25,7 +25,9 @@ impl UpdateDataProvider for UpdateDataProviderMock {
         // we've to fetch these from the api because we want to test a real image in the UI and hardcoded bytes here is too much
         // this may break if the api delted the image
         // TODO consider allowing image fetch to fail (everywhere) - so e.g. image api being down doesn't make everything fail
-        let image_bytes = image_api.get_image("xqXI6IBs1tSlfNAARFXiFeq4376WBrv6Wcexg2C2gG4=").await?;
+        let image_bytes = image_api
+            .get_image("xqXI6IBs1tSlfNAARFXiFeq4376WBrv6Wcexg2C2gG4=")
+            .await?;
         let image_bytes_base64 = BASE64.encode(&image_bytes);
 
         Ok(UpdatableDataResJs {
