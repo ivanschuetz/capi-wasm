@@ -148,6 +148,7 @@ impl SharesDistributionProvider for SharesDistributionProviderMock {
 
         Ok(SharedDistributionResJs {
             holders: holders_js,
+            not_owned_shares: "555".to_owned(),
         })
     }
 }

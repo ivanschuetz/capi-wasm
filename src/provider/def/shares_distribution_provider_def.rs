@@ -39,10 +39,13 @@ impl SharesDistributionProvider for SharesDistributionProviderDef {
             });
         }
 
-        holders_js.push(not_owned_shares_holdings(&holders, share_supply)?);
+        let not_owned = not_owned_shares_holdings(&holders, share_supply)?;
+        let not_owned_shares = not_owned.amount.clone();
+        holders_js.push(not_owned);
 
         Ok(SharedDistributionResJs {
             holders: holders_js,
+            not_owned_shares,
         })
     }
 }

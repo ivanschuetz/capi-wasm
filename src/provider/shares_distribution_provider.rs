@@ -25,10 +25,11 @@ pub struct ShareHoldingPercentageJs {
     pub amount: String,
     pub percentage_formatted: String,
     pub percentage_number: String,
-    pub type_: String,
+    pub type_: String, // NOTE: don't change without updating react
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SharedDistributionResJs {
     pub holders: Vec<ShareHoldingPercentageJs>,
+    pub not_owned_shares: String,
 }
