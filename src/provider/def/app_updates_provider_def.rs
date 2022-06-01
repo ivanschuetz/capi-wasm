@@ -37,6 +37,10 @@ impl AppUpdatesProvider for AppUpdatesProviderDef {
             None
         };
 
+        if let Some(update_data) = &update_data {
+            log::debug!("There's a new version: {:?}", update_data);
+        }
+
         Ok(CheckForUpdatesResJs {
             current_approval_version: state.app_approval_version.0.to_string(),
             current_clear_version: state.app_clear_version.0.to_string(),
