@@ -4,7 +4,6 @@ pub mod js;
 mod model;
 mod provider;
 mod service;
-pub mod teal;
 
 use anyhow::{anyhow, Result};
 use base::api::image_api::ImageApi;
