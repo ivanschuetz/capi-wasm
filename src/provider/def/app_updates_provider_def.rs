@@ -1,13 +1,11 @@
-use crate::{
-    dependencies::api,
-    provider::app_updates_provider::{
-        AppUpdatesProvider, CheckForUpdatesParJs, CheckForUpdatesResJs, UpdateDataJs,
-    },
+use crate::provider::app_updates_provider::{
+    AppUpdatesProvider, CheckForUpdatesParJs, CheckForUpdatesResJs, UpdateDataJs,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
+use base::{dependencies::teal_api, teal::TealApi};
 use mbase::{
-    api::teal_api::TealApi, api::version::Version, dependencies::algod, models::dao_id::DaoId,
+    api::version::Version, dependencies::algod, models::dao_id::DaoId,
     state::dao_app_state::dao_global_state,
 };
 
@@ -18,12 +16,12 @@ pub struct AppUpdatesProviderDef {}
 impl AppUpdatesProvider for AppUpdatesProviderDef {
     async fn get(&self, pars: CheckForUpdatesParJs) -> Result<CheckForUpdatesResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
 
         let dao_id = pars.dao_id.parse::<DaoId>().map_err(Error::msg)?;
 
         let state = dao_global_state(&algod, dao_id.0).await?;
-        let last_versions = api.last_versions();
+        let last_versions = api.last_versions().await?;
 
         let update_data = if last_versions.app_approval.0 > state.app_approval_version.0
             || last_versions.app_clear.0 > state.app_clear_version.0

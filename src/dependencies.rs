@@ -1,7 +1,5 @@
-use crate::service::teal_api::TealStringsApi;
 use anyhow::{anyhow, Error, Result};
 use base::capi_deps::{CapiAddress, CapiAssetDaoDeps};
-use mbase::api::teal_api::TealApi;
 use mbase::{
     dependencies::{network, DataType, Network},
     models::funds::FundsAssetId,
@@ -36,10 +34,6 @@ pub fn capi_deps() -> Result<CapiAssetDaoDeps> {
         escrow_percentage: Decimal::from_str("0.01")?.try_into()?,
         address: capi_address()?,
     })
-}
-
-pub fn api() -> impl TealApi {
-    TealStringsApi {}
 }
 
 /// This is WASM-only as the decimals are needed only for formatting - we don't need this in core.

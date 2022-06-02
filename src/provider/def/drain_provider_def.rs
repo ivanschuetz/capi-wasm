@@ -1,4 +1,4 @@
-use crate::dependencies::{api, capi_deps, funds_asset_specs};
+use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::common::to_my_algo_txs1;
 use crate::provider::drain_provider::{
@@ -9,6 +9,7 @@ use crate::service::number_formats::microalgos_to_algos;
 use anyhow::Error;
 use anyhow::Result;
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::drain::drain::fetch_drain_amount_and_drain;
 use base::flows::drain::drain::{submit_drain_customer_escrow, DrainCustomerEscrowSigned};
@@ -21,7 +22,7 @@ pub struct DrainProviderDef {}
 impl DrainProvider for DrainProviderDef {
     async fn txs(&self, pars: DrainParJs) -> Result<DrainResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse()?;
@@ -50,7 +51,7 @@ impl DrainProvider for DrainProviderDef {
 
     async fn submit(&self, pars: SubmitDrainParJs) -> Result<SubmitDrainResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let capi_deps = capi_deps()?;
 
         let app_call_tx = &pars.txs[0];

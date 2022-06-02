@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::{api, capi_deps, funds_asset_specs},
+    dependencies::{capi_deps, funds_asset_specs},
     js::common::{signed_js_tx_to_signed_tx1, to_my_algo_txs1},
     provider::buy_shares::{
         BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
@@ -11,6 +11,7 @@ use crate::{
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::{
+    dependencies::teal_api,
     flows::{
         create_dao::storage::load_dao::load_dao,
         invest::{
@@ -32,7 +33,7 @@ impl BuySharesProvider for BuySharesProviderDef {
         pars: InvestParJs,
     ) -> Result<InvestResJs, ValidationBuySharesInputsOrAnyhowError> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let capi_deps = capi_deps()?;
 
         let validated_share_amount = validate_share_count(&pars.share_count)?;

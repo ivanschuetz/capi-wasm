@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::{api, capi_deps, funds_asset_specs},
+    dependencies::{capi_deps, funds_asset_specs},
     js::explorer_links::explorer_tx_id_link_env,
     provider::funds_activity_provider::{
         FundsActivityProvider, FundsActivityViewData, LoadFundsActivityParJs,
@@ -13,6 +13,7 @@ use crate::{
 use anyhow::Result;
 use async_trait::async_trait;
 use base::{
+    dependencies::teal_api,
     flows::create_dao::storage::load_dao::load_dao,
     queries::funds_activity::{funds_activity, FundsActivityEntryType},
 };
@@ -30,7 +31,7 @@ pub struct FundsActivityProviderDef {}
 impl FundsActivityProvider for FundsActivityProviderDef {
     async fn get(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let indexer = indexer();
         let capi_deps = capi_deps()?;
 

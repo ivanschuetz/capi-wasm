@@ -3,12 +3,10 @@ use crate::provider::lock_provider::{
     LockParJs, LockProvider, LockResJs, SubmitLockParJs, SubmitLockResJs,
 };
 use crate::service::invest_or_lock::submit_apps_optins_from_js;
-use crate::{
-    dependencies::{api, capi_deps},
-    js::common::to_my_algo_txs1,
-};
+use crate::{dependencies::capi_deps, js::common::to_my_algo_txs1};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::flows::lock::lock::{submit_lock, LockSigned};
 use base::flows::{create_dao::storage::load_dao::load_dao, lock::lock::lock};
 use mbase::dependencies::algod;
@@ -21,7 +19,7 @@ pub struct LockProviderDef {}
 impl LockProvider for LockProviderDef {
     async fn txs(&self, pars: LockParJs) -> Result<LockResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let capi_deps = capi_deps()?;
 
         let share_amount = ShareAmount::new(pars.share_count.parse()?);

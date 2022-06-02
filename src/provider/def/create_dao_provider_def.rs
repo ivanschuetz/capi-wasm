@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use crate::dependencies::{api, capi_deps, funds_asset_specs};
+use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::common::to_my_algo_txs1;
 use crate::model::dao_js::ToDaoJs;
@@ -14,7 +14,7 @@ use algonaut::transaction::Transaction;
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::api::image_api::ImageApi;
-use base::dependencies::image_api;
+use base::dependencies::{image_api, teal_api};
 use base::flows::create_dao::model::{SetupDaoSigned, SetupDaoToSign};
 use base::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
 use base::flows::create_dao::setup_dao::{setup_dao_txs, submit_setup_dao};
@@ -22,8 +22,8 @@ use base::flows::create_dao::setup_dao::{Escrows, Programs};
 use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
 use base::flows::create_dao::storage::load_dao::TxId;
 use base::network_util::wait_for_pending_transaction;
+use base::teal::TealApi;
 use mbase::api::contract::Contract;
-use mbase::api::teal_api::TealApi;
 use mbase::dependencies::algod;
 use mbase::models::dao_app_id::DaoAppId;
 use mbase::models::hash::GlobalStateHash;
@@ -35,7 +35,7 @@ pub struct CreateDaoProviderDef {}
 impl CreateDaoProvider for CreateDaoProviderDef {
     async fn txs(&self, pars: CreateDaoParJs) -> Result<CreateDaoResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 
@@ -58,15 +58,15 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         let creator_address = pars.pt.inputs.creator.parse().map_err(Error::msg)?;
         let dao_specs = pars.pt.inputs.to_dao_specs(&funds_asset_specs)?;
 
-        let last_versions = api.last_versions();
+        let last_versions = api.last_versions().await?;
 
         let programs = Programs {
             central_app_approval: api
-                .template(Contract::DaoAppApproval, last_versions.app_approval)?,
-            central_app_clear: api.template(Contract::DaoAppClear, last_versions.app_clear)?,
+                .template(Contract::DaoAppApproval, last_versions.app_approval).await?,
+            central_app_clear: api.template(Contract::DaoAppClear, last_versions.app_clear).await?,
             escrows: Escrows {
                 customer_escrow: api
-                    .template(Contract::DaoCustomer, last_versions.customer_escrow)?,
+                    .template(Contract::DaoCustomer, last_versions.customer_escrow).await?,
             },
         };
 

@@ -1,7 +1,8 @@
-use crate::dependencies::{api, capi_deps};
+use crate::dependencies::capi_deps;
 use crate::provider::my_shares_provider::{MySharesParJs, MySharesProvider, MySharesResJs};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::state::account_state::asset_holdings;
 use mbase::checked::CheckedAdd;
@@ -17,7 +18,7 @@ pub struct MySharesProviderDef {}
 impl MySharesProvider for MySharesProviderDef {
     async fn get(&self, pars: MySharesParJs) -> Result<MySharesResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse()?;

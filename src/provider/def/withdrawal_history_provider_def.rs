@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs},
+    dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs},
     provider::withdrawal_history_provider::{
         LoadWithdrawalParJs, LoadWithdrawalResJs, WithdrawalHistoryProvider, WithdrawalViewData,
     },
@@ -7,9 +7,11 @@ use crate::{
 use algonaut::{algod::v2::Algod, indexer::v2::Indexer};
 use anyhow::Result;
 use async_trait::async_trait;
-use base::{capi_deps::CapiAssetDaoDeps, flows::withdraw::withdrawals::withdrawals};
+use base::{
+    capi_deps::CapiAssetDaoDeps, dependencies::teal_api, flows::withdraw::withdrawals::withdrawals,
+    teal::TealApi,
+};
 use mbase::{
-    api::teal_api::TealApi,
     dependencies::{algod, indexer},
     models::dao_id::DaoId,
 };
@@ -23,7 +25,7 @@ pub struct WithdrawalHistoryProviderDef {}
 impl WithdrawalHistoryProvider for WithdrawalHistoryProviderDef {
     async fn get(&self, pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let indexer = indexer();
         let capi_deps = capi_deps()?;
 

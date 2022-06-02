@@ -10,12 +10,13 @@ use crate::{
     service::number_formats::base_units_to_display_units_str,
 };
 use crate::{
-    dependencies::{api, capi_deps, funds_asset_specs},
+    dependencies::{capi_deps, funds_asset_specs},
     service::drain_if_needed::drain_if_needed_txs,
 };
 use crate::{js::common::signed_js_tx_to_signed_tx1, service::drain_if_needed::submit_drain};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::flows::create_dao::storage::load_dao::TxId;
 use base::flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned};
 use base::flows::{
@@ -34,7 +35,7 @@ impl WithdrawProvider for WithdrawProviderDef {
         log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 

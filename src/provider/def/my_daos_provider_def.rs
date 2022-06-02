@@ -1,10 +1,10 @@
 use crate::{
-    dependencies::{api, capi_deps},
+    dependencies::capi_deps,
     provider::my_daos_provider::{MyDaosParJs, MyDaosProvider, MyDaosResJs},
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::queries::my_daos::my_daos;
+use base::{dependencies::teal_api, queries::my_daos::my_daos};
 use mbase::dependencies::{algod, indexer};
 
 pub struct MyDaosProviderDef {}
@@ -14,7 +14,7 @@ pub struct MyDaosProviderDef {}
 impl MyDaosProvider for MyDaosProviderDef {
     async fn get(&self, pars: MyDaosParJs) -> Result<MyDaosResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let indexer = indexer();
         let capi_deps = capi_deps()?;
 

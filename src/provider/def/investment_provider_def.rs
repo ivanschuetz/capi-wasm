@@ -4,7 +4,7 @@ use crate::provider::investment_provider::{
     CalcPriceAndPercSpecs, InvestmentProvider, LoadInvestmentParJs, LoadInvestmentResJs,
 };
 use crate::{
-    dependencies::{api, capi_deps, funds_asset_specs},
+    dependencies::{capi_deps, funds_asset_specs},
     service::{constants::PRECISION, number_formats::base_units_to_display_units_str},
 };
 use algonaut::algod::v2::Algod;
@@ -12,6 +12,7 @@ use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::capi_deps::CapiAssetDaoDeps;
+use base::dependencies::teal_api;
 use base::flows::create_dao::model::Dao;
 use base::flows::{
     claim::claim::claimable_dividend, create_dao::storage::load_dao::load_dao,
@@ -38,7 +39,7 @@ impl InvestmentProvider for InvestmentProviderDef {
         log::debug!("bridge_load_investment, pars: {:?}", pars);
 
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 

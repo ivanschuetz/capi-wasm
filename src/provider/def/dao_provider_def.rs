@@ -1,12 +1,15 @@
 use crate::{
-    dependencies::{api, capi_deps, funds_asset_specs},
+    dependencies::{capi_deps, funds_asset_specs},
     model::dao_js::{DaoJs, ToDaoJs},
     provider::dao_provider::DaoProvider,
     GlobalStateHashExt,
 };
 use anyhow::Result;
 use async_trait::async_trait;
-use base::{dependencies::image_api, flows::create_dao::storage::load_dao::load_dao};
+use base::{
+    dependencies::{image_api, teal_api},
+    flows::create_dao::storage::load_dao::load_dao,
+};
 use mbase::dependencies::algod;
 
 pub struct DaoUserViewProviderDef {}
@@ -17,7 +20,7 @@ impl DaoProvider for DaoUserViewProviderDef {
     async fn get(&self, dao_id_str: String) -> Result<DaoJs> {
         let algod = algod();
         let image_api = image_api();
-        let api = api();
+        let api = teal_api();
         let capi_deps = capi_deps()?;
 
         let dao_id = dao_id_str.parse()?;

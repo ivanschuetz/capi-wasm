@@ -1,4 +1,4 @@
-use crate::dependencies::{api, capi_deps};
+use crate::dependencies::capi_deps;
 use crate::js::common::{signed_js_tx_to_signed_tx1, to_my_algo_tx1};
 use crate::provider::update_app_provider::{
     SubmitUpdateAppParJs, SubmitUpdateAppResJs, UpdateAppProvider, UpdateDaoAppParJs,
@@ -7,13 +7,14 @@ use crate::provider::update_app_provider::{
 use crate::service::constants::PRECISION;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::flows::create_dao::setup::create_app::{
     render_and_compile_app_approval, render_and_compile_app_clear,
 };
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::update_app::update::{submit_update, update, UpdateAppSigned};
+use base::teal::TealApi;
 use mbase::api::contract::Contract;
-use mbase::api::teal_api::TealApi;
 use mbase::api::version::Version;
 use mbase::dependencies::algod;
 
@@ -24,7 +25,7 @@ pub struct UpdateAppProviderDef {}
 impl UpdateAppProvider for UpdateAppProviderDef {
     async fn txs(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse().map_err(Error::msg)?;
@@ -37,10 +38,12 @@ impl UpdateAppProvider for UpdateAppProviderDef {
         // Note that the current core "render_central_app" function is essentially for version 1.
         // Side note: consider adding version as a comment in TEAL and check in the render functions (for a bit more security re: passing the correct template versions to the rendering functions)
         let approval_version: Version = Version(pars.approval_version.parse().map_err(Error::msg)?);
-        let approval_template = api.template(Contract::DaoAppApproval, approval_version)?;
+        let approval_template = api
+            .template(Contract::DaoAppApproval, approval_version)
+            .await?;
 
         let clear_version: Version = Version(pars.approval_version.parse().map_err(Error::msg)?);
-        let clear_template = api.template(Contract::DaoAppClear, clear_version)?;
+        let clear_template = api.template(Contract::DaoAppClear, clear_version).await?;
 
         // TODO optimize: instead of calling load_dao, fetch app state and asset infos (don't e.g. compile and render the escrows, which is not needed here)
         let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;

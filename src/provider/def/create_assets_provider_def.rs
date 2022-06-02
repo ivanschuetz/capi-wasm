@@ -1,4 +1,4 @@
-use crate::dependencies::{api, capi_deps, funds_asset_specs};
+use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::to_my_algo_txs1;
 use crate::provider::create_assets_provider::{
     CreateAssetsProvider, CreateDaoAssetsParJs, CreateDaoAssetsResJs,
@@ -9,10 +9,11 @@ use crate::service::constants::PRECISION;
 use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::flows::create_dao::setup::create_shares::create_assets;
 use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
+use base::teal::TealApi;
 use mbase::api::contract::Contract;
-use mbase::api::teal_api::TealApi;
 use mbase::dependencies::algod;
 
 pub struct CreateAssetsProviderDef {}
@@ -40,12 +41,16 @@ async fn create_dao_assets_txs(
     inputs: CreateDaoFormInputsJs,
 ) -> Result<CreateDaoAssetsResJs> {
     let algod = algod();
-    let api = api();
+    let api = teal_api();
     let capi_deps = capi_deps()?;
 
-    let last_versions = api.last_versions();
-    let last_approval_tmpl = api.template(Contract::DaoAppApproval, last_versions.app_approval)?;
-    let last_clear_tmpl = api.template(Contract::DaoAppClear, last_versions.app_clear)?;
+    let last_versions = api.last_versions().await?;
+    let last_approval_tmpl = api
+        .template(Contract::DaoAppApproval, last_versions.app_approval)
+        .await?;
+    let last_clear_tmpl = api
+        .template(Contract::DaoAppClear, last_versions.app_clear)
+        .await?;
 
     let create_assets_txs = create_assets(
         &algod,

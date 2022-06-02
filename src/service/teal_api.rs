@@ -1,23 +1,27 @@
 use crate::teal::{customer_escrow, dao_app_approval, dao_app_clear};
 use anyhow::{anyhow, Result};
+use async_trait::async_trait;
+use base::teal::TealApi;
 use mbase::{
+    api::contract::Contract,
     api::version::{Version, VersionedTealSourceTemplate, Versions},
-    api::{contract::Contract, teal_api::TealApi},
     teal::TealSourceTemplate,
 };
 
 pub struct TealStringsApi {}
 
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl TealApi for TealStringsApi {
-    fn last_versions(&self) -> Versions {
-        Versions {
+    async fn last_versions(&self) -> Result<Versions> {
+        Ok(Versions {
             app_approval: Version(1),
             app_clear: Version(1),
             customer_escrow: Version(1),
-        }
+        })
     }
 
-    fn template(
+    async fn template(
         &self,
         contract: Contract,
         version: Version,
@@ -26,9 +30,6 @@ impl TealApi for TealStringsApi {
             Contract::DaoCustomer => dao_customer_teal(version),
             Contract::DaoAppApproval => dao_app_approval_teal(version),
             Contract::DaoAppClear => dao_app_clear_teal(version),
-            Contract::CapiAppApproval | Contract::CapiAppClear => Err(anyhow!(
-                "Contract not supported/neeeded in WASM: {contract:?}"
-            )),
         }
     }
 }

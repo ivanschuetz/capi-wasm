@@ -1,4 +1,4 @@
-use crate::dependencies::{api, capi_deps, funds_asset_specs, FundsAssetSpecs};
+use crate::dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::provider::income_vs_spending_provider::{
     to_interval_data, ChartDataPointJs, IncomeVsSpendingParJs, IncomeVsSpendingProvider,
     IncomeVsSpendingResJs,
@@ -6,6 +6,7 @@ use crate::provider::income_vs_spending_provider::{
 use crate::service::number_formats::base_units_to_display_units;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::{
     flows::{create_dao::storage::load_dao::load_dao, withdraw::withdrawals::withdrawals},
     queries::received_payments::all_received_payments,
@@ -23,7 +24,7 @@ pub struct IncomeVsSpendingProviderDef {}
 impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
     async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let indexer = indexer();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;

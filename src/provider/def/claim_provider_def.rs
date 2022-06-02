@@ -1,4 +1,4 @@
-use crate::dependencies::{api, capi_deps, funds_asset_specs};
+use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::common::to_my_algo_txs1;
 use crate::provider::claim_provider::{
@@ -8,6 +8,7 @@ use crate::provider::claim_provider::{
 use crate::service::drain_if_needed::{drain_if_needed_txs, submit_drain};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::diagnostics::log_claim_diagnostics;
 use base::flows::claim::claim::{claim, submit_claim, ClaimSigned};
 use base::flows::create_dao::storage::load_dao::load_dao;
@@ -21,7 +22,7 @@ pub struct ClaimProviderDef {}
 impl ClaimProvider for ClaimProviderDef {
     async fn txs(&self, pars: ClaimParJs) -> Result<ClaimResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let funds_asset_id = funds_asset_specs()?.id;
         let capi_deps = capi_deps()?;
 
@@ -59,7 +60,7 @@ impl ClaimProvider for ClaimProviderDef {
 
     async fn submit(&self, pars: SubmitClaimParJs) -> Result<SubmitClaimResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let capi_deps = capi_deps()?;
 
         // 1 tx if only claim, 2 if claim + 1 drain

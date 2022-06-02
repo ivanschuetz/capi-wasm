@@ -1,5 +1,5 @@
 use super::investment_provider_def::{fetch_claimable_dividend, investor_local_state_view_data};
-use crate::dependencies::{api, capi_deps};
+use crate::dependencies::capi_deps;
 use crate::provider::dividends_provider::{DividendsParJs, DividendsProvider};
 use crate::service::constants::PRECISION;
 use crate::{
@@ -7,6 +7,7 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
+use base::dependencies::teal_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
@@ -19,7 +20,7 @@ pub struct DividendsProviderDef {}
 impl DividendsProvider for DividendsProviderDef {
     async fn get(&self, pars: DividendsParJs) -> Result<String> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 

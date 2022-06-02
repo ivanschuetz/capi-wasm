@@ -1,4 +1,4 @@
-use crate::dependencies::{api, capi_deps};
+use crate::dependencies::capi_deps;
 use crate::js::common::{signed_js_tx_to_signed_tx1, to_my_algo_tx1};
 use crate::provider::def::create_dao_provider_def::maybe_upload_image;
 use crate::provider::update_data_provider::{
@@ -9,7 +9,7 @@ use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::api::image_api::ImageApi;
-use base::dependencies::image_api;
+use base::dependencies::{image_api, teal_api};
 use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::update_data::update_data::{
@@ -29,7 +29,7 @@ pub struct UpdateDataProviderDef {}
 impl UpdateDataProvider for UpdateDataProviderDef {
     async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let image_api = image_api();
         let capi_deps = capi_deps()?;
 

@@ -1,4 +1,4 @@
-use crate::dependencies::{api, capi_deps, funds_asset_specs};
+use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::available_funds;
@@ -8,7 +8,7 @@ use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::dependencies::image_api;
+use base::dependencies::{image_api, teal_api};
 use base::flows::create_dao::storage::load_dao::load_dao;
 use mbase::dependencies::algod;
 use mbase::util::decimal_util::DecimalExt;
@@ -20,7 +20,7 @@ pub struct ViewDaoProviderDef {}
 impl ViewDaoProvider for ViewDaoProviderDef {
     async fn get(&self, pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
         let algod = algod();
-        let api = api();
+        let api = teal_api();
         let image_api = image_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
