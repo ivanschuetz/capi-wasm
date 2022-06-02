@@ -62,11 +62,15 @@ impl CreateDaoProvider for CreateDaoProviderDef {
 
         let programs = Programs {
             central_app_approval: api
-                .template(Contract::DaoAppApproval, last_versions.app_approval).await?,
-            central_app_clear: api.template(Contract::DaoAppClear, last_versions.app_clear).await?,
+                .template(Contract::DaoAppApproval, last_versions.app_approval)
+                .await?,
+            central_app_clear: api
+                .template(Contract::DaoAppClear, last_versions.app_clear)
+                .await?,
             escrows: Escrows {
                 customer_escrow: api
-                    .template(Contract::DaoCustomer, last_versions.customer_escrow).await?,
+                    .template(Contract::DaoCustomer, last_versions.customer_escrow)
+                    .await?,
             },
         };
 
