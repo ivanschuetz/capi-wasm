@@ -1804,6 +1804,7 @@ dependencies = [
  "mbase",
  "my-algo",
  "num-format",
+ "reqwest",
  "rmp-serde",
  "rust_decimal",
  "serde",

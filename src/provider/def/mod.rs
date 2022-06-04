@@ -29,3 +29,4 @@ pub mod update_data_provider_def;
 pub mod view_dao_provider_def;
 pub mod withdraw_provider_def;
 pub mod withdrawal_history_provider_def;
+pub mod wyre_provider_def;

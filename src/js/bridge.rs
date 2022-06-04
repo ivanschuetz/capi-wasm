@@ -19,7 +19,12 @@ pub async fn bridge_create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsVa
 #[wasm_bindgen]
 pub async fn bridge_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_create_dao, pars: {:?}", pars);
-    to_bridge_res(providers()?.create_dao.txs(parse_bridge_pars(pars)?).await)
+    providers()?
+        .create_dao
+        .txs(parse_bridge_pars(pars)?)
+        .await
+        .map_err(|e| e.into())
+        .and_then(|r| to_js_res(&r))
 }
 
 #[wasm_bindgen]
@@ -354,4 +359,10 @@ pub async fn bridge_submit_reclaim(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn bridge_description(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_description, pars: {:?}", pars);
     to_bridge_res(providers()?.description.get(parse_bridge_pars(pars)?).await)
+}
+
+#[wasm_bindgen]
+pub async fn bridge_reserve_wyre() -> Result<JsValue, JsValue> {
+    log::debug!("bridge_reserve_wyre");
+    to_bridge_res(providers()?.wyre.reserve().await)
 }

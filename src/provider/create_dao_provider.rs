@@ -1,4 +1,5 @@
 use crate::dependencies::FundsAssetSpecs;
+use crate::error::FrError;
 use crate::inputs_validation::ValidationError;
 use crate::js::common::to_js_value;
 use crate::js::common::SignedTxFromJs;
@@ -26,7 +27,7 @@ use wasm_bindgen::JsValue;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait CreateDaoProvider {
-    async fn txs(&self, pars: CreateDaoParJs) -> Result<CreateDaoResJs>;
+    async fn txs(&self, pars: CreateDaoParJs) -> Result<CreateDaoResJs, FrError>;
     /// create daos specs + signed assets txs -> create dao result
     /// submits the signed assets, creates rest of dao with generated asset ids
     async fn submit(&self, pars: SubmitCreateDaoParJs) -> Result<CreateDaoRes>;

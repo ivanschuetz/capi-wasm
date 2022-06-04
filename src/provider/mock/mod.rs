@@ -46,6 +46,7 @@ pub mod update_data_provider_mock;
 pub mod view_dao_provider_mock;
 pub mod withdraw_provider_mock;
 pub mod withdrawal_history_provider_mock;
+pub mod wyre_provider_mock;
 
 /// Arbitrary minimal tx for flows that return a tx to be signed in js
 /// `address` should (unless trying to cause a signing error) belong to the user using the UI, so they can sign and continue the flow

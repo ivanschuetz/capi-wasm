@@ -29,7 +29,7 @@ use super::{
         unlock_provider_def::UnlockProviderDef, update_app_provider_def::UpdateAppProviderDef,
         update_data_provider_def::UpdateDataProviderDef, view_dao_provider_def::ViewDaoProviderDef,
         withdraw_provider_def::WithdrawProviderDef,
-        withdrawal_history_provider_def::WithdrawalHistoryProviderDef,
+        withdrawal_history_provider_def::WithdrawalHistoryProviderDef, wyre_provider_def::WyreProviderDef,
     },
     description_provider::DescriptionProvider,
     dividends_provider::DividendsProvider,
@@ -64,7 +64,7 @@ use super::{
         unlock_provider_mock::UnlockProviderMock, update_app_provider_mock::UpdateAppProviderMock,
         update_data_provider_mock::UpdateDataProviderMock,
         view_dao_provider_mock::ViewDaoProviderMock, withdraw_provider_mock::WithdrawProviderMock,
-        withdrawal_history_provider_mock::WithdrawalHistoryProviderMock,
+        withdrawal_history_provider_mock::WithdrawalHistoryProviderMock, wyre_provider_mock::WyreProviderMock,
     },
     my_daos_provider::MyDaosProvider,
     my_shares_provider::MySharesProvider,
@@ -79,7 +79,7 @@ use super::{
     update_data_provider::UpdateDataProvider,
     view_dao_provider::ViewDaoProvider,
     withdraw_provider::WithdrawProvider,
-    withdrawal_history_provider::WithdrawalHistoryProvider,
+    withdrawal_history_provider::WithdrawalHistoryProvider, wyre_provider::WyreProvider,
 };
 use crate::{dependencies::data_type, js::common::to_js_value};
 use mbase::dependencies::DataType;
@@ -117,6 +117,7 @@ pub struct Providers<'a> {
     pub dividend: &'a dyn DividendsProvider,
     pub reclaim: &'a dyn ReclaimProvider,
     pub description: &'a dyn DescriptionProvider,
+    pub wyre: &'a dyn WyreProvider,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -163,7 +164,9 @@ fn def_providers<'a>() -> Providers<'a> {
         dividend: &DividendsProviderDef {},
         reclaim: &ReclaimProviderDef {},
         description: &DescriptionProviderDef {},
+        wyre: &WyreProviderDef {},
     }
+
 }
 
 fn mock_providers<'a>() -> Providers<'a> {
@@ -199,5 +202,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         dividend: &DividendsProviderMock {},
         reclaim: &ReclaimProviderMock {},
         description: &DescriptionProviderMock {},
+        wyre: &WyreProviderMock {},
     }
 }

@@ -1,4 +1,5 @@
 mod dependencies;
+pub mod error;
 mod inputs_validation;
 pub mod js;
 mod model;

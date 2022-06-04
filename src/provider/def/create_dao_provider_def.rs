@@ -1,6 +1,7 @@
 use std::convert::TryInto;
 
 use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::common::to_my_algo_txs1;
 use crate::model::dao_js::ToDaoJs;
@@ -33,7 +34,7 @@ pub struct CreateDaoProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl CreateDaoProvider for CreateDaoProviderDef {
-    async fn txs(&self, pars: CreateDaoParJs) -> Result<CreateDaoResJs> {
+    async fn txs(&self, pars: CreateDaoParJs) -> Result<CreateDaoResJs, FrError> {
         let algod = algod();
         let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
@@ -53,7 +54,15 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 create_app: signed_js_tx_to_signed_tx1(create_app_signed_tx)?,
             },
         )
-        .await?;
+        .await;
+
+        if let Some(err) = submit_assets_res.as_ref().err() {
+            if err.to_string().contains("overspend") {
+                return Err(FrError::NotEnoughAlgos);
+            }
+        }
+
+        let submit_assets_res = submit_assets_res?;
 
         let creator_address = pars.pt.inputs.creator.parse().map_err(Error::msg)?;
         let dao_specs = pars.pt.inputs.to_dao_specs(&funds_asset_specs)?;
@@ -92,10 +101,10 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         // in the next step we also check the length of the signed txs
         let txs_to_sign = &txs_to_sign(&to_sign);
         if txs_to_sign.len() as u64 != 4 {
-            return Err(anyhow!(
+            return Err(FrError::Msg(format!(
                 "Unexpected to sign dao txs length: {}",
                 txs_to_sign.len()
-            ));
+            )));
         }
 
         Ok(CreateDaoResJs {
@@ -106,7 +115,8 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 // !! TODO renamed: escrow_optin_signed_txs_msg_pack -> and only 1 tx now (not vec)
                 customer_escrow_optin_to_funds_asset_tx_msg_pack: rmp_serde::to_vec_named(
                     &to_sign.customer_escrow_optin_to_funds_asset_tx,
-                )?,
+                )
+                .map_err(Error::msg)?,
                 shares_asset_id: submit_assets_res.shares_asset_id,
                 customer_escrow: to_sign.customer_escrow.into(),
                 app_id: submit_assets_res.app_id.0,

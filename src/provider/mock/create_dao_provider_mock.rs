@@ -2,6 +2,7 @@ use super::{
     mock_contract_account, mock_dao_for_users_view_data, mock_js_txs, mock_msgpack_tx, req_delay,
 };
 use crate::dependencies::funds_asset_specs;
+use crate::error::FrError;
 use crate::provider::create_dao_provider::{
     CreateDaoParJs, CreateDaoProvider, CreateDaoRes, CreateDaoResJs, SubmitCreateDaoParJs,
     SubmitSetupDaoPassthroughParJs,
@@ -15,7 +16,7 @@ pub struct CreateDaoProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl CreateDaoProvider for CreateDaoProviderMock {
-    async fn txs(&self, pars: CreateDaoParJs) -> Result<CreateDaoResJs> {
+    async fn txs(&self, pars: CreateDaoParJs) -> Result<CreateDaoResJs, FrError> {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
 
