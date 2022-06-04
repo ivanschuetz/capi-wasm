@@ -362,7 +362,7 @@ pub async fn bridge_description(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 #[wasm_bindgen]
-pub async fn bridge_reserve_wyre() -> Result<JsValue, JsValue> {
-    log::debug!("bridge_reserve_wyre");
-    to_bridge_res(providers()?.wyre.reserve().await)
+pub async fn bridge_reserve_wyre(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_reserve_wyre, pars: {:?}", pars);
+    to_bridge_res(providers()?.wyre.reserve(parse_bridge_pars(pars)?).await)
 }

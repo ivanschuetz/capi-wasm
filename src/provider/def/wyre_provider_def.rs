@@ -1,5 +1,6 @@
-use crate::provider::wyre_provider::{WyreProvider, WyreReserveResJs};
-use anyhow::Result;
+use crate::provider::wyre_provider::{WyreProvider, WyreReserveResJs, WyreReserveParsJs};
+use algonaut::core::Address;
+use anyhow::{Result, Error};
 use async_trait::async_trait;
 use base::reqwest_ext::ResponseExt;
 use reqwest::Client;
@@ -10,10 +11,12 @@ pub struct WyreProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl WyreProvider for WyreProviderDef {
-    async fn reserve(&self) -> Result<WyreReserveResJs> {
+    async fn reserve(&self, pars: WyreReserveParsJs) -> Result<WyreReserveResJs> {
         let api = test_wyre_api()?;
 
-        let res = api.reserve().await?;
+        let address = pars.address.parse().map_err(Error::msg)?;
+
+        let res = api.reserve(&address).await?;
 
         Ok(WyreReserveResJs {
             url: res.url.clone(),
@@ -40,9 +43,13 @@ impl WyreApi {
         }
     }
 
-    pub async fn reserve(&self) -> Result<WyreReserveRes> {
+    pub async fn reserve(&self, address: &Address) -> Result<WyreReserveRes> {
         let body = WyreRegistrationBody {
             referrer_account_id: self.account_id.to_owned(),
+            amount: "1".to_string(),
+            source_currency: "USD".to_string(),
+            dest_currency: "ALGO".to_string(),
+            dest: format!("algorand:{}", address),
         };
 
         let url = format!("{}/orders/reserve", self.host);
@@ -68,6 +75,10 @@ impl WyreApi {
 #[serde(rename_all = "camelCase")]
 struct WyreRegistrationBody {
     referrer_account_id: String,
+    amount: String,
+    source_currency: String,
+    dest_currency: String,
+    dest: String
 }
 
 #[derive(Debug, Clone, Deserialize)]
