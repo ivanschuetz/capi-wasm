@@ -1,4 +1,4 @@
-use super::{mock_js_tx, mock_tx_id, req_delay};
+use super::{mock_to_sign, mock_tx_id, req_delay};
 use crate::provider::add_roadmap_item_provider::{
     AddRoadmapItemParJs, AddRoadmapItemResJs, SubmitAddRoadmapItemParJs,
 };
@@ -21,7 +21,7 @@ impl AddRoadmapItemProvider for AddRoadmapItemProviderMock {
         req_delay().await;
 
         Ok(AddRoadmapItemResJs {
-            to_sign: vec![mock_js_tx(&algod, &dao_creator).await?],
+            to_sign: mock_to_sign(&algod, &dao_creator).await?,
         })
     }
 

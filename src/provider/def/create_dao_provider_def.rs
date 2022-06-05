@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
-use crate::js::common::to_my_algo_txs1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::create_dao_provider::{
     CreateDaoParJs, CreateDaoProvider, CreateDaoRes, CreateDaoResJs, SubmitCreateDaoParJs,
@@ -99,7 +99,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
 
         // double-checking total length as well, just in case
         // in the next step we also check the length of the signed txs
-        let txs_to_sign = &txs_to_sign(&to_sign);
+        let txs_to_sign = txs_to_sign(&to_sign);
         if txs_to_sign.len() as u64 != 4 {
             return Err(FrError::Msg(format!(
                 "Unexpected to sign dao txs length: {}",
@@ -108,7 +108,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         }
 
         Ok(CreateDaoResJs {
-            to_sign: to_my_algo_txs1(txs_to_sign)?,
+            to_sign: ToSignJs::new(txs_to_sign)?,
             pt: SubmitSetupDaoPassthroughParJs {
                 specs: dao_specs,
                 creator: creator_address.to_string(),

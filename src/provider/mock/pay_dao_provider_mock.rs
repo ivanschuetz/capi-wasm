@@ -1,4 +1,5 @@
-use super::{mock_js_tx, req_delay};
+use super::mock_to_sign;
+use super::req_delay;
 use crate::provider::pay_dao_provider::{
     PayDaoParJs, PayDaoProvider, PayDaoResJs, SubmitPayDaoParJs, SubmitPayDaoResJs,
 };
@@ -20,7 +21,7 @@ impl PayDaoProvider for PayDaoProviderMock {
         req_delay().await;
 
         Ok(PayDaoResJs {
-            to_sign: vec![mock_js_tx(&algod, &customer_address).await?],
+            to_sign: mock_to_sign(&algod, &customer_address).await?,
         })
     }
 

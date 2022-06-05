@@ -1,9 +1,8 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
-use crate::js::common::SignedTxFromJs;
+use crate::js::{common::SignedTxFromJs, to_sign_js::ToSignJs};
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -54,7 +53,7 @@ pub struct UpdateDataParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdateDataResJs {
-    pub to_sign: Vec<Value>,
+    pub to_sign: ToSignJs,
     pub pt: UpdateDataPassthroughJs,
 }
 

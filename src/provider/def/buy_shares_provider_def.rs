@@ -1,6 +1,6 @@
 use crate::{
     dependencies::{capi_deps, funds_asset_specs},
-    js::common::{signed_js_tx_to_signed_tx1, to_my_algo_txs1},
+    js::{common::signed_js_tx_to_signed_tx1, to_sign_js::ToSignJs},
     provider::buy_shares::{
         BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
         SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
@@ -67,7 +67,7 @@ impl BuySharesProvider for BuySharesProviderDef {
         ];
 
         Ok(InvestResJs {
-            to_sign: to_my_algo_txs1(&to_sign_txs).map_err(Error::msg)?,
+            to_sign: ToSignJs::new(to_sign_txs)?,
             pt: SubmitBuySharesPassthroughParJs {
                 dao_msg_pack: rmp_serde::to_vec_named(&dao).map_err(Error::msg)?,
             },

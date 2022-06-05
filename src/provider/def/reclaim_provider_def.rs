@@ -1,5 +1,6 @@
 use crate::dependencies::capi_deps;
-use crate::js::common::{signed_js_tx_to_signed_tx1, to_my_algo_txs1};
+use crate::js::common::signed_js_tx_to_signed_tx1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::reclaim_provider::{
     ReclaimParJs, ReclaimProvider, ReclaimResJs, SubmitReclaimParJs, SubmitReclaimResJs,
 };
@@ -44,7 +45,7 @@ impl ReclaimProvider for ReclaimProviderDef {
         let to_sign_txs = vec![to_sign.app_call_tx, to_sign.shares_xfer_tx];
 
         Ok(ReclaimResJs {
-            to_sign: to_my_algo_txs1(&to_sign_txs)?,
+            to_sign: ToSignJs::new(to_sign_txs)?,
         })
     }
 

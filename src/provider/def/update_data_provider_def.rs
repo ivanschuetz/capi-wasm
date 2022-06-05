@@ -1,5 +1,6 @@
 use crate::dependencies::capi_deps;
-use crate::js::common::{signed_js_tx_to_signed_tx1, to_my_algo_tx1};
+use crate::js::common::signed_js_tx_to_signed_tx1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::def::create_dao_provider_def::maybe_upload_image;
 use crate::provider::update_data_provider::{
     SubmitUpdateDataParJs, SubmitUpdateDataResJs, UpdatableDataParJs, UpdatableDataResJs,
@@ -97,7 +98,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         .await?;
 
         Ok(UpdateDataResJs {
-            to_sign: vec![to_my_algo_tx1(&to_sign.update).map_err(Error::msg)?],
+            to_sign: ToSignJs::new(vec![to_sign.update])?,
             pt: UpdateDataPassthroughJs {
                 dao_id: dao_id.to_string(),
                 image: image.map(|i| i.bytes()),

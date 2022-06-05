@@ -1,5 +1,5 @@
 use super::{
-    mock_contract_account, mock_dao_for_users_view_data, mock_js_txs, mock_msgpack_tx, req_delay,
+    mock_contract_account, mock_dao_for_users_view_data, mock_msgpack_tx, mock_to_sign, req_delay,
 };
 use crate::dependencies::funds_asset_specs;
 use crate::error::FrError;
@@ -28,7 +28,7 @@ impl CreateDaoProvider for CreateDaoProviderMock {
         req_delay().await;
 
         Ok(CreateDaoResJs {
-            to_sign: mock_js_txs(&algod, &creator_address).await?,
+            to_sign: mock_to_sign(&algod, &creator_address).await?,
             // note that data returned here doesn't matter to UI as it's just passthrough
             pt: SubmitSetupDaoPassthroughParJs {
                 specs: dao_specs,

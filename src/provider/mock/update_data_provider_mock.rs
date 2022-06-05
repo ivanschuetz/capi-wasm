@@ -1,4 +1,4 @@
-use super::{mock_address, mock_dao_for_users_view_data, mock_js_tx, req_delay};
+use super::{mock_address, mock_dao_for_users_view_data, mock_to_sign, req_delay};
 use crate::provider::update_data_provider::{
     SubmitUpdateDataParJs, SubmitUpdateDataResJs, UpdatableDataParJs, UpdatableDataResJs,
     UpdateDataParJs, UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
@@ -51,7 +51,7 @@ impl UpdateDataProvider for UpdateDataProviderMock {
         req_delay().await;
 
         Ok(UpdateDataResJs {
-            to_sign: vec![mock_js_tx(&algod, &owner).await?],
+            to_sign: mock_to_sign(&algod, &owner).await?,
             pt: UpdateDataPassthroughJs {
                 dao_id: mock_dao.app_id,
                 image: None,

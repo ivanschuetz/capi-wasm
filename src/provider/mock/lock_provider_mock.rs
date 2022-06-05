@@ -5,7 +5,7 @@ use anyhow::{Error, Result};
 use async_trait::async_trait;
 use mbase::dependencies::algod;
 
-use super::{mock_js_txs, req_delay};
+use super::{mock_to_sign, req_delay};
 
 pub struct LockProviderMock {}
 
@@ -20,7 +20,7 @@ impl LockProvider for LockProviderMock {
         req_delay().await;
 
         Ok(LockResJs {
-            to_sign: mock_js_txs(&algod, &investor_address).await?,
+            to_sign: mock_to_sign(&algod, &investor_address).await?,
         })
     }
 

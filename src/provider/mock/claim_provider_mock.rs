@@ -1,4 +1,4 @@
-use super::{mock_js_txs, req_delay};
+use super::{mock_to_sign, req_delay};
 use crate::provider::claim_provider::{
     ClaimParJs, ClaimProvider, ClaimResJs, SubmitClaimParJs, SubmitClaimPassthroughParJs,
     SubmitClaimResJs,
@@ -20,7 +20,7 @@ impl ClaimProvider for ClaimProviderMock {
         req_delay().await;
 
         Ok(ClaimResJs {
-            to_sign: mock_js_txs(&algod, investor_address).await?,
+            to_sign: mock_to_sign(&algod, investor_address).await?,
             pt: SubmitClaimPassthroughParJs {
                 maybe_drain_tx_msg_pack: None,
                 maybe_capi_share_tx_msg_pack: None,

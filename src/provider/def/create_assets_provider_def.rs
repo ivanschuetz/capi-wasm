@@ -1,5 +1,5 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
-use crate::js::common::to_my_algo_txs1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_assets_provider::{
     CreateAssetsProvider, CreateDaoAssetsParJs, CreateDaoAssetsResJs,
 };
@@ -7,7 +7,7 @@ use crate::provider::create_dao_provider::{validate_dao_inputs, ValidationDaoInp
 use crate::provider::create_dao_provider::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs};
 use crate::service::constants::PRECISION;
 use algonaut::core::Address;
-use anyhow::{Error, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use base::dependencies::teal_api;
 use base::flows::create_dao::setup::create_shares::create_assets;
@@ -64,11 +64,10 @@ async fn create_dao_assets_txs(
     .await?;
 
     Ok(CreateDaoAssetsResJs {
-        to_sign: to_my_algo_txs1(&[
+        to_sign: ToSignJs::new(vec![
             create_assets_txs.create_shares_tx,
             create_assets_txs.create_app_tx,
-        ])
-        .map_err(Error::msg)?,
+        ])?,
         // we forward the inputs to the next step, just for a little convenience (javascript could pass them as separate fields again instead)
         // the next step will validate them again, as this performs type conversion too (+ general safety)
         pt: CreateDaoPassthroughParJs { inputs },

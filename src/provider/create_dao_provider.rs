@@ -4,6 +4,7 @@ use crate::inputs_validation::ValidationError;
 use crate::js::common::to_js_value;
 use crate::js::common::SignedTxFromJs;
 use crate::js::js_types_workarounds::VersionedContractAccountJs;
+use crate::js::to_sign_js::ToSignJs;
 use crate::model::dao_js::DaoJs;
 use crate::service::number_formats::validate_funds_amount_input;
 use algonaut::core::Address;
@@ -19,7 +20,6 @@ use mbase::models::shares_percentage::SharesPercentage;
 use mbase::models::timestamp::Timestamp;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::convert::TryInto;
 use std::fmt::Debug;
 use wasm_bindgen::JsValue;
@@ -257,7 +257,7 @@ pub struct CreateDaoPassthroughParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct CreateDaoResJs {
-    pub to_sign: Vec<Value>,
+    pub to_sign: ToSignJs,
     pub pt: SubmitSetupDaoPassthroughParJs, // passthrough
 }
 

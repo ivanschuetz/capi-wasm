@@ -1,5 +1,6 @@
 use crate::dependencies::FundsAssetSpecs;
 use crate::js::common::SignedTxFromJs;
+use crate::js::to_sign_js::ToSignJs;
 use crate::service::number_formats::validate_funds_amount_input;
 use algonaut::core::Address;
 use anyhow::Error;
@@ -8,7 +9,6 @@ use async_trait::async_trait;
 use mbase::models::funds::FundsAmount;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::Value;
 use std::fmt::Debug;
 
 use super::withdrawal_history_provider::WithdrawalViewData;
@@ -30,7 +30,7 @@ pub struct WithdrawParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct WithdrawResJs {
-    pub to_sign: Vec<Value>,
+    pub to_sign: ToSignJs,
     pub pt: SubmitWithdrawPassthroughParJs,
 }
 

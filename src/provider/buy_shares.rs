@@ -3,12 +3,12 @@ use crate::{
     js::{
         common::{to_js_value, SignedTxFromJs},
         inputs_validation_js::{to_validation_error_js, ValidationErrorJs},
+        to_sign_js::ToSignJs,
     },
 };
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use wasm_bindgen::JsValue;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
@@ -33,7 +33,7 @@ pub struct InvestParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct InvestResJs {
-    pub to_sign: Vec<Value>,
+    pub to_sign: ToSignJs,
     pub pt: SubmitBuySharesPassthroughParJs,
 }
 

@@ -5,12 +5,11 @@ use algonaut::{
     util::sleep,
 };
 use anyhow::{anyhow, Result};
-use serde_json::Value;
 
 use crate::{
     js::{
-        common::to_my_algo_tx1,
         js_types_workarounds::{ContractAccountJs, VersionedContractAccountJs},
+        to_sign_js::ToSignJs,
     },
     model::dao_js::DaoJs,
 };
@@ -57,17 +56,13 @@ pub async fn mock_tx(algod: &Algod, address: &Address) -> Result<Transaction> {
     Ok(tx)
 }
 
-pub async fn mock_js_tx(algod: &Algod, address: &Address) -> Result<Value> {
-    to_my_algo_tx1(&mock_tx(algod, address).await?)
-}
-
 pub async fn mock_msgpack_tx(algod: &Algod, address: &Address) -> Result<Vec<u8>> {
     Ok(rmp_serde::to_vec_named(&mock_tx(algod, address).await?)?)
     // .map_err(Error::msg)
 }
 
-pub async fn mock_js_txs(algod: &Algod, address: &Address) -> Result<Vec<Value>> {
-    Ok(vec![mock_js_tx(algod, address).await?])
+pub async fn mock_to_sign(algod: &Algod, address: &Address) -> Result<ToSignJs> {
+    Ok(ToSignJs::new(vec![mock_tx(algod, address).await?])?)
 }
 
 pub fn mock_address() -> Result<Address> {

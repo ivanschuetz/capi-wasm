@@ -1,5 +1,6 @@
 use crate::dependencies::capi_deps;
-use crate::js::common::{signed_js_tx_to_signed_tx1, to_my_algo_txs1};
+use crate::js::common::signed_js_tx_to_signed_tx1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::unlock_provider::{
     SubmitUnlockParJs, SubmitUnlockResJs, UnlockParJs, UnlockProvider, UnlockResJs,
 };
@@ -34,7 +35,7 @@ impl UnlockProvider for UnlockProviderDef {
         let to_sign_txs = vec![to_sign.central_app_optout_tx];
 
         Ok(UnlockResJs {
-            to_sign: to_my_algo_txs1(&to_sign_txs)?,
+            to_sign: ToSignJs::new(to_sign_txs)?,
         })
     }
 

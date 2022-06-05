@@ -1,4 +1,4 @@
-use super::{mock_js_txs, req_delay};
+use super::{mock_to_sign, req_delay};
 use crate::{
     provider::{
         buy_shares::{
@@ -33,7 +33,7 @@ impl BuySharesProvider for BuySharesProviderMock {
         req_delay().await;
 
         Ok(InvestResJs {
-            to_sign: mock_js_txs(&algod, investor_address).await?,
+            to_sign: mock_to_sign(&algod, investor_address).await?,
             pt: SubmitBuySharesPassthroughParJs {
                 dao_msg_pack: mock_msgpack_tx(&algod, investor_address).await?,
             },

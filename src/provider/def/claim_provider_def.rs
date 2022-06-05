@@ -1,6 +1,6 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::signed_js_tx_to_signed_tx1;
-use crate::js::common::to_my_algo_txs1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::claim_provider::{
     ClaimParJs, ClaimProvider, ClaimResJs, SubmitClaimParJs, SubmitClaimPassthroughParJs,
     SubmitClaimResJs,
@@ -50,7 +50,7 @@ impl ClaimProvider for ClaimProviderDef {
         }
 
         Ok(ClaimResJs {
-            to_sign: to_my_algo_txs1(&to_sign).map_err(Error::msg)?,
+            to_sign: ToSignJs::new(to_sign)?,
             pt: SubmitClaimPassthroughParJs {
                 maybe_drain_tx_msg_pack,
                 maybe_capi_share_tx_msg_pack,

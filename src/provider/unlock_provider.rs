@@ -1,8 +1,7 @@
-use crate::js::common::SignedTxFromJs;
+use crate::js::{common::SignedTxFromJs, to_sign_js::ToSignJs};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -19,7 +18,7 @@ pub struct UnlockParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UnlockResJs {
-    pub to_sign: Vec<Value>,
+    pub to_sign: ToSignJs,
 }
 
 /// The assets creation signed transactions and the specs to create the dao

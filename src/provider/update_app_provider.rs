@@ -1,9 +1,9 @@
 use crate::js::common::SignedTxFromJs;
+use crate::js::to_sign_js::ToSignJs;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::Value;
 use std::fmt::Debug;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
@@ -25,7 +25,7 @@ pub struct UpdateDaoAppParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdateDaoAppResJs {
-    pub to_sign: Vec<Value>,
+    pub to_sign: ToSignJs,
 }
 
 #[derive(Debug, Clone, Deserialize)]

@@ -1,4 +1,4 @@
-use super::{mock_js_txs, req_delay};
+use super::{mock_to_sign, req_delay};
 use crate::provider::optin_to_app_provider::{
     OptInToAppParJs, OptInToAppResJs, OptinToAppProvider,
 };
@@ -19,7 +19,7 @@ impl OptinToAppProvider for OptinToAppProviderMock {
         req_delay().await;
 
         Ok(OptInToAppResJs {
-            to_sign: Some(mock_js_txs(&algod, &investor_address).await?),
+            to_sign: Some(mock_to_sign(&algod, &investor_address).await?),
         })
     }
 }

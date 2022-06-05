@@ -1,5 +1,6 @@
 use crate::dependencies::capi_deps;
-use crate::js::common::{signed_js_tx_to_signed_tx1, to_my_algo_tx1};
+use crate::js::common::signed_js_tx_to_signed_tx1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::update_app_provider::{
     SubmitUpdateAppParJs, SubmitUpdateAppResJs, UpdateAppProvider, UpdateDaoAppParJs,
     UpdateDaoAppResJs,
@@ -66,7 +67,7 @@ impl UpdateAppProvider for UpdateAppProviderDef {
         let to_sign = update(&algod, &owner, dao_id.0, app_source, clear_source).await?;
 
         Ok(UpdateDaoAppResJs {
-            to_sign: vec![to_my_algo_tx1(&to_sign.update).map_err(Error::msg)?],
+            to_sign: ToSignJs::new(vec![to_sign.update])?,
         })
     }
 

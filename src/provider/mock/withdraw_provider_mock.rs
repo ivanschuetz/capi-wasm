@@ -1,7 +1,7 @@
 use super::mock_tx_id;
 use crate::dependencies::funds_asset_specs;
 use crate::provider::def::withdraw_provider_def::withdrawal_view_data;
-use crate::provider::mock::{mock_js_txs, req_delay};
+use crate::provider::mock::{mock_to_sign, req_delay};
 use crate::provider::withdraw_provider::{
     validate_withdrawal_inputs, SubmitWithdrawParJs, SubmitWithdrawPassthroughParJs,
     SubmitWithdrawResJs, WithdrawInputsPassthroughJs, WithdrawParJs, WithdrawProvider,
@@ -33,7 +33,7 @@ impl WithdrawProvider for WithdrawProviderMock {
         req_delay().await;
 
         Ok(WithdrawResJs {
-            to_sign: mock_js_txs(&algod, &owner).await?,
+            to_sign: mock_to_sign(&algod, &owner).await?,
             pt: SubmitWithdrawPassthroughParJs {
                 maybe_drain_tx_msg_pack: None,
                 maybe_capi_share_tx_msg_pack: None,

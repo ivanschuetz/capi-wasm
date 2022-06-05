@@ -1,4 +1,4 @@
-use super::{mock_js_txs, req_delay};
+use super::{mock_to_sign, req_delay};
 use crate::dependencies::funds_asset_specs;
 use crate::provider::create_assets_provider::{
     CreateAssetsProvider, CreateDaoAssetsParJs, CreateDaoAssetsResJs,
@@ -28,7 +28,7 @@ impl CreateAssetsProvider for CreateAssetsProviderMock {
         req_delay().await;
 
         Ok(CreateDaoAssetsResJs {
-            to_sign: mock_js_txs(&algod, &validated_inputs.creator).await?,
+            to_sign: mock_to_sign(&algod, &validated_inputs.creator).await?,
             pt: CreateDaoPassthroughParJs {
                 inputs: pars.inputs,
             },

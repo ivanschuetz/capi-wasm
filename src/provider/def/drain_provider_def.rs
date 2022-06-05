@@ -1,6 +1,6 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::js::common::signed_js_tx_to_signed_tx1;
-use crate::js::common::to_my_algo_txs1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::drain_provider::{
     DrainParJs, DrainProvider, DrainResJs, SubmitDrainParJs, SubmitDrainPassthroughParJs,
     SubmitDrainResJs,
@@ -40,7 +40,7 @@ impl DrainProvider for DrainProviderDef {
         .await?;
 
         Ok(DrainResJs {
-            to_sign: to_my_algo_txs1(&vec![to_sign.app_call_tx])?,
+            to_sign: ToSignJs::new(vec![to_sign.app_call_tx])?,
             pt: SubmitDrainPassthroughParJs {
                 drain_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.drain_tx)?,
                 capi_share_tx_msg_pack: rmp_serde::to_vec_named(&to_sign.capi_share_tx)?,

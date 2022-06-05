@@ -1,9 +1,10 @@
+use crate::dependencies::capi_deps;
 use crate::js::common::signed_js_tx_to_signed_tx1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::lock_provider::{
     LockParJs, LockProvider, LockResJs, SubmitLockParJs, SubmitLockResJs,
 };
 use crate::service::invest_or_lock::submit_apps_optins_from_js;
-use crate::{dependencies::capi_deps, js::common::to_my_algo_txs1};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::dependencies::teal_api;
@@ -40,7 +41,7 @@ impl LockProvider for LockProviderDef {
         let to_sign_txs = vec![to_sign.central_app_call_setup_tx, to_sign.shares_xfer_tx];
 
         Ok(LockResJs {
-            to_sign: to_my_algo_txs1(&to_sign_txs)?,
+            to_sign: ToSignJs::new(to_sign_txs)?,
         })
     }
 

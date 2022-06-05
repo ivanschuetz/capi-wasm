@@ -7,8 +7,6 @@ use wasm_bindgen::JsValue;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SignedTxFromJs {
-    #[serde(rename = "txId")]
-    pub tx_id: String,
     pub blob: Vec<u8>,
 }
 

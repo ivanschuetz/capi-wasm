@@ -1,5 +1,5 @@
 use crate::{
-    js::common::to_my_algo_txs,
+    js::to_sign_js::ToSignJs,
     provider::optin_to_app_provider::{OptInToAppParJs, OptInToAppResJs, OptinToAppProvider},
 };
 use algonaut::{
@@ -50,7 +50,7 @@ impl OptinToAppProvider for OptinToAppProviderDef {
             }
 
             Ok(OptInToAppResJs {
-                to_sign: Some(to_my_algo_txs(&optins).map_err(|e| Error::msg(format!("{e:?}")))?),
+                to_sign: Some(ToSignJs::new(optins)?),
             })
         }
     }

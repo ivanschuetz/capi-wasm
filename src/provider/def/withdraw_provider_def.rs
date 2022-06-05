@@ -1,5 +1,5 @@
-use crate::js::common::to_my_algo_txs1;
 use crate::js::explorer_links::explorer_tx_id_link_env;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::withdraw_provider::{
     validate_withdrawal_inputs, SubmitWithdrawParJs, SubmitWithdrawPassthroughParJs,
     SubmitWithdrawResJs, WithdrawInputsPassthroughJs, WithdrawParJs, WithdrawProvider,
@@ -86,7 +86,7 @@ impl WithdrawProvider for WithdrawProviderDef {
         }
 
         Ok(WithdrawResJs {
-            to_sign: to_my_algo_txs1(&to_sign).map_err(Error::msg)?,
+            to_sign: ToSignJs::new(to_sign)?,
             pt: SubmitWithdrawPassthroughParJs {
                 maybe_drain_tx_msg_pack,
                 maybe_capi_share_tx_msg_pack,

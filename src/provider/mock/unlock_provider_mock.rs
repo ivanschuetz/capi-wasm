@@ -1,10 +1,12 @@
-use crate::provider::mock::{mock_js_txs, req_delay};
+use crate::provider::mock::req_delay;
 use crate::provider::unlock_provider::{
     SubmitUnlockParJs, SubmitUnlockResJs, UnlockParJs, UnlockProvider, UnlockResJs,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use mbase::dependencies::algod;
+
+use super::mock_to_sign;
 
 pub struct UnlockProviderMock {}
 
@@ -19,7 +21,7 @@ impl UnlockProvider for UnlockProviderMock {
         req_delay().await;
 
         Ok(UnlockResJs {
-            to_sign: mock_js_txs(&algod, &investor_address).await?,
+            to_sign: mock_to_sign(&algod, &investor_address).await?,
         })
     }
 

@@ -1,4 +1,4 @@
-use crate::provider::mock::{mock_js_tx, req_delay};
+use crate::provider::mock::req_delay;
 use crate::provider::update_app_provider::{
     SubmitUpdateAppParJs, SubmitUpdateAppResJs, UpdateAppProvider, UpdateDaoAppParJs,
     UpdateDaoAppResJs,
@@ -6,6 +6,8 @@ use crate::provider::update_app_provider::{
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use mbase::dependencies::algod;
+
+use super::mock_to_sign;
 
 pub struct UpdateAppProviderMock {}
 
@@ -20,7 +22,7 @@ impl UpdateAppProvider for UpdateAppProviderMock {
         req_delay().await;
 
         Ok(UpdateDaoAppResJs {
-            to_sign: vec![mock_js_tx(&algod, &owner).await?],
+            to_sign: mock_to_sign(&algod, &owner).await?,
         })
     }
 

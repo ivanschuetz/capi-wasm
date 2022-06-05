@@ -1,6 +1,7 @@
 use std::convert::TryInto;
 
-use crate::js::common::{signed_js_tx_to_signed_tx1, to_my_algo_tx1};
+use crate::js::common::signed_js_tx_to_signed_tx1;
+use crate::js::to_sign_js::ToSignJs;
 use crate::provider::add_roadmap_item_provider::{
     AddRoadmapItemParJs, AddRoadmapItemResJs, SubmitAddRoadmapItemParJs,
 };
@@ -45,7 +46,7 @@ impl AddRoadmapItemProvider for AddRoadmapItemProviderDef {
         .await?;
 
         Ok(AddRoadmapItemResJs {
-            to_sign: vec![to_my_algo_tx1(&to_sign.tx)?],
+            to_sign: ToSignJs::new(vec![to_sign.tx])?,
         })
     }
 
