@@ -54,13 +54,13 @@ pub struct UpdateDataParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdateDataResJs {
-    pub to_sign: Value,
+    pub to_sign: Vec<Value>,
     pub pt: UpdateDataPassthroughJs,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitUpdateDataParJs {
-    pub tx: SignedTxFromJs,
+    pub txs: Vec<SignedTxFromJs>,
     pub pt: UpdateDataPassthroughJs,
 }
 

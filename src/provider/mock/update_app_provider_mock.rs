@@ -20,7 +20,7 @@ impl UpdateAppProvider for UpdateAppProviderMock {
         req_delay().await;
 
         Ok(UpdateDaoAppResJs {
-            to_sign: mock_js_tx(&algod, &owner).await?,
+            to_sign: vec![mock_js_tx(&algod, &owner).await?],
         })
     }
 

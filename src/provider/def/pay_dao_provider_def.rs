@@ -6,8 +6,7 @@ use crate::{
     dependencies::funds_asset_specs, js::common::to_my_algo_tx1,
     service::number_formats::validate_funds_amount_input,
 };
-use anyhow::Error;
-use anyhow::Result;
+use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::flows::pay_dao::pay_dao::pay_dao;
 use base::flows::pay_dao::pay_dao::{submit_pay_dao, PayDaoSigned};
@@ -36,17 +35,22 @@ impl PayDaoProvider for PayDaoProviderDef {
         .await?;
 
         Ok(PayDaoResJs {
-            to_sign: to_my_algo_tx1(&to_sign.tx)?,
+            to_sign: vec![to_my_algo_tx1(&to_sign.tx)?],
         })
     }
 
     async fn submit(&self, pars: SubmitPayDaoParJs) -> Result<SubmitPayDaoResJs> {
         let algod = algod();
 
+        if pars.txs.len() != 1 {
+            return Err(anyhow!("Unexpected pay dao txs length: {}", pars.txs.len()));
+        }
+        let tx = &pars.txs[0];
+
         let res = submit_pay_dao(
             &algod,
             PayDaoSigned {
-                tx: signed_js_tx_to_signed_tx1(&pars.tx)?,
+                tx: signed_js_tx_to_signed_tx1(&tx)?,
             },
         )
         .await?;

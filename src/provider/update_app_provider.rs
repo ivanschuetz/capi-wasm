@@ -25,12 +25,12 @@ pub struct UpdateDaoAppParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdateDaoAppResJs {
-    pub to_sign: Value,
+    pub to_sign: Vec<Value>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitUpdateAppParJs {
-    pub tx: SignedTxFromJs,
+    pub txs: Vec<SignedTxFromJs>,
 }
 
 #[derive(Debug, Clone, Serialize)]

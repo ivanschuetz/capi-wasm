@@ -21,7 +21,7 @@ impl AddRoadmapItemProvider for AddRoadmapItemProviderMock {
         req_delay().await;
 
         Ok(AddRoadmapItemResJs {
-            to_sign: mock_js_tx(&algod, &dao_creator).await?,
+            to_sign: vec![mock_js_tx(&algod, &dao_creator).await?],
         })
     }
 

@@ -5,7 +5,7 @@ use crate::provider::update_app_provider::{
     UpdateDaoAppResJs,
 };
 use crate::service::constants::PRECISION;
-use anyhow::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::dependencies::teal_api;
 use base::flows::create_dao::setup::create_app::{
@@ -66,17 +66,25 @@ impl UpdateAppProvider for UpdateAppProviderDef {
         let to_sign = update(&algod, &owner, dao_id.0, app_source, clear_source).await?;
 
         Ok(UpdateDaoAppResJs {
-            to_sign: to_my_algo_tx1(&to_sign.update).map_err(Error::msg)?,
+            to_sign: vec![to_my_algo_tx1(&to_sign.update).map_err(Error::msg)?],
         })
     }
 
     async fn submit(&self, pars: SubmitUpdateAppParJs) -> Result<SubmitUpdateAppResJs> {
         let algod = algod();
 
+        if pars.txs.len() != 1 {
+            return Err(anyhow!(
+                "Unexpected update app txs length: {}",
+                pars.txs.len()
+            ));
+        }
+        let tx = &pars.txs[0];
+
         let submit_update_res = submit_update(
             &algod,
             UpdateAppSigned {
-                update: signed_js_tx_to_signed_tx1(&pars.tx)?,
+                update: signed_js_tx_to_signed_tx1(&tx)?,
             },
         )
         .await?;

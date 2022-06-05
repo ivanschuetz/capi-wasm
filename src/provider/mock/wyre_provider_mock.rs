@@ -1,9 +1,9 @@
-use crate::provider::wyre_provider::{WyreProvider, WyreReserveResJs, WyreReserveParsJs};
+use super::req_delay;
+use crate::provider::wyre_provider::{WyreProvider, WyreReserveParsJs, WyreReserveResJs};
 use anyhow::Result;
 use async_trait::async_trait;
-use super::req_delay;
 
-// not sure if this mock makes sense - we might want to use the Def impl for mocks too (so delete this), 
+// not sure if this mock makes sense - we might want to use the Def impl for mocks too (so delete this),
 // to see the wyre dialog / be redirected to app after?
 pub struct WyreProviderMock {}
 

@@ -21,12 +21,12 @@ pub struct PayDaoParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PayDaoResJs {
-    pub to_sign: Value,
+    pub to_sign: Vec<Value>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitPayDaoParJs {
-    pub tx: SignedTxFromJs,
+    pub txs: Vec<SignedTxFromJs>,
 }
 
 #[derive(Debug, Clone, Serialize)]

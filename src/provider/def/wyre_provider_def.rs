@@ -1,6 +1,6 @@
-use crate::provider::wyre_provider::{WyreProvider, WyreReserveResJs, WyreReserveParsJs};
+use crate::provider::wyre_provider::{WyreProvider, WyreReserveParsJs, WyreReserveResJs};
 use algonaut::core::Address;
-use anyhow::{Result, Error};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::reqwest_ext::ResponseExt;
 use reqwest::Client;
@@ -78,7 +78,7 @@ struct WyreRegistrationBody {
     amount: String,
     source_currency: String,
     dest_currency: String,
-    dest: String
+    dest: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

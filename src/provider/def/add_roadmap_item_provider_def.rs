@@ -45,14 +45,22 @@ impl AddRoadmapItemProvider for AddRoadmapItemProviderDef {
         .await?;
 
         Ok(AddRoadmapItemResJs {
-            to_sign: to_my_algo_tx1(&to_sign.tx)?,
+            to_sign: vec![to_my_algo_tx1(&to_sign.tx)?],
         })
     }
 
     async fn submit(&self, pars: SubmitAddRoadmapItemParJs) -> Result<SubmitAddRoadmapItemResJs> {
         let algod = algod();
 
-        let add_roadmap_item_signed_tx = signed_js_tx_to_signed_tx1(&pars.tx)?;
+        if pars.txs.len() != 1 {
+            return Err(anyhow!(
+                "Unexpected add roadmap item txs length: {}",
+                pars.txs.len()
+            ));
+        }
+        let tx = &pars.txs[0];
+
+        let add_roadmap_item_signed_tx = signed_js_tx_to_signed_tx1(&tx)?;
 
         let tx_id = submit_add_roadmap_item(
             &algod,

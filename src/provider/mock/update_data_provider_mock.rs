@@ -51,7 +51,7 @@ impl UpdateDataProvider for UpdateDataProviderMock {
         req_delay().await;
 
         Ok(UpdateDataResJs {
-            to_sign: mock_js_tx(&algod, &owner).await?,
+            to_sign: vec![mock_js_tx(&algod, &owner).await?],
             pt: UpdateDataPassthroughJs {
                 dao_id: mock_dao.app_id,
                 image: None,

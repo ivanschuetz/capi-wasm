@@ -20,7 +20,7 @@ impl PayDaoProvider for PayDaoProviderMock {
         req_delay().await;
 
         Ok(PayDaoResJs {
-            to_sign: mock_js_tx(&algod, &customer_address).await?,
+            to_sign: vec![mock_js_tx(&algod, &customer_address).await?],
         })
     }
 

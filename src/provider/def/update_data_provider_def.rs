@@ -6,7 +6,7 @@ use crate::provider::update_data_provider::{
     UpdateDataParJs, UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
 };
 use algonaut::core::Address;
-use anyhow::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::api::image_api::ImageApi;
 use base::dependencies::{image_api, teal_api};
@@ -97,7 +97,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         .await?;
 
         Ok(UpdateDataResJs {
-            to_sign: to_my_algo_tx1(&to_sign.update).map_err(Error::msg)?,
+            to_sign: vec![to_my_algo_tx1(&to_sign.update).map_err(Error::msg)?],
             pt: UpdateDataPassthroughJs {
                 dao_id: dao_id.to_string(),
                 image: image.map(|i| i.bytes()),
@@ -110,6 +110,14 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         let algod = algod();
         let image_api = image_api();
 
+        if pars.txs.len() != 1 {
+            return Err(anyhow!(
+                "Unexpected update app data txs length: {}",
+                pars.txs.len()
+            ));
+        }
+        let tx = &pars.txs[0];
+
         let dao_id = pars.pt.dao_id.parse::<DaoId>().map_err(Error::msg)?;
         let image = pars.pt.image.map(CompressedImage::new);
         let image_hash = match pars.pt.image_hash {
@@ -120,7 +128,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         let tx_id = submit_update_data(
             &algod,
             UpdateDaoDataSigned {
-                update: signed_js_tx_to_signed_tx1(&pars.tx)?,
+                update: signed_js_tx_to_signed_tx1(tx)?,
             },
         )
         .await?;

@@ -23,12 +23,12 @@ pub struct AddRoadmapItemParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct AddRoadmapItemResJs {
-    pub to_sign: Value,
+    pub to_sign: Vec<Value>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitAddRoadmapItemParJs {
-    pub tx: SignedTxFromJs,
+    pub txs: Vec<SignedTxFromJs>,
 }
 
 #[derive(Debug, Clone, Serialize)]
