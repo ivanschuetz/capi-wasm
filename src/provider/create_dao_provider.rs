@@ -471,9 +471,3 @@ pub struct SubmitSetupDaoPassthroughParJs {
     pub description: Option<String>,
     pub compressed_image: Option<Vec<u8>>,
 }
-
-#[derive(Debug, Clone, Serialize)]
-pub struct SubmitCreateDaoResJs {
-    // next step tx: save the dao
-    pub to_sign: Value,
-}
