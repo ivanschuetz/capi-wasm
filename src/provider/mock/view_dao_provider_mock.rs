@@ -1,4 +1,4 @@
-use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
+use crate::{provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs}, service::number_formats::format_u64_readable};
 use algonaut::{core::MicroAlgos, transaction::url::LinkableTransactionBuilder};
 use anyhow::Result;
 use async_trait::async_trait;
@@ -16,9 +16,9 @@ impl ViewDaoProvider for ViewDaoProviderMock {
         let dao = mock_dao_for_users_view_data()?;
         Ok(ViewDaoResJs {
             dao,
-            shares_available: "10000000".to_owned(),
+            shares_available: format_u64_readable(10000000)?,
             investors_share: "40 %".to_owned(),
-            available_funds: "20000".to_owned(),
+            available_funds: format_u64_readable(20000)?,
             customer_payment_deeplink: LinkableTransactionBuilder::payment(
                 mock_address()?,
                 MicroAlgos(0),

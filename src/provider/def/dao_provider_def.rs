@@ -34,6 +34,6 @@ impl DaoProvider for DaoUserViewProviderDef {
                 .clone()
                 .map(|h| h.as_api_url(&image_api)),
             &funds_asset_specs()?,
-        ))
+        )?)
     }
 }

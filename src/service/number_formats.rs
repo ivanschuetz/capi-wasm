@@ -52,18 +52,28 @@ pub fn base_units_to_display_units_str(
 ) -> String {
     format_display_units(base_units_to_display_units(funds, asset_specs))
 }
+pub fn base_units_to_display_units_readable(
+    funds: FundsAmount,
+    asset_specs: &FundsAssetSpecs,
+) -> Result<String> {
+    format_decimal_readable(base_units_to_display_units(funds, asset_specs))
+}
 
 pub fn format_display_units(display_units: Decimal) -> String {
     format!("{:.2}", display_units)
 }
 
+pub fn format_u64_readable(number: u64) -> Result<String> {
+    format_decimal_readable(number.into())
+}
+
 /// Format number in a readable format (basically with readability separators e.g. 1,000,000 instead of 1000000)
-pub fn format_display_units_readable(display_units: Decimal) -> Result<String> {
+pub fn format_decimal_readable(decimal: Decimal) -> Result<String> {
     // num_format doesn't support fractionals, so we use it to format only the whole part and append the decimals manually
     // this is hacky and probably has a better solution
     // note that it's also potentially problematic if we were to make the locale dynamic,
     // as the "." we append for the decimals might conflict with the locale-specific separator.
-    let dec_formatted = one_fractional_skip_zeros(display_units)?;
+    let dec_formatted = one_fractional_skip_zeros(decimal)?;
     let whole = dec_formatted.trunc();
     let fractionals: Decimal = dec_formatted.fract();
 

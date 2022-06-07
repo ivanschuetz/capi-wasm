@@ -11,7 +11,7 @@ use crate::provider::calculate_total_price::{
 };
 use crate::provider::investment_provider::CalcPriceAndPercSpecs;
 use crate::service::number_formats::{
-    base_units_to_display_units_str, validate_funds_amount_input, validate_share_count,
+    validate_funds_amount_input, validate_share_count, base_units_to_display_units_readable,
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
@@ -60,7 +60,7 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceDef {
         let profit_percentage =
             calculate_profit_percentage(validated_share_amount, share_supply, investors_share)?;
 
-        let total_price_display = base_units_to_display_units_str(total_price, &specs.funds_specs);
+        let total_price_display = base_units_to_display_units_readable(total_price, &specs.funds_specs)?;
 
         Ok(CalculateTotalPriceResJs {
             total_price: total_price_display,

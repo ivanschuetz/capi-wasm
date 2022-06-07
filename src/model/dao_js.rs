@@ -1,6 +1,10 @@
 use crate::{
-    dependencies::FundsAssetSpecs, service::number_formats::base_units_to_display_units_str,
+    dependencies::FundsAssetSpecs,
+    service::number_formats::{
+        base_units_to_display_units_readable, base_units_to_display_units_str, format_u64_readable,
+    },
 };
+use anyhow::Result;
 use base::flows::create_dao::model::Dao;
 use serde::{Deserialize, Serialize};
 
@@ -33,7 +37,7 @@ pub trait ToDaoJs {
         description_id: Option<String>,
         image_url: Option<String>,
         funds_asset_specs: &FundsAssetSpecs,
-    ) -> DaoJs;
+    ) -> Result<DaoJs>;
 }
 
 impl ToDaoJs for Dao {
@@ -42,14 +46,17 @@ impl ToDaoJs for Dao {
         description_id: Option<String>,
         image_url: Option<String>,
         funds_asset_specs: &FundsAssetSpecs,
-    ) -> DaoJs {
+    ) -> Result<DaoJs> {
         let dao_id_str = self.id().to_string();
-        DaoJs {
+        Ok(DaoJs {
             name: self.specs.name.clone(),
             description_id,
-            share_price: base_units_to_display_units_str(self.specs.share_price, funds_asset_specs),
+            share_price: base_units_to_display_units_readable(
+                self.specs.share_price,
+                funds_asset_specs,
+            )?,
             share_asset_name: self.specs.shares.token_name.clone(),
-            share_supply: self.specs.shares.supply.to_string(),
+            share_supply: format_u64_readable(self.specs.shares.supply.val())?,
             investors_share: self.specs.investors_share.value().to_string(),
             image_url,
             social_media_url: self.specs.social_media_url.clone(),
@@ -67,6 +74,6 @@ impl ToDaoJs for Dao {
                 self.specs.share_price,
                 funds_asset_specs,
             ),
-        }
+        })
     }
 }

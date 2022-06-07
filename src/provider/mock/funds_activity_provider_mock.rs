@@ -7,7 +7,7 @@ use crate::{
             LoadFundsActivityResJs,
         },
     },
-    service::number_formats::{format_display_units_readable, format_short},
+    service::number_formats::{format_decimal_readable, format_short},
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -328,12 +328,12 @@ impl FundsActivityProvider for FundsActivityProviderMock {
         // set short and readable amount
         for e in raw_entries {
             let amount = e.amount.parse()?;
-            let readable_amount = format_display_units_readable(amount)?;
+            let readable_amount = format_decimal_readable(amount)?;
             let short_amount = format_short(amount)?;
             // log::debug!("{} -> {}", amount, short_amount);
 
             let amount_without_fee = e.amount_without_fee.parse()?;
-            let readable_amount_without_fee = format_display_units_readable(amount_without_fee)?;
+            let readable_amount_without_fee = format_decimal_readable(amount_without_fee)?;
             let short_amount_without_fee = format_short(amount_without_fee)?;
             // log::debug!("{} -> {}", amount_without_fee, short_amount_without_fee);
 

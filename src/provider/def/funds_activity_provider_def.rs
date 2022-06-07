@@ -6,8 +6,8 @@ use crate::{
         LoadFundsActivityResJs,
     },
     service::number_formats::{
-        base_units_to_display_units, base_units_to_display_units_str,
-        format_display_units_readable, format_short,
+        base_units_to_display_units, base_units_to_display_units_str, format_decimal_readable,
+        format_short,
     },
 };
 use anyhow::Result;
@@ -65,12 +65,10 @@ impl FundsActivityProvider for FundsActivityProviderDef {
                 base_units_to_display_units(entry.amount.sub(&entry.fee)?, &funds_asset_specs()?);
 
             view_data_entries.push(FundsActivityViewData {
-                amount: format_display_units_readable(amount_display_units)?,
+                amount: format_decimal_readable(amount_display_units)?,
                 short_amount: format_short(amount_display_units)?,
                 fee: base_units_to_display_units_str(entry.fee, &funds_asset_specs()?),
-                amount_without_fee: format_display_units_readable(
-                    amount_without_fee_display_units,
-                )?,
+                amount_without_fee: format_decimal_readable(amount_without_fee_display_units)?,
                 short_amount_without_fee: format_short(amount_without_fee_display_units)?,
                 is_income: match entry.type_ {
                     FundsActivityEntryType::Income => "true",

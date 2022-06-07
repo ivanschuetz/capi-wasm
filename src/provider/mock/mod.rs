@@ -11,7 +11,7 @@ use crate::{
         js_types_workarounds::{ContractAccountJs, VersionedContractAccountJs},
         to_sign_js::ToSignJs,
     },
-    model::dao_js::DaoJs,
+    model::dao_js::DaoJs, service::number_formats::format_u64_readable,
 };
 
 pub mod add_roadmap_item_provider_mock;
@@ -94,7 +94,7 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
     Ok(DaoJs {
         name: "Test name".to_owned(),
         description_id: Some("123".to_owned()),
-        share_supply: "123123123".to_owned(),
+        share_supply: format_u64_readable(123123123)?,
         investors_share: "0.4".to_owned(),
         share_asset_name: "My asset name".to_owned(),
         share_price: "100".to_owned(),

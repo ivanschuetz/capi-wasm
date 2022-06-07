@@ -341,7 +341,7 @@ fn validate_compressed_image_opt(
             match validate_compressed_image(bytes) {
                 Ok(image) => Ok(Some(image)),
                 Err(ValidationError::Empty) => Ok(None),
-                Err(e) => Err(e)
+                Err(e) => Err(e),
             }
         }
         None => Ok(None),
@@ -353,7 +353,7 @@ fn validate_compressed_image(bytes: &Vec<u8>) -> Result<CompressedImage, Validat
     let size = bytes.len();
 
     if bytes.len() == 0 {
-        return Err(ValidationError::Empty) // image with no bytes makes no sense
+        return Err(ValidationError::Empty); // image with no bytes makes no sense
     } else if bytes.len() > 500_000 {
         return Err(ValidationError::CompressedImageSize {
             max: format!("{} bytes", max_size),

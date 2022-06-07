@@ -6,8 +6,8 @@ use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::create_dao_provider::{
-    CreateDaoParJs, CreateDaoProvider, CreateDaoRes, CreateDaoResJs, SubmitCreateDaoParJs,
-    SubmitSetupDaoPassthroughParJs, validate_dao_inputs, validated_inputs_to_dao_specs,
+    validate_dao_inputs, validated_inputs_to_dao_specs, CreateDaoParJs, CreateDaoProvider,
+    CreateDaoRes, CreateDaoResJs, SubmitCreateDaoParJs, SubmitSetupDaoPassthroughParJs,
 };
 use crate::service::constants::PRECISION;
 use algonaut::algod::v2::Algod;
@@ -123,7 +123,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 customer_escrow: to_sign.customer_escrow.into(),
                 app_id: submit_assets_res.app_id.0,
                 description: validated_inputs.description,
-                compressed_image: validated_inputs.image.map(|i| i.bytes())
+                compressed_image: validated_inputs.image.map(|i| i.bytes()),
             },
         })
     }
@@ -208,7 +208,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 descr_hash.map(|h| h.as_str()),
                 maybe_image_url,
                 &funds_asset_specs,
-            ),
+            )?,
             descr_error: maybe_descr_upload_error,
             image_error: maybe_image_upload_error,
         })

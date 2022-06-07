@@ -59,7 +59,7 @@ impl ViewDaoProvider for ViewDaoProviderDef {
                 .clone()
                 .map(|h| h.as_api_url(&image_api)),
             &funds_asset_specs,
-        );
+        )?;
 
         Ok(ViewDaoResJs {
             dao: dao_view_data,
