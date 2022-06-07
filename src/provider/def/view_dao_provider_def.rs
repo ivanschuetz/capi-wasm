@@ -63,7 +63,6 @@ impl ViewDaoProvider for ViewDaoProviderDef {
 
         Ok(ViewDaoResJs {
             dao: dao_view_data,
-            // shares_supply: shares_supply.to_string(),
             shares_available: shares_available.to_string(),
             investors_share: investos_share_formatted,
             available_funds: base_units_to_display_units(available_funds, &funds_asset_specs)

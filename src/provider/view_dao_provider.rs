@@ -19,7 +19,6 @@ pub struct ViewDaoParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct ViewDaoResJs {
     pub dao: DaoJs,
-    // pub shares_supply: String,
     pub shares_available: String,
     pub investors_share: String,
     pub available_funds: String,
