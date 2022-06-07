@@ -107,23 +107,23 @@ impl CreateDaoFormInputsJs {
         funds_asset_specs: &FundsAssetSpecs,
     ) -> Result<SetupDaoSpecs, ValidateDaoInputsError> {
         let validated_inputs = validate_dao_inputs(self, funds_asset_specs)?;
-        validated_inputs_to_dao_specs(validated_inputs)
+        validated_inputs_to_dao_specs(&validated_inputs)
             .map_err(|e| ValidateDaoInputsError::NonValidation(format!("Unexpected: {e:?}")))
     }
 }
 
-fn validated_inputs_to_dao_specs(inputs: ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
+pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
     SetupDaoSpecs::new(
-        inputs.name,
-        inputs.description.map(|d| d.hash()),
+        inputs.name.clone(),
+        inputs.description.clone().map(|d| d.hash()),
         CreateSharesSpecs {
-            token_name: inputs.token_name,
+            token_name: inputs.token_name.clone(),
             supply: inputs.share_supply,
         },
         inputs.investors_share,
         inputs.share_price,
-        inputs.image.map(|i| i.hash()),
-        inputs.social_media_url,
+        inputs.image.clone().map(|i| i.hash()),
+        inputs.social_media_url.clone(),
         inputs.shares_for_investors,
         inputs.min_raise_target,
         inputs.min_raise_target_end_date,
@@ -336,7 +336,14 @@ fn validate_compressed_image_opt(
     bytes: &Option<Vec<u8>>,
 ) -> Result<Option<CompressedImage>, ValidationError> {
     match bytes {
-        Some(bytes) => Ok(Some(validate_compressed_image(bytes)?)),
+        Some(bytes) => {
+            // map empty image error to no image - this sanitizes getting empty array from js instead of none
+            match validate_compressed_image(bytes) {
+                Ok(image) => Ok(Some(image)),
+                Err(ValidationError::Empty) => Ok(None),
+                Err(e) => Err(e)
+            }
+        }
         None => Ok(None),
     }
 }
@@ -344,7 +351,10 @@ fn validate_compressed_image_opt(
 fn validate_compressed_image(bytes: &Vec<u8>) -> Result<CompressedImage, ValidationError> {
     let max_size = 500_000;
     let size = bytes.len();
-    if bytes.len() > 500_000 {
+
+    if bytes.len() == 0 {
+        return Err(ValidationError::Empty) // image with no bytes makes no sense
+    } else if bytes.len() > 500_000 {
         return Err(ValidationError::CompressedImageSize {
             max: format!("{} bytes", max_size),
             actual: format!("{} bytes", size),

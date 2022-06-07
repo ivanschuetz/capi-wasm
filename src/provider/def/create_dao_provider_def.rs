@@ -7,7 +7,7 @@ use crate::js::to_sign_js::ToSignJs;
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::create_dao_provider::{
     CreateDaoParJs, CreateDaoProvider, CreateDaoRes, CreateDaoResJs, SubmitCreateDaoParJs,
-    SubmitSetupDaoPassthroughParJs,
+    SubmitSetupDaoPassthroughParJs, validate_dao_inputs, validated_inputs_to_dao_specs,
 };
 use crate::service::constants::PRECISION;
 use algonaut::algod::v2::Algod;
@@ -47,6 +47,8 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         let create_shares_signed_tx = &pars.create_assets_signed_txs[0];
         let create_app_signed_tx = &pars.create_assets_signed_txs[1];
 
+        let validated_inputs = validate_dao_inputs(&pars.pt.inputs, &funds_asset_specs)?;
+
         let submit_assets_res = submit_create_assets(
             &algod,
             &CrateDaoAssetsSigned {
@@ -65,7 +67,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         let submit_assets_res = submit_assets_res?;
 
         let creator_address = pars.pt.inputs.creator.parse().map_err(Error::msg)?;
-        let dao_specs = pars.pt.inputs.to_dao_specs(&funds_asset_specs)?;
+        let dao_specs = validated_inputs_to_dao_specs(&validated_inputs)?;
 
         let last_versions = api.last_versions().await?;
 
@@ -120,8 +122,8 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 shares_asset_id: submit_assets_res.shares_asset_id,
                 customer_escrow: to_sign.customer_escrow.into(),
                 app_id: submit_assets_res.app_id.0,
-                description: pars.pt.inputs.dao_description,
-                compressed_image: pars.pt.inputs.compressed_image,
+                description: validated_inputs.description,
+                compressed_image: validated_inputs.image.map(|i| i.bytes())
             },
         })
     }
@@ -322,12 +324,12 @@ async fn upload_descr(
     descr: String,
 ) -> Result<(Option<String>, Option<String>)> {
     wait_for_pending_transaction(algod, &tx_id_to_wait).await?;
-    let (possible_image_url, possible_image_upload_error) = match api
+    let (possible_url, possible_upload_error) = match api
             .upload_descr(app_id, descr.as_bytes().to_vec())
             .await {
                 Ok(_) => (Some(descr_hash.as_api_id()), None),
                 Err(e) => (None, Some(format!("Error storing image: {e}. Please try uploading it again from the project's settings.")))
             };
 
-    Ok((possible_image_url, possible_image_upload_error))
+    Ok((possible_url, possible_upload_error))
 }
