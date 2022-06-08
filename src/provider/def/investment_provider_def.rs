@@ -1,7 +1,7 @@
-use crate::calculate_profit_percentage;
 use crate::dependencies::FundsAssetSpecs;
 use crate::provider::investment_provider::{
-    CalcPriceAndPercSpecs, InvestmentProvider, LoadInvestmentParJs, LoadInvestmentResJs,
+    AvailableSharesParJs, AvailableSharesResJs, InvestmentProvider, LoadInvestorParJs,
+    LoadInvestorResJs,
 };
 use crate::{
     dependencies::{capi_deps, funds_asset_specs},
@@ -23,6 +23,7 @@ use base::state::dao_shares::dao_shares_with_dao_state;
 use mbase::checked::{CheckedAdd, CheckedSub};
 use mbase::dependencies::algod;
 use mbase::models::dao_app_id::DaoAppId;
+use mbase::models::dao_id::DaoId;
 use mbase::models::funds::FundsAmount;
 use mbase::models::share_amount::ShareAmount;
 use mbase::state::app_state::ApplicationLocalStateError;
@@ -34,8 +35,25 @@ pub struct InvestmentProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl InvestmentProvider for InvestmentProviderDef {
+    async fn available_shares(&self, pars: AvailableSharesParJs) -> Result<AvailableSharesResJs> {
+        log::debug!("bridge_load_investment, pars: {:?}", pars);
+
+        let algod = algod();
+
+        let dao_id: DaoId = pars.dao_id.parse()?;
+
+        let app_state = dao_global_state(&algod, dao_id.0).await?;
+        let dao_shares =
+            dao_shares_with_dao_state(&algod, dao_id.0, app_state.shares_asset_id, &app_state)
+                .await?;
+
+        Ok(AvailableSharesResJs {
+            available_shares: dao_shares.available.to_string(),
+        })
+    }
+
     // TODO parallelize requests if possible
-    async fn get(&self, pars: LoadInvestmentParJs) -> Result<LoadInvestmentResJs> {
+    async fn get_investor_data(&self, pars: LoadInvestorParJs) -> Result<LoadInvestorResJs> {
         log::debug!("bridge_load_investment, pars: {:?}", pars);
 
         let algod = algod();
@@ -73,20 +91,10 @@ impl InvestmentProvider for InvestmentProviderDef {
         )
         .await?;
 
-        let dao_shares =
-            dao_shares_with_dao_state(&algod, dao_id.0, dao.shares_asset_id, &central_state)
-                .await?;
-
         let investor_holdings =
             asset_holdings(&algod, investor_address, dao.shares_asset_id).await?;
 
-        let one_share_profit_percentage = calculate_profit_percentage(
-            ShareAmount::new(1),
-            dao.specs.shares.supply,
-            dao.specs.investors_share,
-        )?;
-
-        Ok(LoadInvestmentResJs {
+        Ok(LoadInvestorResJs {
             investor_shares_count: investor_view_data.locked_shares.to_string(),
 
             // TODO do we still need these? don't we care only about investor_percentage_relative_to_total (the % of income basically)?,
@@ -106,19 +114,8 @@ impl InvestmentProvider for InvestmentProviderDef {
                 &funds_asset_specs,
             ),
             investor_claimable_dividend_microalgos: claimable_dividend.to_string(),
-            available_shares: dao_shares.available.to_string(),
             investor_locked_shares: investor_view_data.locked_shares.to_string(),
             investor_unlocked_shares: investor_holdings.to_string(),
-
-            init_share_price: base_units_to_display_units_str(
-                central_state.share_price,
-                &funds_asset_specs,
-            ),
-            init_profit_percentage: one_share_profit_percentage.format_percentage(),
-
-            share_specs_msg_pack: rmp_serde::to_vec_named(&CalcPriceAndPercSpecs {
-                funds_specs: funds_asset_specs,
-            })?,
         })
     }
 }

@@ -109,7 +109,23 @@ pub async fn bridge_claim(pars: JsValue) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub async fn bridge_load_investment(pars: JsValue) -> Result<JsValue, JsValue> {
     log::debug!("bridge_load_investment, pars: {:?}", pars);
-    to_bridge_res(providers()?.investment.get(parse_bridge_pars(pars)?).await)
+    to_bridge_res(
+        providers()?
+            .investment
+            .get_investor_data(parse_bridge_pars(pars)?)
+            .await,
+    )
+}
+
+#[wasm_bindgen]
+pub async fn bridge_load_available_shares(pars: JsValue) -> Result<JsValue, JsValue> {
+    log::debug!("bridge_load_available_shares, pars: {:?}", pars);
+    to_bridge_res(
+        providers()?
+            .investment
+            .available_shares(parse_bridge_pars(pars)?)
+            .await,
+    )
 }
 
 #[wasm_bindgen]

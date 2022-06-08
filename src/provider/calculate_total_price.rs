@@ -20,7 +20,6 @@ pub struct CalculateTotalPriceParJs {
     pub share_supply: String,
     pub investors_share: String,
     pub share_price: String,
-    pub share_specs_msg_pack: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize)]

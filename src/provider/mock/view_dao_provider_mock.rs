@@ -1,4 +1,7 @@
-use crate::{provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs}, service::number_formats::format_u64_readable};
+use crate::{
+    provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs},
+    service::number_formats::format_u64_readable,
+};
 use algonaut::{core::MicroAlgos, transaction::url::LinkableTransactionBuilder};
 use anyhow::Result;
 use async_trait::async_trait;

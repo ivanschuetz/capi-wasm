@@ -1,9 +1,12 @@
-use crate::{provider::{
-    calculate_total_price::{
-        CalculateTotalPriceParJs, CalculateTotalPriceProvider, CalculateTotalPriceResJs,
+use crate::{
+    provider::{
+        calculate_total_price::{
+            CalculateTotalPriceParJs, CalculateTotalPriceProvider, CalculateTotalPriceResJs,
+        },
+        def::calculate_total_price_def::ValidationCalcTotalPriceOrAnyhowError,
     },
-    def::calculate_total_price_def::ValidationCalcTotalPriceOrAnyhowError,
-}, service::number_formats::format_u64_readable};
+    service::number_formats::format_u64_readable,
+};
 use anyhow::Result;
 use async_trait::async_trait;
 

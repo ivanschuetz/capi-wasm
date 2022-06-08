@@ -11,7 +11,8 @@ use crate::{
         js_types_workarounds::{ContractAccountJs, VersionedContractAccountJs},
         to_sign_js::ToSignJs,
     },
-    model::dao_js::DaoJs, service::number_formats::format_u64_readable,
+    model::dao_js::DaoJs,
+    service::number_formats::format_u64_readable,
 };
 
 pub mod add_roadmap_item_provider_mock;

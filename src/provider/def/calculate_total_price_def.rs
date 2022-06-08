@@ -2,6 +2,7 @@ use std::convert::TryInto;
 use std::str::FromStr;
 
 use crate::calculate_profit_percentage;
+use crate::dependencies::funds_asset_specs;
 use crate::inputs_validation::ValidationError;
 use crate::js::common::to_js_value;
 use crate::js::inputs_validation_js::{to_validation_error_js, ValidationErrorJs};
@@ -9,9 +10,8 @@ use crate::provider::buy_shares::ValidateBuySharesInputsError;
 use crate::provider::calculate_total_price::{
     CalculateTotalPriceParJs, CalculateTotalPriceProvider, CalculateTotalPriceResJs,
 };
-use crate::provider::investment_provider::CalcPriceAndPercSpecs;
 use crate::service::number_formats::{
-    validate_funds_amount_input, validate_share_count, base_units_to_display_units_readable,
+    base_units_to_display_units_readable, validate_funds_amount_input, validate_share_count,
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
@@ -31,10 +31,9 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceDef {
         &self,
         pars: CalculateTotalPriceParJs,
     ) -> Result<CalculateTotalPriceResJs, ValidationCalcTotalPriceOrAnyhowError> {
-        let specs: CalcPriceAndPercSpecs =
-            rmp_serde::from_slice(&pars.share_specs_msg_pack).map_err(Error::msg)?;
+        let funds_asset_specs = funds_asset_specs()?;
 
-        let validated_price = validate_funds_amount_input(&pars.share_price, &specs.funds_specs)?;
+        let validated_price = validate_funds_amount_input(&pars.share_price, &funds_asset_specs)?;
         let validated_share_amount = validate_share_count(&pars.shares_amount)?;
 
         let available_shares = ShareAmount::new(pars.available_shares.parse().map_err(Error::msg)?);
@@ -60,7 +59,8 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceDef {
         let profit_percentage =
             calculate_profit_percentage(validated_share_amount, share_supply, investors_share)?;
 
-        let total_price_display = base_units_to_display_units_readable(total_price, &specs.funds_specs)?;
+        let total_price_display =
+            base_units_to_display_units_readable(total_price, &funds_asset_specs)?;
 
         Ok(CalculateTotalPriceResJs {
             total_price: total_price_display,
