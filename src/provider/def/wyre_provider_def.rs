@@ -50,6 +50,25 @@ impl WyreApi {
             source_currency: "USD".to_string(),
             dest_currency: "ALGO".to_string(),
             dest: format!("algorand:{}", address),
+
+            // prefill (convenience for testing)
+            first_name: "firstname".to_owned(),
+            last_name: "lastname".to_owned(),
+            phone: "000000".to_owned(),
+            email: "sfsdf@sdfsf.com".to_owned(),
+            country: "DE".to_owned(),
+            postal_code: "AAAA".to_owned(), // for non-us addresses
+            state: "sdfsfd".to_owned(),
+            city: "sdfds".to_owned(),
+            street1: "dfsdf".to_owned(),
+
+            // card (can't be passed):
+            // VISA:
+            // 4111111111111111 or 4444333322221111
+            // MASTERCARD (International only) - Use when testing 3D Secure:
+            // 5454545454545454 
+            // Exp (both): 10/23
+            // CVV (both): 555
         };
 
         let url = format!("{}/orders/reserve", self.host);
@@ -79,6 +98,17 @@ struct WyreRegistrationBody {
     source_currency: String,
     dest_currency: String,
     dest: String,
+
+    // prefill (convenience for testing) - comment (or enable conditionally)
+    first_name: String,
+    last_name: String,
+    phone: String,
+    email: String,
+    country: String,
+    postal_code: String,
+    state: String,
+    city: String,
+    street1: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
