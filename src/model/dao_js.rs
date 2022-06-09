@@ -14,6 +14,9 @@ pub struct DaoJs {
     pub description_id: Option<String>,
     // TODO remove?
     pub share_supply: String,
+    // TODO consider passing a msgpack version of the dao back and forth to access non-display properties in wasm,
+    // regular fields should be only for display purpose - so we don't need these additional not formatted "_number" or "_algo" fields.
+    pub share_supply_number: String,
     pub investors_share: String,
     pub share_asset_name: String,
     pub share_price: String,
@@ -57,6 +60,7 @@ impl ToDaoJs for Dao {
             )?,
             share_asset_name: self.specs.shares.token_name.clone(),
             share_supply: format_u64_readable(self.specs.shares.supply.val())?,
+            share_supply_number: self.specs.shares.supply.val().to_string(),
             investors_share: self.specs.investors_share.value().to_string(),
             image_url,
             social_media_url: self.specs.social_media_url.clone(),

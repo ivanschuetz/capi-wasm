@@ -96,6 +96,7 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
         name: "Test name".to_owned(),
         description_id: Some("123".to_owned()),
         share_supply: format_u64_readable(123123123)?,
+        share_supply_number: "123123123".to_owned(),
         investors_share: "0.4".to_owned(),
         share_asset_name: "My asset name".to_owned(),
         share_price: "100".to_owned(),
