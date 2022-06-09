@@ -54,7 +54,7 @@ impl WyreApi {
             // prefill (convenience for testing)
             first_name: "firstname".to_owned(),
             last_name: "lastname".to_owned(),
-            phone: "000000".to_owned(),
+            phone: "+49000000".to_owned(),
             email: "sfsdf@sdfsf.com".to_owned(),
             country: "DE".to_owned(),
             postal_code: "AAAA".to_owned(), // for non-us addresses
