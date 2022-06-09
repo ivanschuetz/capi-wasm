@@ -12,7 +12,6 @@ use serde::{Deserialize, Serialize};
 pub struct DaoJs {
     pub name: String,
     pub description_id: Option<String>,
-    // TODO remove?
     pub share_supply: String,
     // TODO consider passing a msgpack version of the dao back and forth to access non-display properties in wasm,
     // regular fields should be only for display purpose - so we don't need these additional not formatted "_number" or "_algo" fields.
