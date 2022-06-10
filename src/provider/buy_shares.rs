@@ -1,4 +1,5 @@
 use crate::{
+    error::FrError,
     inputs_validation::ValidationError,
     js::{
         common::{to_js_value, SignedTxFromJs},
@@ -18,7 +19,7 @@ pub trait BuySharesProvider {
         &self,
         pars: InvestParJs,
     ) -> Result<InvestResJs, ValidationBuySharesInputsOrAnyhowError>;
-    async fn submit(&self, pars: SubmitBuySharesParJs) -> Result<SubmitBuySharesResJs>;
+    async fn submit(&self, pars: SubmitBuySharesParJs) -> Result<SubmitBuySharesResJs, FrError>;
 }
 
 // TODO rename structs in BuyShares*
@@ -39,6 +40,9 @@ pub struct InvestResJs {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubmitBuySharesParJs {
+    pub investor_address: String,
+    // in case that the transaction fails, to calculate how much we offer the user to buy on on-ramp
+    pub buy_amount: String,
     pub txs: Vec<SignedTxFromJs>,
     pub pt: SubmitBuySharesPassthroughParJs, // passthrough
 }
