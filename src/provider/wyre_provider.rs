@@ -11,6 +11,8 @@ pub trait WyreProvider {
 #[derive(Debug, Clone, Deserialize)]
 pub struct WyreReserveParsJs {
     pub address: String,
+    pub dst_currency: String,
+    pub dst_amount: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

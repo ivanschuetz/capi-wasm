@@ -42,7 +42,7 @@ pub struct InvestResJs {
 pub struct SubmitBuySharesParJs {
     pub investor_address: String,
     // in case that the transaction fails, to calculate how much we offer the user to buy on on-ramp
-    pub buy_amount: String,
+    pub buy_total_cost: String,
     pub txs: Vec<SignedTxFromJs>,
     pub pt: SubmitBuySharesPassthroughParJs, // passthrough
 }

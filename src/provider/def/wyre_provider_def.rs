@@ -16,7 +16,9 @@ impl WyreProvider for WyreProviderDef {
 
         let address = pars.address.parse().map_err(Error::msg)?;
 
-        let res = api.reserve(&address).await?;
+        let res = api
+            .reserve(&address, pars.dst_currency, pars.dst_amount)
+            .await?;
 
         Ok(WyreReserveResJs {
             url: res.url.clone(),
@@ -43,12 +45,17 @@ impl WyreApi {
         }
     }
 
-    pub async fn reserve(&self, address: &Address) -> Result<WyreReserveRes> {
+    pub async fn reserve(
+        &self,
+        address: &Address,
+        dst_currency: String,
+        dst_amount: String,
+    ) -> Result<WyreReserveRes> {
         let body = WyreRegistrationBody {
             referrer_account_id: self.account_id.to_owned(),
-            amount: "1".to_string(),
+            amount: dst_amount,
             source_currency: "USD".to_string(),
-            dest_currency: "ALGO".to_string(),
+            dest_currency: dst_currency,
             dest: format!("algorand:{}", address),
 
             // prefill (convenience for testing)
@@ -61,12 +68,11 @@ impl WyreApi {
             state: "sdfsfd".to_owned(),
             city: "sdfds".to_owned(),
             street1: "dfsdf".to_owned(),
-
             // card (can't be passed):
             // VISA:
             // 4111111111111111 or 4444333322221111
             // MASTERCARD (International only) - Use when testing 3D Secure:
-            // 5454545454545454 
+            // 5454545454545454
             // Exp (both): 10/23
             // CVV (both): 555
         };

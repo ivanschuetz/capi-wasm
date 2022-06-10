@@ -64,6 +64,7 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceDef {
 
         Ok(CalculateTotalPriceResJs {
             total_price: total_price_display,
+            total_price_number: total_price.val().to_string(),
             profit_percentage: profit_percentage.format_percentage(),
         })
     }

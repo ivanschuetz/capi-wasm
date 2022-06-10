@@ -25,5 +25,6 @@ pub struct CalculateTotalPriceParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct CalculateTotalPriceResJs {
     pub total_price: String,
+    pub total_price_number: String,
     pub profit_percentage: String,
 }

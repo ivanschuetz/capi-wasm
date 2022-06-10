@@ -1,5 +1,6 @@
 use super::{mock_to_sign, req_delay};
 use crate::{
+    error::FrError,
     provider::{
         buy_shares::{
             BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
@@ -40,7 +41,7 @@ impl BuySharesProvider for BuySharesProviderMock {
         })
     }
 
-    async fn submit(&self, _: SubmitBuySharesParJs) -> Result<SubmitBuySharesResJs> {
+    async fn submit(&self, _pars: SubmitBuySharesParJs) -> Result<SubmitBuySharesResJs, FrError> {
         req_delay().await;
 
         Ok(SubmitBuySharesResJs {

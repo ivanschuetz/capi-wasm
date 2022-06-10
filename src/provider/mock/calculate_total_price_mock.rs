@@ -21,6 +21,7 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceMock {
     ) -> Result<CalculateTotalPriceResJs, ValidationCalcTotalPriceOrAnyhowError> {
         Ok(CalculateTotalPriceResJs {
             total_price: format_u64_readable(12345)?,
+            total_price_number: "12345".to_owned(),
             profit_percentage: "0.23 %".to_owned(),
         })
     }

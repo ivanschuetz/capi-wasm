@@ -113,7 +113,7 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
     log_wrap("bridge_submit_buy_shares", pars, async move |pars| {
         providers()?
             .buy_shares
-            .txs(parse_bridge_pars(pars)?)
+            .submit(parse_bridge_pars(pars)?)
             .await
             .map_err(|e| e.into())
             .and_then(|r| to_js_res(&r))
@@ -487,9 +487,9 @@ where
     Fut: Future<Output = Result<JsValue, JsValue>>,
 {
     log::debug!("{label}, pars: {:?}", pars);
-    let res = handler(pars).await;
+    let res = handler(pars.clone()).await;
     if let Err(e) = res.as_ref() {
-        log::error!("Error calling {label}: {e:?}");
+        log::error!("Error calling {label}: {e:?}, pars: {pars:?}");
     }
     res
 }

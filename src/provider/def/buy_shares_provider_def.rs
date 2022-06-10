@@ -1,5 +1,6 @@
 use crate::{
     dependencies::{capi_deps, funds_asset_specs},
+    error::FrError,
     js::{common::signed_js_tx_to_signed_tx1, to_sign_js::ToSignJs},
     provider::buy_shares::{
         BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
@@ -20,8 +21,9 @@ use base::{
         },
     },
     network_util::wait_for_pending_transaction,
+    state::account_state::asset_holdings,
 };
-use mbase::dependencies::algod;
+use mbase::{dependencies::algod, models::asset_amount::AssetAmount};
 
 pub struct BuySharesProviderDef {}
 
@@ -35,6 +37,7 @@ impl BuySharesProvider for BuySharesProviderDef {
         let algod = algod();
         let api = teal_api();
         let capi_deps = capi_deps()?;
+        let funds_asset_specs = funds_asset_specs()?;
 
         let validated_share_amount = validate_share_count(&pars.share_count)?;
 
@@ -55,7 +58,7 @@ impl BuySharesProvider for BuySharesProviderDef {
             dao.app_id,
             dao.shares_asset_id,
             validated_share_amount,
-            funds_asset_specs()?.id,
+            funds_asset_specs.id,
             dao.specs.share_price,
         )
         .await?;
@@ -74,21 +77,25 @@ impl BuySharesProvider for BuySharesProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitBuySharesParJs) -> Result<SubmitBuySharesResJs> {
+    async fn submit(&self, pars: SubmitBuySharesParJs) -> Result<SubmitBuySharesResJs, FrError> {
         let algod = algod();
+        let funds_asset_specs = funds_asset_specs()?;
 
         if pars.txs.len() != 3 {
-            return Err(anyhow!(
+            return Err(FrError::Msg(format!(
                 "Unexpected signed invest txs length: {}",
                 pars.txs.len()
-            ));
+            )));
         }
+
+        let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
+        let buy_total_cost: u64 = pars.buy_total_cost.parse().map_err(Error::msg)?;
 
         let central_app_setup_tx = signed_js_tx_to_signed_tx1(&pars.txs[0])?;
         let payment_tx = signed_js_tx_to_signed_tx1(&pars.txs[1])?;
         let shares_asset_optin_tx = signed_js_tx_to_signed_tx1(&pars.txs[2])?;
 
-        let dao = rmp_serde::from_slice(&pars.pt.dao_msg_pack)?;
+        let dao = rmp_serde::from_slice(&pars.pt.dao_msg_pack).map_err(Error::msg)?;
 
         let submit_res = submit_invest(
             &algod,
@@ -99,7 +106,22 @@ impl BuySharesProvider for BuySharesProviderDef {
                 payment_tx,
             },
         )
-        .await?;
+        .await;
+
+        if let Some(err) = submit_res.as_ref().err() {
+            if err.to_string().contains("underflow on subtracting") {
+                // what the user has to buy (on-ramp) to do the transaction: the amount they tried to buy - what they have
+                let holdings =
+                    asset_holdings(&algod, &investor_address, funds_asset_specs.id.0).await?;
+                let to_buy = AssetAmount(
+                    buy_total_cost
+                        .checked_sub(holdings.0)
+                        .ok_or(anyhow!("Error subtracting: {buy_total_cost} - {holdings}"))?,
+                );
+                return Err(FrError::NotEnoughFundsAsset { to_buy });
+            }
+        }
+        let submit_res = submit_res?;
 
         let _ = wait_for_pending_transaction(&algod, &submit_res.tx_id).await?;
 
