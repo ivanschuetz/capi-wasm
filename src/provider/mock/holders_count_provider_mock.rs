@@ -1,6 +1,7 @@
 use super::req_delay;
 use crate::provider::holders_count_provider::{
-    HoldersCountParJs, HoldersCountProvider, HoldersCountResJs,
+    HoldersChangeParJs, HoldersChangeResJs, HoldersCountParJs, HoldersCountProvider,
+    HoldersCountResJs,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -14,7 +15,13 @@ impl HoldersCountProvider for HoldersCountProviderMock {
         req_delay().await;
 
         Ok(HoldersCountResJs {
-            count: "2315".to_string(),
+            count: "2315".to_owned(),
+        })
+    }
+
+    async fn change(&self, _pars: HoldersChangeParJs) -> Result<HoldersChangeResJs> {
+        Ok(HoldersChangeResJs {
+            change: "up".to_owned(),
         })
     }
 }

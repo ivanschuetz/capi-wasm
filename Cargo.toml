@@ -37,6 +37,7 @@ chrono = { version = "0.4.19", features = ["serde", "wasmbind"] }
 async-trait = "0.1.51"
 num-format = "0.4.0"
 reqwest = { version = "0.11.10", features = ["rustls-tls"], default-features = false }
+web-sys = { version = "0.3.57", features = ["Storage", "Window"]}
 
 [profile.release]
 # less code to include into binary

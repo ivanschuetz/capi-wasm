@@ -478,6 +478,19 @@ pub async fn bridge_reserve_wyre(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
+#[wasm_bindgen]
+pub async fn bridge_holders_change(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_holders_change", pars, async move |pars| {
+        to_bridge_res(
+            providers()?
+                .holders_count
+                .change(parse_bridge_pars(pars)?)
+                .await,
+        )
+    })
+    .await
+}
+
 async fn log_wrap<Fut>(
     label: &str,
     pars: JsValue,
