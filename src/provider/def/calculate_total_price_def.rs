@@ -6,12 +6,12 @@ use crate::dependencies::funds_asset_specs;
 use crate::inputs_validation::ValidationError;
 use crate::js::common::to_js_value;
 use crate::js::inputs_validation_js::{to_validation_error_js, ValidationErrorJs};
-use crate::provider::buy_shares::ValidateBuySharesInputsError;
+use crate::provider::buy_shares::ValidateSharesInputError;
 use crate::provider::calculate_total_price::{
     CalculateTotalPriceParJs, CalculateTotalPriceProvider, CalculateTotalPriceResJs,
 };
 use crate::service::number_formats::{
-    base_units_to_display_units_readable, validate_funds_amount_input, validate_share_count,
+    base_units_to_display_units_readable, validate_funds_amount_input, validate_share_amount,
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
@@ -34,7 +34,7 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceDef {
         let funds_asset_specs = funds_asset_specs()?;
 
         let validated_price = validate_funds_amount_input(&pars.share_price, &funds_asset_specs)?;
-        let validated_share_amount = validate_share_count(&pars.shares_amount)?;
+        let validated_share_amount = validate_share_amount(&pars.shares_amount)?;
 
         let available_shares = ShareAmount::new(pars.available_shares.parse().map_err(Error::msg)?);
         let share_supply = ShareAmount::new(pars.share_supply.parse().map_err(Error::msg)?);
@@ -91,13 +91,13 @@ impl From<ValidateCalcTotalPriceInputsError> for ValidationCalcTotalPriceOrAnyho
     }
 }
 
-impl From<ValidateBuySharesInputsError> for ValidationCalcTotalPriceOrAnyhowError {
-    fn from(e: ValidateBuySharesInputsError) -> Self {
+impl From<ValidateSharesInputError> for ValidationCalcTotalPriceOrAnyhowError {
+    fn from(e: ValidateSharesInputError) -> Self {
         match e {
-            ValidateBuySharesInputsError::Validation(e) => e.into(),
-            ValidateBuySharesInputsError::NonValidation(e) => {
-                ValidationCalcTotalPriceOrAnyhowError::Anyhow(Error::msg(e))
-            }
+            ValidateSharesInputError::Validation(e) => e.into(),
+            // ValidateSharesInputError::NonValidation(e) => {
+            //     ValidationCalcTotalPriceOrAnyhowError::Anyhow(Error::msg(e))
+            // }
         }
     }
 }
@@ -123,7 +123,7 @@ impl From<ValidationError> for ValidationCalcTotalPriceOrAnyhowError {
 #[derive(Debug, Clone, Serialize)]
 pub enum ValidateCalcTotalPriceInputsError {
     Validation(ValidationError),
-    NonValidation(String),
+    // NonValidation(String),
 }
 
 // /// Errors to be shown next to the respective input fields
@@ -151,7 +151,6 @@ impl From<ValidateCalcTotalPriceInputsError> for JsValue {
                     Err(e) => to_js_value(e),
                 }
             }
-            _ => to_js_value(format!("Error processing inputs: {error:?}")),
         }
     }
 }

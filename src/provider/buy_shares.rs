@@ -61,7 +61,7 @@ pub struct SubmitBuySharesResJs {
 
 #[derive(Debug)]
 pub enum ValidationBuySharesInputsOrAnyhowError {
-    Validation(ValidateBuySharesInputsError),
+    Validation(ValidateSharesInputError),
     Anyhow(anyhow::Error),
 }
 
@@ -71,8 +71,8 @@ impl From<anyhow::Error> for ValidationBuySharesInputsOrAnyhowError {
     }
 }
 
-impl From<ValidateBuySharesInputsError> for ValidationBuySharesInputsOrAnyhowError {
-    fn from(e: ValidateBuySharesInputsError) -> Self {
+impl From<ValidateSharesInputError> for ValidationBuySharesInputsOrAnyhowError {
+    fn from(e: ValidateSharesInputError) -> Self {
         ValidationBuySharesInputsOrAnyhowError::Validation(e)
     }
 }
@@ -88,9 +88,9 @@ impl From<ValidationBuySharesInputsOrAnyhowError> for JsValue {
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Serialize)]
-pub enum ValidateBuySharesInputsError {
+pub enum ValidateSharesInputError {
     Validation(ValidationError),
-    NonValidation(String),
+    // NonValidation(String),
 }
 
 /// Errors to be shown next to the respective input fields
@@ -101,10 +101,10 @@ pub struct SharesInputErrorsJs {
     pub amount: ValidationErrorJs,
 }
 
-impl From<ValidateBuySharesInputsError> for JsValue {
-    fn from(error: ValidateBuySharesInputsError) -> JsValue {
+impl From<ValidateSharesInputError> for JsValue {
+    fn from(error: ValidateSharesInputError) -> JsValue {
         match error {
-            ValidateBuySharesInputsError::Validation(e) => {
+            ValidateSharesInputError::Validation(e) => {
                 let error_js = SharesInputErrorsJs {
                     type_identifier: "input_errors".to_owned(),
                     amount: to_validation_error_js(e),
@@ -115,7 +115,14 @@ impl From<ValidateBuySharesInputsError> for JsValue {
                     Err(e) => to_js_value(e),
                 }
             }
-            _ => to_js_value(format!("Error processing inputs: {error:?}")),
+        }
+    }
+}
+
+impl From<ValidateSharesInputError> for FrError {
+    fn from(error: ValidateSharesInputError) -> FrError {
+        match error {
+            ValidateSharesInputError::Validation(e) => FrError::Validation(e),
         }
     }
 }

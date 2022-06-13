@@ -1,9 +1,11 @@
 use crate::{
+    error::FrError,
     js::common::{parse_bridge_pars, to_bridge_res, to_js_res},
     provider::providers,
 };
 use anyhow::Result;
-use std::future::Future;
+use serde::Serialize;
+use std::{convert::TryInto, future::Future};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -22,12 +24,7 @@ pub async fn bridge_create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsVa
 #[wasm_bindgen]
 pub async fn bridge_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("bridge_create_dao", pars, async move |pars| {
-        providers()?
-            .create_dao
-            .txs(parse_bridge_pars(pars)?)
-            .await
-            .map_err(|e| e.into())
-            .and_then(|r| to_js_res(&r))
+        to_js(providers()?.create_dao.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
@@ -111,12 +108,12 @@ pub async fn bridge_opt_in_to_apps_if_needed(pars: JsValue) -> Result<JsValue, J
 #[wasm_bindgen]
 pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("bridge_submit_buy_shares", pars, async move |pars| {
-        providers()?
-            .buy_shares
-            .submit(parse_bridge_pars(pars)?)
-            .await
-            .map_err(|e| e.into())
-            .and_then(|r| to_js_res(&r))
+        to_js(
+            providers()?
+                .buy_shares
+                .submit(parse_bridge_pars(pars)?)
+                .await,
+        )
     })
     .await
 }
@@ -166,7 +163,7 @@ pub async fn bridge_submit_claim(pars: JsValue) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub async fn bridge_lock(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("bridge_lock", pars, async move |pars| {
-        to_bridge_res(providers()?.lock.txs(parse_bridge_pars(pars)?).await)
+        to_js(providers()?.lock.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
@@ -491,6 +488,16 @@ pub async fn bridge_holders_change(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
+fn to_js<T>(res: Result<T, FrError>) -> Result<JsValue, JsValue>
+where
+    T: Serialize,
+{
+    match res {
+        Ok(r) => to_js_res(r),
+        Err(e) => Err(e.try_into()?),
+    }
+}
+
 async fn log_wrap<Fut>(
     label: &str,
     pars: JsValue,
@@ -505,4 +512,25 @@ where
         log::error!("Error calling {label}: {e:?}, pars: {pars:?}");
     }
     res
+}
+
+#[allow(dead_code)]
+// TODO make providers() and parse_bridge_pars() return FrError instead of JsError
+// then replace log_wrap with this, simplifying the closures to return Result<T, FrError> instead of Result<JsError, JsError>
+// (where possible - some providers don't return FrErrors yet, but the idea is that eventually everything does)
+async fn wrap<Fut, T>(
+    label: &str,
+    pars: JsValue,
+    handler: impl FnOnce(JsValue) -> Fut + Send,
+) -> Result<JsValue, JsValue>
+where
+    Fut: Future<Output = Result<T, FrError>>,
+    T: Serialize,
+{
+    log::debug!("{label}, pars: {:?}", pars);
+    let res = handler(pars.clone()).await;
+    if let Err(e) = res.as_ref() {
+        log::error!("Error calling {label}: {e:?}, pars: {pars:?}");
+    }
+    to_js(res)
 }

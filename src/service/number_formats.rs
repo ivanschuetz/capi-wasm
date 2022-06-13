@@ -1,6 +1,6 @@
 use crate::{
     dependencies::FundsAssetSpecs, inputs_validation::ValidationError,
-    provider::buy_shares::ValidateBuySharesInputsError,
+    provider::buy_shares::ValidateSharesInputError,
 };
 use algonaut::core::MicroAlgos;
 use anyhow::{anyhow, Result};
@@ -23,14 +23,13 @@ pub fn validate_funds_amount_input(
     )
 }
 
-pub fn validate_share_count(input: &str) -> Result<ShareAmount, ValidateBuySharesInputsError> {
-    // TODO < available shares (asset count in investing escrow).
+pub fn validate_share_amount(input: &str) -> Result<ShareAmount, ValidateSharesInputError> {
     let share_count = input
         .parse()
-        .map_err(|_| ValidateBuySharesInputsError::Validation(ValidationError::NotAnInteger))?;
+        .map_err(|_| ValidateSharesInputError::Validation(ValidationError::NotAnInteger))?;
 
     if share_count == 0 {
-        return Err(ValidateBuySharesInputsError::Validation(
+        return Err(ValidateSharesInputError::Validation(
             ValidationError::NotPositive,
         ));
     }

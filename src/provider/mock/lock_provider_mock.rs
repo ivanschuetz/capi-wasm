@@ -1,5 +1,8 @@
-use crate::provider::lock_provider::{
-    LockParJs, LockProvider, LockResJs, SubmitLockParJs, SubmitLockResJs,
+use crate::{
+    error::FrError,
+    provider::lock_provider::{
+        LockParJs, LockProvider, LockResJs, SubmitLockParJs, SubmitLockResJs,
+    },
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -12,7 +15,7 @@ pub struct LockProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl LockProvider for LockProviderMock {
-    async fn txs(&self, pars: LockParJs) -> Result<LockResJs> {
+    async fn txs(&self, pars: LockParJs) -> Result<LockResJs, FrError> {
         let algod = algod();
 
         let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
