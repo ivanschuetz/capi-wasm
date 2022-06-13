@@ -6,7 +6,7 @@ use crate::{
     provider::create_dao_provider::ValidateDaoInputsError,
 };
 use algonaut::error::ServiceError;
-use mbase::models::asset_amount::AssetAmount;
+use mbase::{models::asset_amount::AssetAmount, state::app_state::ApplicationLocalStateError};
 use serde::Serialize;
 use wasm_bindgen::JsValue;
 
@@ -74,4 +74,10 @@ where
 {
     id: String,
     details: Option<T>,
+}
+
+impl From<ApplicationLocalStateError<'static>> for FrError {
+    fn from(e: ApplicationLocalStateError) -> Self {
+        FrError::Msg(format!("{e:?}"))
+    }
 }
