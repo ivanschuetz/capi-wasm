@@ -17,12 +17,12 @@ pub struct FundsActivityProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl FundsActivityProvider for FundsActivityProviderMock {
-    async fn get(&self, _: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
+    async fn get(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
         req_delay().await;
 
         // note that short_amount will be set at the end, based on amount
         // normally we'd set short_amount manually, but tedious + not bad to ensure correctness to not confuse testers here
-        let raw_entries = [FundsActivityViewData {
+        let raw_entries = vec![FundsActivityViewData {
             amount: "123".to_owned(),
             short_amount: "".to_owned(),
             short_amount_without_fee: "".to_owned(),
@@ -323,10 +323,17 @@ impl FundsActivityProvider for FundsActivityProviderMock {
             tx_link: "https://testnet.algoexplorer.io/tx/FYIRN74JXW54KHOMNRLM42JKAYVGUA33JKXCGPHQIFWVDBY5SAQA".to_owned(),
         }];
 
+        let truncated_raw_entries = if let Some(max_results) = pars.max_results {
+            let max_results = max_results.parse()?;
+            raw_entries.into_iter().take(max_results).collect()
+        } else {
+            raw_entries
+        };
+
         let mut entries = vec![];
 
         // set short and readable amount
-        for e in raw_entries {
+        for e in truncated_raw_entries {
             let amount = e.amount.parse()?;
             let readable_amount = format_decimal_readable(amount)?;
             let short_amount = format_short(amount)?;
