@@ -102,8 +102,7 @@ impl InvestmentProvider for InvestmentProviderDef {
             investor_percentage: investor_locked_percentage_of_supply.format_percentage(),
             investor_percentage_number: investor_locked_percentage_of_supply.to_string(),
 
-            // TODO rename field in investor_dividend_percentage
-            investor_percentage_relative_to_total_number: investor_dividend_percentage.to_string(),
+            investor_share: investor_dividend_percentage.format_percentage(),
 
             investor_already_retrieved_amount: base_units_to_display_units_str(
                 investor_view_data.retrieved,

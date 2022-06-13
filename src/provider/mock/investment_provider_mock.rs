@@ -27,7 +27,8 @@ impl InvestmentProvider for InvestmentProviderMock {
 
             investor_percentage: "21 %".to_owned(),
             investor_percentage_number: "21".to_owned(),
-            investor_percentage_relative_to_total_number: "12".to_owned(),
+
+            investor_share: "12 %".to_owned(),
 
             investor_already_retrieved_amount: "11100".to_owned(),
             investor_claimable_dividend: "240".to_owned(),
