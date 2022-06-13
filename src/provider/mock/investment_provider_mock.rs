@@ -24,10 +24,6 @@ impl InvestmentProvider for InvestmentProviderMock {
 
         Ok(LoadInvestorResJs {
             investor_shares_count: "123".to_owned(),
-
-            investor_percentage: "21 %".to_owned(),
-            investor_percentage_number: "21".to_owned(),
-
             investor_share: "12 %".to_owned(),
 
             investor_already_retrieved_amount: "11100".to_owned(),

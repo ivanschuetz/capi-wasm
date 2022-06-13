@@ -18,8 +18,6 @@ pub struct LoadInvestorParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct LoadInvestorResJs {
     pub investor_shares_count: String,
-    pub investor_percentage: String,
-    pub investor_percentage_number: String, // relative to investor's share (part reserved to investors)
     pub investor_share: String, // relative to the dao's income
     pub investor_already_retrieved_amount: String,
     pub investor_claimable_dividend: String,

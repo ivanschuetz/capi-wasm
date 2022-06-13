@@ -96,12 +96,6 @@ impl InvestmentProvider for InvestmentProviderDef {
 
         Ok(LoadInvestorResJs {
             investor_shares_count: investor_view_data.locked_shares.to_string(),
-
-            // TODO do we still need these? don't we care only about investor_percentage_relative_to_total (the % of income basically)?,
-            // this is the percentage relative only to the total asset supply (i.e. other investors)
-            investor_percentage: investor_locked_percentage_of_supply.format_percentage(),
-            investor_percentage_number: investor_locked_percentage_of_supply.to_string(),
-
             investor_share: investor_dividend_percentage.format_percentage(),
 
             investor_already_retrieved_amount: base_units_to_display_units_str(
