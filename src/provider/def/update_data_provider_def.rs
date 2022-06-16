@@ -50,8 +50,6 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         };
 
         Ok(UpdatableDataResJs {
-            owner: app_state.owner.to_string(),
-
             customer_escrow: app_state.customer_escrow.address.to_string(),
             customer_escrow_version: app_state.customer_escrow.version.0.to_string(),
 

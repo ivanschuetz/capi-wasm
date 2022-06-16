@@ -23,7 +23,8 @@ use super::{
         investment_provider_def::InvestmentProviderDef, lock_provider_def::LockProviderDef,
         my_daos_provider_def::MyDaosProviderDef, my_shares_provider_def::MySharesProviderDef,
         optin_to_app_provider_def::OptinToAppProviderDef, pay_dao_provider_def::PayDaoProviderDef,
-        reclaim_provider_def::ReclaimProviderDef, roadmap_provider_def::RoadmapProviderDef,
+        reclaim_provider_def::ReclaimProviderDef, rekey_provider_def::RekeyProviderDef,
+        roadmap_provider_def::RoadmapProviderDef,
         shares_count_provider_def::SharesCountProviderDef,
         shares_distribution_provider_def::SharesDistributionProviderDef,
         unlock_provider_def::UnlockProviderDef, update_app_provider_def::UpdateAppProviderDef,
@@ -59,7 +60,7 @@ use super::{
         my_daos_provider_mock::MyDaosProviderMock, my_shares_provider_mock::MySharesProviderMock,
         optin_to_app_provider_mock::OptinToAppProviderMock,
         pay_dao_provider_mock::PayDaoProviderMock, reclaim_provider_mock::ReclaimProviderMock,
-        roadmap_provider_mock::RoadmapProviderMock,
+        rekey_provider_mock::RekeyProviderMock, roadmap_provider_mock::RoadmapProviderMock,
         shares_count_provider_mock::SharesCountProviderMock,
         shares_distribution_provider_mock::SharesDistributionProviderMock,
         unlock_provider_mock::UnlockProviderMock, update_app_provider_mock::UpdateAppProviderMock,
@@ -73,6 +74,7 @@ use super::{
     optin_to_app_provider::OptinToAppProvider,
     pay_dao_provider::PayDaoProvider,
     reclaim_provider::ReclaimProvider,
+    rekey_provider::RekeyProvider,
     roadmap_provider::RoadmapProvider,
     shares_count_provider::SharesCountProvider,
     shares_distribution_provider::SharesDistributionProvider,
@@ -121,6 +123,7 @@ pub struct Providers<'a> {
     pub reclaim: &'a dyn ReclaimProvider,
     pub description: &'a dyn DescriptionProvider,
     pub wyre: &'a dyn WyreProvider,
+    pub rekey: &'a dyn RekeyProvider,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -168,6 +171,7 @@ fn def_providers<'a>() -> Providers<'a> {
         reclaim: &ReclaimProviderDef {},
         description: &DescriptionProviderDef {},
         wyre: &WyreProviderDef {},
+        rekey: &RekeyProviderDef {},
     }
 }
 
@@ -205,5 +209,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         reclaim: &ReclaimProviderMock {},
         description: &DescriptionProviderMock {},
         wyre: &WyreProviderMock {},
+        rekey: &RekeyProviderMock {},
     }
 }

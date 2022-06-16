@@ -19,8 +19,6 @@ pub struct UpdatableDataParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdatableDataResJs {
-    pub owner: String,
-
     pub customer_escrow: String,
 
     pub customer_escrow_version: String,

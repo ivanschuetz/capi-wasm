@@ -488,6 +488,22 @@ pub async fn bridge_holders_change(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
+#[wasm_bindgen]
+pub async fn bridge_rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_rekey_owner", pars, async move |pars| {
+        to_bridge_res(providers()?.rekey.txs(parse_bridge_pars(pars)?).await)
+    })
+    .await
+}
+
+#[wasm_bindgen]
+pub async fn bridge_submit_rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_submit_rekey_owner", pars, async move |pars| {
+        to_bridge_res(providers()?.rekey.submit(parse_bridge_pars(pars)?).await)
+    })
+    .await
+}
+
 fn to_js<T>(res: Result<T, FrError>) -> Result<JsValue, JsValue>
 where
     T: Serialize,

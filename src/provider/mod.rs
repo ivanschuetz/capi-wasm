@@ -23,6 +23,7 @@ pub mod optin_to_app_provider;
 pub mod pay_dao_provider;
 mod providers;
 pub mod reclaim_provider;
+pub mod rekey_provider;
 mod roadmap_provider;
 pub mod shares_count_provider;
 mod shares_distribution_provider;

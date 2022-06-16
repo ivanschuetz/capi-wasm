@@ -31,7 +31,6 @@ impl UpdateDataProvider for UpdateDataProviderMock {
         let image_bytes_base64 = BASE64.encode(&image_bytes);
 
         Ok(UpdatableDataResJs {
-            owner: mock_address()?.to_string(),
             customer_escrow: mock_address()?.to_string(),
             customer_escrow_version: "1".to_owned(),
             project_name: mock_dao.name,

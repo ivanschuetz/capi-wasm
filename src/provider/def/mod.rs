@@ -20,6 +20,7 @@ pub mod my_shares_provider_def;
 pub mod optin_to_app_provider_def;
 pub mod pay_dao_provider_def;
 pub mod reclaim_provider_def;
+pub mod rekey_provider_def;
 pub mod roadmap_provider_def;
 pub mod shares_count_provider_def;
 pub mod shares_distribution_provider_def;

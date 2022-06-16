@@ -37,6 +37,7 @@ pub mod my_shares_provider_mock;
 pub mod optin_to_app_provider_mock;
 pub mod pay_dao_provider_mock;
 pub mod reclaim_provider_mock;
+pub mod rekey_provider_mock;
 pub mod roadmap_provider_mock;
 pub mod shares_count_provider_mock;
 pub mod shares_distribution_provider_mock;
