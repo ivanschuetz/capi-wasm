@@ -295,7 +295,7 @@ fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
 
 fn validate_dao_description_opt(descr: &Option<String>) -> Result<Option<String>, ValidationError> {
     match descr {
-        Some(d) => Ok(Some(validate_dao_description(&d)?)),
+        Some(d) => Ok(Some(validate_dao_description(d)?)),
         None => Ok(None),
     }
 }
@@ -352,7 +352,7 @@ fn validate_compressed_image(bytes: &Vec<u8>) -> Result<CompressedImage, Validat
     let max_size = 500_000;
     let size = bytes.len();
 
-    if bytes.len() == 0 {
+    if bytes.is_empty() {
         return Err(ValidationError::Empty); // image with no bytes makes no sense
     } else if bytes.len() > 500_000 {
         return Err(ValidationError::CompressedImageSize {

@@ -64,7 +64,7 @@ pub async fn mock_msgpack_tx(algod: &Algod, address: &Address) -> Result<Vec<u8>
 }
 
 pub async fn mock_to_sign(algod: &Algod, address: &Address) -> Result<ToSignJs> {
-    Ok(ToSignJs::new(vec![mock_tx(algod, address).await?])?)
+    ToSignJs::new(vec![mock_tx(algod, address).await?])
 }
 
 pub fn mock_address() -> Result<Address> {

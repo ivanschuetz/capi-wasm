@@ -85,7 +85,7 @@ impl UpdateAppProvider for UpdateAppProviderDef {
         let submit_update_res = submit_update(
             &algod,
             UpdateAppSigned {
-                update: signed_js_tx_to_signed_tx1(&tx)?,
+                update: signed_js_tx_to_signed_tx1(tx)?,
             },
         )
         .await?;

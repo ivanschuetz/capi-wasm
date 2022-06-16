@@ -78,11 +78,9 @@ pub fn format_decimal_readable(decimal: Decimal) -> Result<String> {
 
     // fractionals is 0,... - we need then as an integer to append to the whole part
     let base = 10u32;
-    let multiplier = base.checked_pow(dec_formatted.scale()).ok_or(anyhow!(
-        "Failed pow: {} pow {}",
-        base,
-        dec_formatted.scale()
-    ))?;
+    let multiplier = base
+        .checked_pow(dec_formatted.scale())
+        .ok_or_else(|| anyhow!("Failed pow: {} pow {}", base, dec_formatted.scale()))?;
     let fractionals_as_whole: Decimal = (fractionals * Decimal::from(multiplier)).normalize();
     // log::debug!("display_units: {}, dec_formatted: {}, whole: {}, fractionals: {}, fractionals_as_whole: {}", display_units, dec_formatted, whole, fractionals, fractionals_as_whole);
 
@@ -93,7 +91,7 @@ pub fn format_decimal_readable(decimal: Decimal) -> Result<String> {
         .to_formatted_string(&Locale::en);
 
     Ok(if fractionals.is_zero() {
-        format!("{}", str)
+        str
     } else {
         format!("{}.{}", str, fractionals_as_whole)
     })
@@ -202,19 +200,11 @@ fn one_fractional_skip_zeros(d: Decimal) -> Result<Decimal> {
 
     // "part1" is an operand, isolated only for logging
     let part1 = (d.checked_mul(one_fractional_multiplier))
-        .ok_or(anyhow!(
-            "Error multiplying: {} * {}",
-            d,
-            one_fractional_multiplier
-        ))?
+        .ok_or_else(|| anyhow!("Error multiplying: {} * {}", d, one_fractional_multiplier))?
         .round();
     let res = part1
         .checked_div(one_fractional_multiplier)
-        .ok_or(anyhow!(
-            "Error dividing: {} / {}",
-            part1,
-            one_fractional_multiplier
-        ))?
+        .ok_or_else(|| anyhow!("Error dividing: {} / {}", part1, one_fractional_multiplier))?
         .normalize();
 
     Ok(res)

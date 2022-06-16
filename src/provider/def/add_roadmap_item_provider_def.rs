@@ -61,7 +61,7 @@ impl AddRoadmapItemProvider for AddRoadmapItemProviderDef {
         }
         let tx = &pars.txs[0];
 
-        let add_roadmap_item_signed_tx = signed_js_tx_to_signed_tx1(&tx)?;
+        let add_roadmap_item_signed_tx = signed_js_tx_to_signed_tx1(tx)?;
 
         let tx_id = submit_add_roadmap_item(
             &algod,

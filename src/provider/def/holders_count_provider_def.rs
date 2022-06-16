@@ -147,7 +147,7 @@ fn count_more_than_duration_ago(
             return Some(count);
         }
     }
-    return None;
+    None
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

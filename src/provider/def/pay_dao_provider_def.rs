@@ -50,7 +50,7 @@ impl PayDaoProvider for PayDaoProviderDef {
         let res = submit_pay_dao(
             &algod,
             PayDaoSigned {
-                tx: signed_js_tx_to_signed_tx1(&tx)?,
+                tx: signed_js_tx_to_signed_tx1(tx)?,
             },
         )
         .await?;

@@ -22,7 +22,7 @@ impl WyreProvider for WyreProviderDef {
 
         Ok(WyreReserveResJs {
             url: res.url.clone(),
-            reservation: res.reservation.clone(),
+            reservation: res.reservation,
         })
     }
 }

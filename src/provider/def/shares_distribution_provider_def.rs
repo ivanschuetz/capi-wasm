@@ -40,7 +40,7 @@ impl SharesDistributionProvider for SharesDistributionProviderDef {
         }
 
         let not_owned = not_owned_shares_holdings(&holders, share_supply)?;
-        let not_owned_shares = not_owned.amount.clone();
+        let not_owned_shares = not_owned.amount;
 
         Ok(SharedDistributionResJs {
             holders: holders_js,
