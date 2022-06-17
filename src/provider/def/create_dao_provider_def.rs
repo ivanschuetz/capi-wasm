@@ -89,7 +89,6 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             &algod,
             &dao_specs,
             creator_address,
-            creator_address, // for now creator is owner
             submit_assets_res.shares_asset_id,
             funds_asset_specs.id,
             &programs,

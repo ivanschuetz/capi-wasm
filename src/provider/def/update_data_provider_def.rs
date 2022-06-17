@@ -90,7 +90,6 @@ impl UpdateDataProvider for UpdateDataProviderDef {
                 project_desc: pars.project_desc.map(|d| d.hash()),
                 image_hash: image_hash.clone(),
                 social_media_url: pars.social_media_url,
-                owner,
             },
         )
         .await?;
