@@ -338,7 +338,7 @@ pub async fn bridge_updatable_data(pars: JsValue) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub async fn bridge_update_data(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("bridge_update_data", pars, async move |pars| {
-        to_bridge_res(providers()?.update_data.txs(parse_bridge_pars(pars)?).await)
+        to_js(providers()?.update_data.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }

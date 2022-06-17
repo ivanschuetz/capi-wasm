@@ -289,11 +289,13 @@ pub struct CreateAssetsInputErrors {
     pub min_raise_target_end_date: Option<ValidationError>,
 }
 
-fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
+pub fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
     validate_text_min_max_length(name, 2, 40)
 }
 
-fn validate_dao_description_opt(descr: &Option<String>) -> Result<Option<String>, ValidationError> {
+pub fn validate_dao_description_opt(
+    descr: &Option<String>,
+) -> Result<Option<String>, ValidationError> {
     match descr {
         Some(d) => Ok(Some(validate_dao_description(d)?)),
         None => Ok(None),
@@ -304,7 +306,7 @@ fn validate_dao_description(descr: &str) -> Result<String, ValidationError> {
     validate_text_min_max_length(descr, 0, 2000)
 }
 
-fn validate_address(str: &str) -> Result<Address, ValidationError> {
+pub fn validate_address(str: &str) -> Result<Address, ValidationError> {
     str.parse().map_err(|_| ValidationError::Address)
 }
 
@@ -332,7 +334,7 @@ fn validate_text_min_max_length(
     Ok(text.to_owned())
 }
 
-fn validate_compressed_image_opt(
+pub fn validate_compressed_image_opt(
     bytes: &Option<Vec<u8>>,
 ) -> Result<Option<CompressedImage>, ValidationError> {
     match bytes {
@@ -428,7 +430,7 @@ fn validate_investors_share(input: &str) -> Result<SharesPercentage, ValidationE
     }
 }
 
-fn validate_social_media_url(input: &str) -> Result<String, ValidationError> {
+pub fn validate_social_media_url(input: &str) -> Result<String, ValidationError> {
     let count = input.len();
     let max_chars = 100;
     if count > max_chars {
@@ -450,7 +452,7 @@ fn validate_min_raised_target_end_date(input: &str) -> Result<Timestamp, Validat
     Ok(Timestamp(timestamp))
 }
 
-fn to_single_field_val_error(field_name: &str, e: ValidationError) -> ValidateDaoInputsError {
+pub fn to_single_field_val_error(field_name: &str, e: ValidationError) -> ValidateDaoInputsError {
     ValidateDaoInputsError::SingleFieldValidation {
         field: field_name.to_owned(),
         error: e,

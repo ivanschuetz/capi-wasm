@@ -1,7 +1,10 @@
 use super::{mock_address, mock_dao_for_users_view_data, mock_to_sign, req_delay};
-use crate::provider::update_data_provider::{
-    SubmitUpdateDataParJs, SubmitUpdateDataResJs, UpdatableDataParJs, UpdatableDataResJs,
-    UpdateDataParJs, UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
+use crate::{
+    error::FrError,
+    provider::update_data_provider::{
+        SubmitUpdateDataParJs, SubmitUpdateDataResJs, UpdatableDataParJs, UpdatableDataResJs,
+        UpdateDataParJs, UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
+    },
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -41,7 +44,7 @@ impl UpdateDataProvider for UpdateDataProviderMock {
         })
     }
 
-    async fn txs(&self, pars: UpdateDataParJs) -> Result<UpdateDataResJs> {
+    async fn txs(&self, pars: UpdateDataParJs) -> Result<UpdateDataResJs, FrError> {
         let algod = algod();
         let owner = pars.owner.parse().map_err(Error::msg)?;
 

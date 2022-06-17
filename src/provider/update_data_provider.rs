@@ -2,13 +2,16 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
-use crate::js::{common::SignedTxFromJs, to_sign_js::ToSignJs};
+use crate::{
+    error::FrError,
+    js::{common::SignedTxFromJs, to_sign_js::ToSignJs},
+};
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait UpdateDataProvider {
     async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs>;
-    async fn txs(&self, pars: UpdateDataParJs) -> Result<UpdateDataResJs>;
+    async fn txs(&self, pars: UpdateDataParJs) -> Result<UpdateDataResJs, FrError>;
     async fn submit(&self, pars: SubmitUpdateDataParJs) -> Result<SubmitUpdateDataResJs>;
 }
 
@@ -43,6 +46,7 @@ pub struct UpdateDataParJs {
 
     pub project_name: String,
     pub project_desc: Option<String>,
+    // TODO remove? not updatable currently
     pub share_price: String,
 
     pub image: Option<Vec<u8>>,

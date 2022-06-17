@@ -1,8 +1,11 @@
-use std::convert::TryFrom;
+use std::{collections::HashMap, convert::TryFrom};
 
 use crate::{
     inputs_validation::ValidationError,
-    js::{common::to_js_res, inputs_validation_js::to_validation_error_js},
+    js::{
+        common::to_js_res,
+        inputs_validation_js::{to_validation_error_js, ValidationErrorJs},
+    },
     provider::create_dao_provider::ValidateDaoInputsError,
 };
 use algonaut::error::ServiceError;
@@ -17,6 +20,7 @@ pub enum FrError {
     NotEnoughAlgos,
     NotEnoughFundsAsset { to_buy: AssetAmount },
     Validation(ValidationError),
+    Validations(HashMap<String, ValidationError>),
     Msg(String), // this is temporary / last resort: we expect to map all the errors to localized error messages in js
 }
 
@@ -49,6 +53,17 @@ impl TryFrom<FrError> for JsValue {
                 to_js_res(FrErrorWithId {
                     id: "validation".to_owned(),
                     details: Some(error_js),
+                })
+            }
+            FrError::Validations(validations) => {
+                let map_js: HashMap<String, ValidationErrorJs> = validations
+                    .into_iter()
+                    .map(|(k, v)| (k, to_validation_error_js(v)))
+                    .collect();
+
+                to_js_res(FrErrorWithId {
+                    id: "validations".to_owned(),
+                    details: Some(map_js),
                 })
             }
         }
