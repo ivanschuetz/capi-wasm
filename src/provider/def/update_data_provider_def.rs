@@ -40,7 +40,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
 
         let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
-        let image_bytes = match dao.specs.image_hash {
+        let image_bytes = match dao.image_hash {
             Some(hash) => {
                 let bytes = image_api.get_image(&hash.as_api_id()).await?;
                 let base64 = BASE64.encode(&bytes);

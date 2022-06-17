@@ -60,7 +60,7 @@ impl BuySharesProvider for BuySharesProviderDef {
             dao.shares_asset_id,
             validated_share_amount,
             funds_asset_specs.id,
-            dao.specs.share_price,
+            dao.share_price,
         )
         .await?;
 

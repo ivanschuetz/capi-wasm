@@ -51,18 +51,15 @@ impl ToDaoJs for Dao {
     ) -> Result<DaoJs> {
         let dao_id_str = self.id().to_string();
         Ok(DaoJs {
-            name: self.specs.name.clone(),
+            name: self.name.clone(),
             description_id,
-            share_price: base_units_to_display_units_readable(
-                self.specs.share_price,
-                funds_asset_specs,
-            )?,
-            share_asset_name: self.specs.shares.token_name.clone(),
-            share_supply: format_u64_readable(self.specs.shares.supply.val())?,
-            share_supply_number: self.specs.shares.supply.val().to_string(),
-            investors_share: self.specs.investors_share.value().to_string(),
+            share_price: base_units_to_display_units_readable(self.share_price, funds_asset_specs)?,
+            share_asset_name: self.token_name.clone(),
+            share_supply: format_u64_readable(self.token_supply.val())?,
+            share_supply_number: self.token_supply.val().to_string(),
+            investors_share: self.investors_share.value().to_string(),
             image_url,
-            social_media_url: self.specs.social_media_url.clone(),
+            social_media_url: self.social_media_url.clone(),
             shares_asset_id: self.shares_asset_id.to_string(),
             app_id: self.app_id.to_string(),
             customer_escrow_address: self.customer_escrow.address().to_string(),
@@ -74,7 +71,7 @@ impl ToDaoJs for Dao {
             dao_link: format!("/{}", dao_id_str),
             creator_address: self.owner.to_string(),
             share_price_number_algo: base_units_to_display_units_str(
-                self.specs.share_price,
+                self.share_price,
                 funds_asset_specs,
             ),
         })

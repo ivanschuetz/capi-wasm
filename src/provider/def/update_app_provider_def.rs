@@ -54,12 +54,12 @@ impl UpdateAppProvider for UpdateAppProviderDef {
         let app_source = render_and_compile_app_approval(
             &algod,
             &approval_template,
-            dao.specs.shares.supply,
+            dao.token_supply,
             PRECISION,
-            dao.specs.investors_share,
+            dao.investors_share,
             &capi_deps.address,
             capi_deps.escrow_percentage,
-            dao.specs.share_price,
+            dao.share_price,
         )
         .await?;
         let clear_source = render_and_compile_app_clear(&algod, &clear_template).await?;

@@ -72,10 +72,10 @@ impl InvestmentProvider for InvestmentProviderDef {
 
         // The % of investor's locked shares relative to the total supply
         let investor_locked_percentage_of_supply =
-            investor_view_data.locked_shares.as_decimal() / dao.specs.shares.supply.as_decimal();
+            investor_view_data.locked_shares.as_decimal() / dao.token_supply.as_decimal();
         // The % of DAO income the investor is entitled to, based on their locked shares
         let investor_dividend_percentage =
-            investor_locked_percentage_of_supply * dao.specs.investors_share.value();
+            investor_locked_percentage_of_supply * dao.investors_share.value();
 
         let central_state = dao_global_state(&algod, dao.app_id).await?;
 
@@ -193,10 +193,10 @@ pub async fn fetch_claimable_dividend(
     let can_claim = claimable_dividend(
         received_total_including_customer_escrow_balance,
         investor_claimed,
-        dao.specs.shares.supply,
+        dao.token_supply,
         investor_locked_shares,
         precision,
-        dao.specs.investors_share,
+        dao.investors_share,
     )?;
 
     Ok(can_claim)

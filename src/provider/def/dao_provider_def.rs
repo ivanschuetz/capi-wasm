@@ -28,11 +28,8 @@ impl DaoProvider for DaoUserViewProviderDef {
         let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
 
         Ok(dao.to_js(
-            dao.specs.descr_hash.clone().map(|h| h.as_str()),
-            dao.specs
-                .image_hash
-                .clone()
-                .map(|h| h.as_api_url(&image_api)),
+            dao.descr_hash.clone().map(|h| h.as_str()),
+            dao.image_hash.clone().map(|h| h.as_api_url(&image_api)),
             &funds_asset_specs()?,
         )?)
     }
