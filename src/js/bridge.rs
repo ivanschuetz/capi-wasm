@@ -491,7 +491,7 @@ pub async fn bridge_holders_change(pars: JsValue) -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub async fn bridge_rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("bridge_rekey_owner", pars, async move |pars| {
-        to_bridge_res(providers()?.rekey.txs(parse_bridge_pars(pars)?).await)
+        to_js(providers()?.rekey.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }

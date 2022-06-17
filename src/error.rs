@@ -31,6 +31,12 @@ impl From<ValidateDaoInputsError> for FrError {
     }
 }
 
+impl From<ValidationError> for FrError {
+    fn from(e: ValidationError) -> Self {
+        FrError::Validation(e)
+    }
+}
+
 impl TryFrom<FrError> for JsValue {
     type Error = JsValue;
 

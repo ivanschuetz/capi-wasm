@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::js::common::SignedTxFromJs;
 use crate::js::to_sign_js::ToSignJs;
 use anyhow::Result;
@@ -9,7 +10,7 @@ use std::fmt::Debug;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait RekeyProvider {
-    async fn txs(&self, pars: RekeyParJs) -> Result<RekeyResJs>;
+    async fn txs(&self, pars: RekeyParJs) -> Result<RekeyResJs, FrError>;
     async fn submit(&self, pars: SubmitRekeyParJs) -> Result<SubmitRekeyResJs>;
 }
 
