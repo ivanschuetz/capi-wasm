@@ -29,6 +29,7 @@ pub struct FundsActivityViewData {
     pub amount_without_fee: String,
     pub short_amount_without_fee: String,
     pub is_income: String, // false: spending
+    // not used currently TODO: later, when we've more identifiable types (e.g. investment, payment), change this in type_id (localization in react)
     pub type_label: String,
     pub description: String,
     pub date: String,
