@@ -1,7 +1,7 @@
 use crate::dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs};
 use crate::provider::income_vs_spending_provider::{
     to_interval_data, ChartDataPointJs, IncomeVsSpendingParJs, IncomeVsSpendingProvider,
-    IncomeVsSpendingResJs,
+    IncomeVsSpendingResJs, IntervalData,
 };
 use crate::service::number_formats::base_units_to_display_units;
 use anyhow::{anyhow, Result};
@@ -78,17 +78,37 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             })
             .collect();
 
-        to_income_vs_spending_res(
+        to_income_vs_spending_res_static_bounds(
             income_data_points,
             spending_data_points,
             &funds_asset_specs,
-            interval_data.interval,
+            interval_data,
         )
     }
 }
 
+/// x range determined by interval_data (data in income/spending may be left out)
 // pub to be shared with the mock provider
-pub fn to_income_vs_spending_res(
+pub fn to_income_vs_spending_res_static_bounds(
+    income: Vec<ChartDataPoint>,
+    spending: Vec<ChartDataPoint>,
+    funds_asset_specs: &FundsAssetSpecs,
+    interval_data: IntervalData,
+) -> Result<IncomeVsSpendingResJs> {
+    to_income_vs_spending_res(
+        income,
+        spending,
+        funds_asset_specs,
+        interval_data.start,
+        interval_data.end,
+        interval_data.interval,
+    )
+}
+
+/// x range adjusts to include all the data
+// dynamic bounds not used currently, but we might change this
+#[allow(dead_code)]
+pub fn to_income_vs_spending_res_dynamic_bounds(
     income: Vec<ChartDataPoint>,
     spending: Vec<ChartDataPoint>,
     funds_asset_specs: &FundsAssetSpecs,
@@ -112,24 +132,42 @@ pub fn to_income_vs_spending_res(
                 max: bounds.max,
             };
 
-            let mut all_points = income;
-            all_points.extend(spending);
-
-            let all_grouped_points_js = group_and_format_data_points(
-                &all_points,
+            to_income_vs_spending_res(
+                income,
+                spending,
+                funds_asset_specs,
                 bounds.min,
                 bounds.max,
                 grouping_interval,
-                funds_asset_specs,
-            )?;
-
-            Ok(IncomeVsSpendingResJs {
-                points: all_grouped_points_js,
-            })
+            )
         }
         // No min max dates -> nothing to display on the chart
         None => Ok(IncomeVsSpendingResJs { points: vec![] }),
     }
+}
+
+fn to_income_vs_spending_res(
+    income: Vec<ChartDataPoint>,
+    spending: Vec<ChartDataPoint>,
+    funds_asset_specs: &FundsAssetSpecs,
+    start_time: DateTime<Utc>,
+    end_time: DateTime<Utc>,
+    interval: Duration,
+) -> Result<IncomeVsSpendingResJs> {
+    let mut all_points = income;
+    all_points.extend(spending);
+
+    let all_grouped_points_js = group_and_format_data_points(
+        &all_points,
+        start_time,
+        end_time,
+        interval,
+        &funds_asset_specs,
+    )?;
+
+    Ok(IncomeVsSpendingResJs {
+        points: all_grouped_points_js,
+    })
 }
 
 /// Returns min max dates of data_points
@@ -203,7 +241,9 @@ pub fn group_and_format_data_points(
     interval_length: Duration,
     funds_asset_specs: &FundsAssetSpecs,
 ) -> Result<Vec<ChartDataPointJs>> {
-    let ticks_count = ticks_between(end_time, start_time, interval_length)?;
+    // we expect ticks_between to normally return a positive value here, as start_time should be <= end_time
+    let ticks_count: usize = ticks_between(end_time, start_time, interval_length)?.try_into()?;
+
     // ticks (indices) on x axis with their respective y value - 0 by default, so the chart shows 0 for dates that have no data
     let mut ticks: Vec<IncomeAndSpending> = vec![
         IncomeAndSpending {
@@ -215,7 +255,14 @@ pub fn group_and_format_data_points(
 
     for point in points {
         // calculate tick (grouped date) on x-axis
-        let tick_index = ticks_between(point.date, start_time, interval_length)?;
+        let tick_index_maybe_negative = ticks_between(point.date, start_time, interval_length)?;
+        // the data point can precede start_time, which gives us a negative tick index
+        // data points preceding start_time (i.e. outside of our current x range) are ignored
+        let tick_index: usize = if tick_index_maybe_negative.is_positive() {
+            tick_index_maybe_negative.try_into()?
+        } else {
+            continue;
+        };
 
         // add value to sum tick (keeping income and spending separate)
         let tick_value = &ticks[tick_index];
@@ -259,12 +306,11 @@ fn ticks_between(
     date: DateTime<Utc>,
     start: DateTime<Utc>,
     interval_length: Duration,
-) -> Result<usize> {
+) -> Result<i64> {
     log::debug!("calc tick count: date: {date:?}, start: {start:?}, length: {interval_length:?}");
     Ok((date - start)
         .num_seconds()
-        .div(interval_length.num_seconds())
-        .try_into()?)
+        .div(interval_length.num_seconds()))
 }
 
 fn create_data_point_js(
