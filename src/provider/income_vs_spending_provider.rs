@@ -38,17 +38,17 @@ pub fn to_interval_data(interval_str: &str) -> Result<IntervalData> {
     let end = Utc::now();
     match interval_str {
         "days7" => Ok(IntervalData {
-            start: end - Duration::days(7),
+            start: end - Duration::days(6),
             end,
             interval: Duration::days(1),
         }),
         "months3" => Ok(IntervalData {
-            start: end - Duration::weeks(12),
+            start: end - Duration::weeks(11),
             end,
             interval: Duration::weeks(1),
         }),
         "year" => Ok(IntervalData {
-            start: end - Duration::weeks(48),
+            start: end - Duration::weeks(47),
             end,
             interval: Duration::weeks(4),
         }),
