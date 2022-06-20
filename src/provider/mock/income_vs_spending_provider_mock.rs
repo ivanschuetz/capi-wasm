@@ -65,6 +65,26 @@ fn test_income_points(now: DateTime<Utc>) -> Vec<ChartDataPoint> {
             value: 5_000_000,
             is_income: true,
         },
+        ChartDataPoint {
+            date: now - Duration::days(12),
+            value: 1_000_000,
+            is_income: true,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(14),
+            value: 3_000_000,
+            is_income: true,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(15),
+            value: 6_500_000,
+            is_income: true,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(120),
+            value: 2_000_000,
+            is_income: true,
+        },
     ]
 }
 
@@ -73,32 +93,57 @@ fn test_spending_points(now: DateTime<Utc>) -> Vec<ChartDataPoint> {
     vec![
         ChartDataPoint {
             date: now - Duration::days(0),
-            value: 1_000_000,
+            value: 5_000_000,
             is_income: false,
         },
         ChartDataPoint {
             date: now - Duration::days(2),
-            value: 5_000_000,
-            is_income: false,
-        },
-        ChartDataPoint {
-            date: now - Duration::days(3),
-            value: 3_000_000,
-            is_income: false,
-        },
-        ChartDataPoint {
-            date: now - Duration::days(5),
             value: 4_000_000,
             is_income: false,
         },
         ChartDataPoint {
+            date: now - Duration::days(3),
+            value: 1_433_211,
+            is_income: false,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(5),
+            value: 4_100_000,
+            is_income: false,
+        },
+        ChartDataPoint {
             date: now - Duration::days(6),
-            value: 5_000_000,
+            value: 2_560_000,
             is_income: false,
         },
         ChartDataPoint {
             date: now - Duration::days(7),
-            value: 5_000_000,
+            value: 4_000_000,
+            is_income: false,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(12),
+            value: 500_000,
+            is_income: false,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(14),
+            value: 250_123,
+            is_income: false,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(15),
+            value: 6_500_000,
+            is_income: false,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(16),
+            value: 3_000_000,
+            is_income: false,
+        },
+        ChartDataPoint {
+            date: now - Duration::days(120),
+            value: 14_000_000,
             is_income: false,
         },
     ]
