@@ -307,7 +307,6 @@ fn ticks_between(
     start: DateTime<Utc>,
     interval_length: Duration,
 ) -> Result<i64> {
-    log::debug!("calc tick count: date: {date:?}, start: {start:?}, length: {interval_length:?}");
     Ok((date - start)
         .num_seconds()
         .div(interval_length.num_seconds()))
