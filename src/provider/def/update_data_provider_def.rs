@@ -57,12 +57,20 @@ impl UpdateDataProvider for UpdateDataProviderDef {
             None => None,
         };
 
+        let description = match dao.descr_hash {
+            Some(hash) => {
+                let descr = image_api.get_descr(&hash.as_api_id()).await?;
+                Some(descr)
+            }
+            None => None,
+        };
+
         Ok(UpdatableDataResJs {
             customer_escrow: app_state.customer_escrow.address.to_string(),
             customer_escrow_version: app_state.customer_escrow.version.0.to_string(),
 
             project_name: app_state.project_name,
-            project_desc: app_state.project_desc.map(|h| h.as_str()),
+            project_desc: description,
             share_price: app_state.share_price.to_string(),
 
             image_bytes,
