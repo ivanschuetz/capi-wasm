@@ -35,8 +35,6 @@ impl WithdrawProvider for WithdrawProviderMock {
         Ok(WithdrawResJs {
             to_sign: mock_to_sign(&algod, &owner).await?,
             pt: SubmitWithdrawPassthroughParJs {
-                maybe_drain_tx_msg_pack: None,
-                maybe_capi_share_tx_msg_pack: None,
                 inputs: inputs_par.clone(),
             },
         })

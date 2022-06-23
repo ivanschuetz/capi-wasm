@@ -12,12 +12,9 @@ use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::capi_deps::CapiAssetDaoDeps;
-use base::dependencies::teal_api;
 use base::flows::create_dao::model::Dao;
-use base::flows::{
-    claim::claim::claimable_dividend, create_dao::storage::load_dao::load_dao,
-    drain::drain::drain_amounts,
-};
+use base::flows::drain::drain::to_drain_amounts;
+use base::flows::{claim::claim::claimable_dividend, create_dao::storage::load_dao::load_dao};
 use base::state::account_state::asset_holdings;
 use base::state::dao_shares::dao_shares_with_dao_state;
 use mbase::checked::{CheckedAdd, CheckedSub};
@@ -57,13 +54,12 @@ impl InvestmentProvider for InvestmentProviderDef {
         log::debug!("bridge_load_investment, pars: {:?}", pars);
 
         let algod = algod();
-        let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse()?;
 
-        let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, dao_id).await?;
 
         let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
@@ -173,25 +169,23 @@ pub async fn fetch_claimable_dividend(
 
     app_state: &CentralAppGlobalState,
 ) -> Result<FundsAmount> {
-    let drain_amounts = drain_amounts(
+    let drain_amounts = to_drain_amounts(
         algod,
         capi_deps.escrow_percentage,
         funds_specs.id,
-        dao.customer_escrow.address(),
+        dao.app_id,
     )
     .await?;
 
-    let withdrawable_customer_escrow_amount = drain_amounts.dao;
+    let not_drained_funds = drain_amounts.dao;
 
-    // This is basically "simulate that the customer escrow was already drained"
-    // we use this value, as harvesting will drain the customer escrow if it has a balance (> MIN_BALANCE + FIXED_FEE)
+    // This is basically "simulate that the app was already drained"
+    // we use this, as claiming will drain the customer escrow if it has a balance (> MIN_BALANCE + FIXED_FEE)
     // and the draining step is invisible to the user (aside of adding more txs to the claiming txs to sign)
-    let received_total_including_customer_escrow_balance = app_state
-        .received
-        .add(&withdrawable_customer_escrow_amount)?;
+    let received_total_including_not_drained_funds = app_state.received.add(&not_drained_funds)?;
 
     let can_claim = claimable_dividend(
-        received_total_including_customer_escrow_balance,
+        received_total_including_not_drained_funds,
         investor_claimed,
         dao.token_supply,
         investor_locked_shares,

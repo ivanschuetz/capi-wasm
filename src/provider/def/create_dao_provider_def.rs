@@ -1,6 +1,4 @@
-use std::convert::TryInto;
-
-use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::dependencies::funds_asset_specs;
 use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
@@ -18,8 +16,8 @@ use base::api::image_api::ImageApi;
 use base::dependencies::{image_api, teal_api};
 use base::flows::create_dao::model::{SetupDaoSigned, SetupDaoToSign};
 use base::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
+use base::flows::create_dao::setup_dao::Programs;
 use base::flows::create_dao::setup_dao::{setup_dao_txs, submit_setup_dao};
-use base::flows::create_dao::setup_dao::{Escrows, Programs};
 use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
 use base::flows::create_dao::storage::load_dao::TxId;
 use base::network_util::wait_for_pending_transaction;
@@ -38,7 +36,6 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         let algod = algod();
         let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
-        let capi_deps = capi_deps()?;
 
         // we assume order: js has as little logic as possible:
         // we send txs to be signed, as an array, and get the signed txs array back
@@ -78,11 +75,6 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             central_app_clear: api
                 .template(Contract::DaoAppClear, last_versions.app_clear)
                 .await?,
-            escrows: Escrows {
-                customer_escrow: api
-                    .template(Contract::DaoCustomer, last_versions.customer_escrow)
-                    .await?,
-            },
         };
 
         let to_sign = setup_dao_txs(
@@ -94,14 +86,13 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             &programs,
             PRECISION,
             submit_assets_res.app_id,
-            &capi_deps,
         )
         .await?;
 
         // double-checking total length as well, just in case
         // in the next step we also check the length of the signed txs
         let txs_to_sign = txs_to_sign(&to_sign);
-        if txs_to_sign.len() as u64 != 4 {
+        if txs_to_sign.len() as u64 != 3 {
             return Err(FrError::Msg(format!(
                 "Unexpected to sign dao txs length: {}",
                 txs_to_sign.len()
@@ -113,13 +104,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             pt: SubmitSetupDaoPassthroughParJs {
                 specs: dao_specs,
                 creator: creator_address.to_string(),
-                // !! TODO renamed: escrow_optin_signed_txs_msg_pack -> and only 1 tx now (not vec)
-                customer_escrow_optin_to_funds_asset_tx_msg_pack: rmp_serde::to_vec_named(
-                    &to_sign.customer_escrow_optin_to_funds_asset_tx,
-                )
-                .map_err(Error::msg)?,
                 shares_asset_id: submit_assets_res.shares_asset_id,
-                customer_escrow: to_sign.customer_escrow.into(),
                 app_id: submit_assets_res.app_id.0,
                 description: validated_inputs.description,
                 compressed_image: validated_inputs.image.map(|i| i.bytes()),
@@ -134,7 +119,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         let image_api = image_api();
         let funds_asset_specs = funds_asset_specs()?;
 
-        if pars.txs.len() != 4 {
+        if pars.txs.len() != 3 {
             return Err(anyhow!(
                 "Unexpected signed dao txs length: {}",
                 pars.txs.len()
@@ -146,9 +131,8 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         // maybe refactor writing/reading into a helper struct or function
         // (written in create_dao::txs_to_sign)
         let setup_app_tx = &pars.txs[0];
-        let customer_escrow_funding_tx = &pars.txs[1];
-        let app_funding_tx = &pars.txs[2];
-        let transfer_shares_to_app_tx = &pars.txs[3];
+        let app_funding_tx = &pars.txs[1];
+        let transfer_shares_to_app_tx = &pars.txs[2];
 
         log::debug!("Submitting the dao..");
 
@@ -161,17 +145,11 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             &algod,
             SetupDaoSigned {
                 app_funding_tx: signed_js_tx_to_signed_tx1(app_funding_tx)?,
-                fund_customer_escrow_tx: signed_js_tx_to_signed_tx1(customer_escrow_funding_tx)?,
-                customer_escrow_optin_to_funds_asset_tx: rmp_serde::from_slice(
-                    &pars.pt.customer_escrow_optin_to_funds_asset_tx_msg_pack,
-                )
-                .map_err(Error::msg)?,
                 transfer_shares_to_app_tx: signed_js_tx_to_signed_tx1(transfer_shares_to_app_tx)?,
                 setup_app_tx: signed_js_tx_to_signed_tx1(setup_app_tx)?,
                 specs: pars.pt.specs,
                 creator: pars.pt.creator.parse().map_err(Error::msg)?,
                 shares_asset_id: pars.pt.shares_asset_id,
-                customer_escrow: pars.pt.customer_escrow.try_into().map_err(Error::msg)?,
                 funds_asset_id: funds_asset_specs.id,
                 app_id: DaoAppId(pars.pt.app_id),
             },
@@ -217,7 +195,6 @@ impl CreateDaoProvider for CreateDaoProviderDef {
 fn txs_to_sign(res: &SetupDaoToSign) -> Vec<Transaction> {
     vec![
         res.setup_app_tx.clone(),
-        res.customer_escrow_funding_tx.clone(),
         res.fund_app_tx.clone(),
         res.transfer_shares_to_app_tx.clone(),
     ]

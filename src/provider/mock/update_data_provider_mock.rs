@@ -1,4 +1,4 @@
-use super::{mock_address, mock_dao_for_users_view_data, mock_to_sign, req_delay};
+use super::{mock_dao_for_users_view_data, mock_to_sign, req_delay};
 use crate::{
     error::FrError,
     provider::update_data_provider::{
@@ -34,8 +34,6 @@ impl UpdateDataProvider for UpdateDataProviderMock {
         let image_bytes_base64 = BASE64.encode(&image_bytes);
 
         Ok(UpdatableDataResJs {
-            customer_escrow: mock_address()?.to_string(),
-            customer_escrow_version: "1".to_owned(),
             project_name: mock_dao.name,
             project_desc: Some("My project description".to_owned()),
             share_price: "1_000".to_owned(),

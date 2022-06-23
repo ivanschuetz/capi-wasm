@@ -22,10 +22,6 @@ pub struct UpdatableDataParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdatableDataResJs {
-    pub customer_escrow: String,
-
-    pub customer_escrow_version: String,
-
     pub project_name: String,
     pub project_desc: Option<String>,
     pub share_price: String,
@@ -40,9 +36,6 @@ pub struct UpdatableDataResJs {
 pub struct UpdateDataParJs {
     pub dao_id: String,
     pub owner: String,
-
-    pub customer_escrow: String,
-    pub customer_escrow_version: String,
 
     pub project_name: String,
     pub project_desc: Option<String>,

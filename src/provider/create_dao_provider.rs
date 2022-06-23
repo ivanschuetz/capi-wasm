@@ -3,7 +3,6 @@ use crate::error::FrError;
 use crate::inputs_validation::ValidationError;
 use crate::js::common::to_js_value;
 use crate::js::common::SignedTxFromJs;
-use crate::js::js_types_workarounds::VersionedContractAccountJs;
 use crate::js::to_sign_js::ToSignJs;
 use crate::model::dao_js::DaoJs;
 use crate::service::number_formats::validate_funds_amount_input;
@@ -469,16 +468,8 @@ pub struct SubmitCreateDaoParJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitSetupDaoPassthroughParJs {
     pub specs: SetupDaoSpecs,
-    // not sure how to passthrough, if we use Address, when deserializing, we get:
-    // index.js:1 Error("invalid type: sequence, expected a 32 byte array", line: 1, column: 10711)
-    // looking at the logs, the passed JsValue looks like an array ([1, 2...])
     pub creator: String,
-    // can't use SignedTransactions because of deserialization issue mainly (only?) with Address
-    // see note on `creator` above
-    // Note: multiple transactions: the tx vector is serialized into a single u8 vector
-    pub customer_escrow_optin_to_funds_asset_tx_msg_pack: Vec<u8>,
     pub shares_asset_id: u64,
-    pub customer_escrow: VersionedContractAccountJs,
     pub app_id: u64,
     pub description: Option<String>,
     pub compressed_image: Option<Vec<u8>>,

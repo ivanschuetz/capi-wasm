@@ -47,7 +47,7 @@ impl UpdateAppProvider for UpdateAppProviderDef {
         let clear_template = api.template(Contract::DaoAppClear, clear_version).await?;
 
         // TODO optimize: instead of calling load_dao, fetch app state and asset infos (don't e.g. compile and render the escrows, which is not needed here)
-        let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, dao_id).await?;
 
         // TODO versioning
         // since there's no versioning, we just render again with v1

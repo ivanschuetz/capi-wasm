@@ -1,7 +1,6 @@
 use super::{mock_to_sign, req_delay};
 use crate::provider::claim_provider::{
-    ClaimParJs, ClaimProvider, ClaimResJs, SubmitClaimParJs, SubmitClaimPassthroughParJs,
-    SubmitClaimResJs,
+    ClaimParJs, ClaimProvider, ClaimResJs, SubmitClaimParJs, SubmitClaimResJs,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -21,10 +20,6 @@ impl ClaimProvider for ClaimProviderMock {
 
         Ok(ClaimResJs {
             to_sign: mock_to_sign(&algod, investor_address).await?,
-            pt: SubmitClaimPassthroughParJs {
-                maybe_drain_tx_msg_pack: None,
-                maybe_capi_share_tx_msg_pack: None,
-            },
         })
     }
 

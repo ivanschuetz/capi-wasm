@@ -1,5 +1,5 @@
 use crate::{
-    dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs},
+    dependencies::{funds_asset_specs, FundsAssetSpecs},
     provider::withdrawal_history_provider::{
         LoadWithdrawalParJs, LoadWithdrawalResJs, WithdrawalHistoryProvider, WithdrawalViewData,
     },
@@ -7,10 +7,7 @@ use crate::{
 use algonaut::{algod::v2::Algod, indexer::v2::Indexer};
 use anyhow::Result;
 use async_trait::async_trait;
-use base::{
-    capi_deps::CapiAssetDaoDeps, dependencies::teal_api, flows::withdraw::withdrawals::withdrawals,
-    teal::TealApi,
-};
+use base::flows::withdraw::withdrawals::withdrawals;
 use mbase::{
     dependencies::{algod, indexer},
     models::dao_id::DaoId,
@@ -25,21 +22,11 @@ pub struct WithdrawalHistoryProviderDef {}
 impl WithdrawalHistoryProvider for WithdrawalHistoryProviderDef {
     async fn get(&self, pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs> {
         let algod = algod();
-        let api = teal_api();
         let indexer = indexer();
-        let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse()?;
 
-        let entries = load_withdrawals(
-            &algod,
-            &indexer,
-            &funds_asset_specs()?,
-            dao_id,
-            &api,
-            &capi_deps,
-        )
-        .await?;
+        let entries = load_withdrawals(&algod, &indexer, &funds_asset_specs()?, dao_id).await?;
 
         Ok(LoadWithdrawalResJs { entries })
     }
@@ -50,20 +37,8 @@ pub async fn load_withdrawals(
     indexer: &Indexer,
     funds_asset_specs: &FundsAssetSpecs,
     dao_id: DaoId,
-    api: &dyn TealApi,
-    capi_deps: &CapiAssetDaoDeps,
 ) -> Result<Vec<WithdrawalViewData>> {
-    let entries = withdrawals(
-        algod,
-        indexer,
-        dao_id,
-        api,
-        funds_asset_specs.id,
-        capi_deps,
-        &None,
-        &None,
-    )
-    .await?;
+    let entries = withdrawals(algod, indexer, dao_id, funds_asset_specs.id, &None, &None).await?;
     let mut reqs_view_data = vec![];
     for entry in entries {
         reqs_view_data.push(withdrawal_view_data(

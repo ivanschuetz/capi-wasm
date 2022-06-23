@@ -1,4 +1,4 @@
-use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::dependencies::funds_asset_specs;
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::available_funds;
@@ -8,7 +8,7 @@ use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::dependencies::{image_api, teal_api};
+use base::dependencies::image_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use mbase::dependencies::algod;
 use mbase::util::decimal_util::DecimalExt;
@@ -20,24 +20,21 @@ pub struct ViewDaoProviderDef {}
 impl ViewDaoProvider for ViewDaoProviderDef {
     async fn get(&self, pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
         let algod = algod();
-        let api = teal_api();
         let image_api = image_api();
         let funds_asset_specs = funds_asset_specs()?;
-        let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse()?;
 
-        let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, dao_id).await?;
 
         // TODO investor count: get all holders of asset (indexer?)
 
         let customer_payment_deeplink =
-            LinkableTransactionBuilder::payment(*dao.customer_escrow.address(), MicroAlgos(0))
+            LinkableTransactionBuilder::payment(dao.app_address(), MicroAlgos(0))
                 .build()
                 .as_url();
 
-        let available_funds =
-            available_funds(&algod, &dao, funds_asset_specs.id, &capi_deps).await?;
+        let available_funds = available_funds(&algod, &dao, funds_asset_specs.id).await?;
 
         // TODO!! not-locked shares (use global function to get not-locked (name prob. "available" shares))
         let shares_available = algod

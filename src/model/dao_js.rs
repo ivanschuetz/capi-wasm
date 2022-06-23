@@ -25,7 +25,7 @@ pub struct DaoJs {
     // TODO this is optional too, make it optional everywhere
     pub social_media_url: String,
     pub app_id: String,
-    pub customer_escrow_address: String,
+    pub app_address: String,
     pub invest_link: String,
     pub my_investment_link: String,
     pub my_investment_link_rel: String,
@@ -62,7 +62,7 @@ impl ToDaoJs for Dao {
             social_media_url: self.social_media_url.clone(),
             shares_asset_id: self.shares_asset_id.to_string(),
             app_id: self.app_id.to_string(),
-            customer_escrow_address: self.customer_escrow.address().to_string(),
+            app_address: self.app_id.address().to_string(),
             // invest_link: format!("/{}/invest", dao_id_str),
             // for now just the dao, because we don't have a dedicated investing view anymore and the embedded view is not linked
             invest_link: format!("/{}", dao_id_str),

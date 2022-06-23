@@ -19,7 +19,6 @@ pub struct ClaimParJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct ClaimResJs {
     pub to_sign: ToSignJs,
-    pub pt: SubmitClaimPassthroughParJs,
 }
 
 /// The assets creation signed transactions and the specs to create the dao
@@ -29,14 +28,6 @@ pub struct SubmitClaimParJs {
     pub dao_id_for_diagnostics: String,
 
     pub txs: Vec<SignedTxFromJs>,
-    pub pt: SubmitClaimPassthroughParJs,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SubmitClaimPassthroughParJs {
-    // set if a drain tx is necessary
-    pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
-    pub maybe_capi_share_tx_msg_pack: Option<Vec<u8>>,
 }
 
 #[derive(Debug, Clone, Serialize)]

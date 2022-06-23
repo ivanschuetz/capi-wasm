@@ -1,4 +1,4 @@
-use super::{mock_msgpack_tx, mock_to_sign, req_delay};
+use super::{mock_to_sign, req_delay};
 use crate::provider::drain_provider::{
     DrainParJs, DrainProvider, DrainResJs, SubmitDrainParJs, SubmitDrainPassthroughParJs,
     SubmitDrainResJs,
@@ -21,8 +21,6 @@ impl DrainProvider for DrainProviderMock {
         Ok(DrainResJs {
             to_sign: mock_to_sign(&algod, &drainer_address).await?,
             pt: SubmitDrainPassthroughParJs {
-                drain_tx_msg_pack: mock_msgpack_tx(&algod, &drainer_address).await?,
-                capi_share_tx_msg_pack: mock_msgpack_tx(&algod, &drainer_address).await?,
                 dao_id: "12312132".to_owned(),
             },
         })
@@ -32,7 +30,6 @@ impl DrainProvider for DrainProviderMock {
         req_delay().await;
 
         Ok(SubmitDrainResJs {
-            new_customer_escrow_balance: "12312".to_owned(),
             new_app_balance: "11111".to_owned(),
         })
     }

@@ -10,7 +10,6 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::dependencies::teal_api;
 use base::queries::historic_balance::historic_dao_funds_balance;
 use base::state::account_state::{funds_holdings, funds_holdings_from_account};
 use chrono::{Duration, Utc};
@@ -47,13 +46,11 @@ impl BalanceProvider for BalanceProviderDef {
     async fn get_balance_change(&self, pars: BalanceChangeParJs) -> Result<BalanceChangeResJs> {
         let algod = algod();
         let indexer = indexer();
-        let api = teal_api();
         let capi_deps = capi_deps()?;
         let funds_asset_specs = funds_asset_specs()?;
 
         // let address = pars.address.parse().map_err(Error::msg)?;
         let dao_id: DaoId = pars.dao_id.parse()?;
-        let customer_escrow_address = pars.customer_escrow.parse().map_err(Error::msg)?;
 
         let dao_address = dao_id.0.address();
 
@@ -63,9 +60,7 @@ impl BalanceProvider for BalanceProviderDef {
         let past_balance = historic_dao_funds_balance(
             &algod,
             &indexer,
-            &api,
             funds_asset_specs.id,
-            &customer_escrow_address,
             dao_id,
             &capi_deps,
             date,

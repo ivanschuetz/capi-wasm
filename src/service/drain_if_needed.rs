@@ -9,28 +9,31 @@ use base::{
     flows::{
         create_dao::model::Dao,
         drain::drain::{
-            fetch_drain_amount_and_drain, submit_drain_customer_escrow, DrainCustomerEscrowSigned,
-            DrainCustomerEscrowToSign,
+            fetch_drain_amount_and_drain, submit_drain, to_drain_amounts, DrainSigned, DrainToSign,
         },
     },
     network_util::wait_for_pending_transaction,
-    state::account_state::funds_holdings,
 };
 use mbase::models::funds::FundsAssetId;
 
 /// Returns txs if needed to drain, None if not needed.
-pub async fn drain_if_needed_txs(
+pub async fn drain_if_needed_tx(
     algod: &Algod,
     dao: &Dao,
     sender: &Address,
     funds_asset_id: FundsAssetId,
     capi_deps: &CapiAssetDaoDeps,
-) -> Result<Option<DrainCustomerEscrowToSign>> {
-    let customer_escrow_amount =
-        funds_holdings(algod, dao.customer_escrow.address(), funds_asset_id).await?;
+) -> Result<Option<DrainToSign>> {
+    let to_drain = to_drain_amounts(
+        algod,
+        capi_deps.escrow_percentage,
+        funds_asset_id,
+        dao.app_id,
+    )
+    .await?;
 
-    if customer_escrow_amount.0 > 0 {
-        log::debug!("There's an amount to drain: {}", customer_escrow_amount);
+    if to_drain.has_something_to_drain() {
+        log::debug!("There's an amount to drain: {:?}", to_drain.dao);
 
         Ok(Some(
             fetch_drain_amount_and_drain(
@@ -39,7 +42,6 @@ pub async fn drain_if_needed_txs(
                 dao.app_id,
                 funds_asset_specs()?.id,
                 capi_deps,
-                &dao.customer_escrow.account,
             )
             .await?,
         ))
@@ -48,24 +50,18 @@ pub async fn drain_if_needed_txs(
     }
 }
 
-pub async fn submit_drain(
+pub async fn prepare_pars_and_submit_drain(
     algod: &Algod,
-    drain_passthrough_tx: &[u8],
-    drain_app_call_tx: &SignedTxFromJs,
-    capi_share_tx: &[u8],
+    app_call_js: &SignedTxFromJs,
 ) -> Result<()> {
     log::debug!("Submit drain txs..");
 
-    let drain_tx = rmp_serde::from_slice(drain_passthrough_tx)?;
-    let drain_app_call_tx = signed_js_tx_to_signed_tx1(drain_app_call_tx)?;
-    let capi_share_tx = rmp_serde::from_slice(capi_share_tx)?;
+    let app_call = signed_js_tx_to_signed_tx1(app_call_js)?;
 
-    let drain_tx_id = submit_drain_customer_escrow(
+    let drain_tx_id = submit_drain(
         algod,
-        &DrainCustomerEscrowSigned {
-            drain_tx,
-            app_call_tx_signed: drain_app_call_tx,
-            capi_share_tx,
+        &DrainSigned {
+            app_call_tx_signed: app_call,
         },
     )
     .await?;

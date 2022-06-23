@@ -14,7 +14,7 @@ pub trait PayDaoProvider {
 #[derive(Debug, Clone, Deserialize)]
 pub struct PayDaoParJs {
     pub customer_address: String,
-    pub customer_escrow_address: String,
+    pub dao_id: String,
     pub amount: String,
 }
 

@@ -34,13 +34,10 @@ pub struct SubmitDrainParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitDrainPassthroughParJs {
-    pub drain_tx_msg_pack: Vec<u8>,
-    pub capi_share_tx_msg_pack: Vec<u8>,
     pub dao_id: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SubmitDrainResJs {
-    pub new_customer_escrow_balance: String,
     pub new_app_balance: String,
 }

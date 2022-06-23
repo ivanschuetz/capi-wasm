@@ -1,4 +1,3 @@
-use crate::dependencies::capi_deps;
 use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
@@ -8,7 +7,6 @@ use crate::provider::rekey_provider::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::dependencies::teal_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::rekey::rekey::{rekey, submit_rekey, RekeySigned};
 use mbase::dependencies::algod;
@@ -22,10 +20,8 @@ impl RekeyProvider for RekeyProviderDef {
         log::debug!("_bridge_rekey, pars: {:?}", pars);
 
         let algod = algod();
-        let api = teal_api();
-        let capi_deps = capi_deps()?;
 
-        let dao = load_dao(&algod, pars.dao_id.parse()?, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, pars.dao_id.parse()?).await?;
 
         let auth = validate_address(&pars.auth_address)?;
 

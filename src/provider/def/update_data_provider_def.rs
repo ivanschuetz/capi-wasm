@@ -1,13 +1,10 @@
-use std::collections::HashMap;
-
-use crate::dependencies::capi_deps;
 use crate::error::FrError;
 use crate::inputs_validation::ValidationError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_dao_provider::{
-    validate_address, validate_compressed_image_opt, validate_dao_description_opt,
-    validate_dao_name, validate_social_media_url,
+    validate_compressed_image_opt, validate_dao_description_opt, validate_dao_name,
+    validate_social_media_url,
 };
 use crate::provider::def::create_dao_provider_def::maybe_upload_image;
 use crate::provider::update_data_provider::{
@@ -17,19 +14,19 @@ use crate::provider::update_data_provider::{
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::api::image_api::ImageApi;
-use base::dependencies::{image_api, teal_api};
+use base::dependencies::image_api;
 use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::update_data::update_data::{
     submit_update_data, update_data, UpdatableDaoData, UpdateDaoDataSigned,
 };
 use data_encoding::BASE64;
-use mbase::api::version::{Version, VersionedAddress};
 use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
 use mbase::models::hash::GlobalStateHash;
 use mbase::state::dao_app_state::dao_global_state;
 use serde::Serialize;
+use std::collections::HashMap;
 
 pub struct UpdateDataProviderDef {}
 
@@ -38,15 +35,13 @@ pub struct UpdateDataProviderDef {}
 impl UpdateDataProvider for UpdateDataProviderDef {
     async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
         let algod = algod();
-        let api = teal_api();
         let image_api = image_api();
-        let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse::<DaoId>().map_err(Error::msg)?;
 
         let app_state = dao_global_state(&algod, dao_id.0).await?;
 
-        let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, dao_id).await?;
 
         let image_bytes = match dao.image_hash {
             Some(hash) => {
@@ -66,9 +61,6 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         };
 
         Ok(UpdatableDataResJs {
-            customer_escrow: app_state.customer_escrow.address.to_string(),
-            customer_escrow_version: app_state.customer_escrow.version.0.to_string(),
-
             project_name: app_state.project_name,
             project_desc: description,
             share_price: app_state.share_price.to_string(),
@@ -150,23 +142,17 @@ fn validate_inputs(
     let dao_description_res = validate_dao_description_opt(&pars.project_desc);
     let image_res = validate_compressed_image_opt(&pars.image);
     let social_media_url_res = validate_social_media_url(&pars.social_media_url);
-    let payment_escrow_res = validate_address(&pars.customer_escrow);
-    let payment_escrow_version_res = validate_payment_escrow_version(&pars.customer_escrow_version);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_err = dao_description_res.clone().err();
     let compressed_image_err = image_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
-    let payment_escrow_err = payment_escrow_res.clone().err();
-    let payment_escrow_version_err = payment_escrow_version_res.clone().err();
 
     if [
         dao_name_err,
         dao_description_err,
         compressed_image_err,
         social_media_url_err,
-        payment_escrow_err,
-        payment_escrow_version_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -176,8 +162,6 @@ fn validate_inputs(
             description: dao_description_res.err(),
             image: image_res.err(),
             social_media_url: social_media_url_res.err(),
-            payment_address: payment_escrow_res.err(),
-            payment_version: payment_escrow_version_res.err(),
         };
         return Err(ValidateDataUpdateInputsError::AllFieldsValidation(errors));
     }
@@ -188,17 +172,12 @@ fn validate_inputs(
     let image = image_res.map_err(|e| to_single_field_val_error("compressed_image", e))?;
     let social_media_url =
         social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
-    let payment_address =
-        payment_escrow_res.map_err(|e| to_single_field_val_error("payment_address", e))?;
-    let payment_version =
-        payment_escrow_version_res.map_err(|e| to_single_field_val_error("payment_version", e))?;
 
     let image_hash = image.as_ref().map(|i| i.hash());
 
     Ok((
         image,
         UpdatableDaoData {
-            customer_escrow: VersionedAddress::new(payment_address, payment_version),
             project_name: dao_name,
             project_desc: dao_description.map(|d| d.hash()),
             image_hash: image_hash.clone(),
@@ -207,25 +186,12 @@ fn validate_inputs(
     ))
 }
 
-fn validate_payment_escrow_version(input: &str) -> Result<Version, ValidationError> {
-    let version: u32 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
-    if version == 0 {
-        return Err(ValidationError::Min {
-            min: 1u8.to_string(),
-            actual: version.to_string(),
-        });
-    }
-    Ok(Version(version))
-}
-
 #[derive(Debug, Clone, Serialize)]
 pub struct ValidateUpateDataInputErrors {
     pub name: Option<ValidationError>,
     pub description: Option<ValidationError>,
     pub image: Option<ValidationError>,
     pub social_media_url: Option<ValidationError>,
-    pub payment_address: Option<ValidationError>,
-    pub payment_version: Option<ValidationError>,
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -258,8 +224,6 @@ impl From<ValidateDataUpdateInputsError> for FrError {
                 insert_if_some(&mut hm, "description", errors.description);
                 insert_if_some(&mut hm, "image", errors.image);
                 insert_if_some(&mut hm, "social_media_url", errors.social_media_url);
-                insert_if_some(&mut hm, "payment_address", errors.payment_address);
-                insert_if_some(&mut hm, "payment_version", errors.payment_version);
                 FrError::Validations(hm)
             }
             ValidateDataUpdateInputsError::SingleFieldValidation { field, error } => {

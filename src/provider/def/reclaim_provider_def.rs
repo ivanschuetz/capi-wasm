@@ -1,4 +1,3 @@
-use crate::dependencies::capi_deps;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::reclaim_provider::{
@@ -6,7 +5,6 @@ use crate::provider::reclaim_provider::{
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::dependencies::teal_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::reclaim::reclaim::{reclaim, submit_reclaim, ReclaimSigned};
 use mbase::dependencies::algod;
@@ -20,10 +18,8 @@ pub struct ReclaimProviderDef {}
 impl ReclaimProvider for ReclaimProviderDef {
     async fn txs(&self, pars: ReclaimParJs) -> Result<ReclaimResJs> {
         let algod = algod();
-        let api = teal_api();
-        let capi_deps = capi_deps()?;
 
-        let dao = load_dao(&algod, pars.dao_id.parse()?, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, pars.dao_id.parse()?).await?;
 
         let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
         let share_amount = ShareAmount::new(pars.share_amount.parse().map_err(Error::msg)?);

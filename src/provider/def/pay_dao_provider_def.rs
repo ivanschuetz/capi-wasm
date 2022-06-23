@@ -8,9 +8,10 @@ use crate::{
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::flows::pay_dao::pay_dao::pay_dao;
+use base::flows::pay_dao::pay_dao::pay_dao_app;
 use base::flows::pay_dao::pay_dao::{submit_pay_dao, PayDaoSigned};
 use mbase::dependencies::algod;
+use mbase::models::dao_id::DaoId;
 
 pub struct PayDaoProviderDef {}
 
@@ -22,13 +23,13 @@ impl PayDaoProvider for PayDaoProviderDef {
         let funds_asset_specs = funds_asset_specs()?;
 
         let customer_address = pars.customer_address.parse().map_err(Error::msg)?;
-        let customer_escrow_address = pars.customer_escrow_address.parse().map_err(Error::msg)?;
+        let dao_id: DaoId = pars.dao_id.parse().map_err(Error::msg)?;
         let amount = validate_funds_amount_input(&pars.amount, &funds_asset_specs)?;
 
-        let to_sign = pay_dao(
+        let to_sign = pay_dao_app(
             &algod,
             &customer_address,
-            &customer_escrow_address,
+            dao_id.0,
             funds_asset_specs.id,
             amount,
         )

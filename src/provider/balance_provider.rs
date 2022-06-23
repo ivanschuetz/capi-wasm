@@ -22,7 +22,6 @@ pub struct BalanceResJs {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct BalanceChangeParJs {
-    pub customer_escrow: String,
     pub dao_id: String,
 }
 

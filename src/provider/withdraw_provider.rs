@@ -42,10 +42,6 @@ pub struct SubmitWithdrawParJs {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitWithdrawPassthroughParJs {
-    // set if a drain tx is necessary
-    pub maybe_drain_tx_msg_pack: Option<Vec<u8>>,
-    pub maybe_capi_share_tx_msg_pack: Option<Vec<u8>>,
-
     pub inputs: WithdrawInputsPassthroughJs,
 }
 

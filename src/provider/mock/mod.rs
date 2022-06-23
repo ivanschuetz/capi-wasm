@@ -1,19 +1,13 @@
+use crate::{
+    js::to_sign_js::ToSignJs, model::dao_js::DaoJs, service::number_formats::format_u64_readable,
+};
 use algonaut::{
     algod::v2::Algod,
-    core::{Address, CompiledTeal, MicroAlgos},
+    core::{Address, MicroAlgos},
     transaction::{Pay, Transaction, TxnBuilder},
     util::sleep,
 };
 use anyhow::{anyhow, Result};
-
-use crate::{
-    js::{
-        js_types_workarounds::{ContractAccountJs, VersionedContractAccountJs},
-        to_sign_js::ToSignJs,
-    },
-    model::dao_js::DaoJs,
-    service::number_formats::format_u64_readable,
-};
 
 pub mod add_roadmap_item_provider_mock;
 pub mod app_updates_provider_mock;
@@ -73,16 +67,6 @@ pub fn mock_address() -> Result<Address> {
         .map_err(|_| anyhow!("Unexpected: couldn't parse mock address"))
 }
 
-pub fn mock_contract_account() -> Result<VersionedContractAccountJs> {
-    Ok(VersionedContractAccountJs {
-        version: "1".to_owned(),
-        contract: ContractAccountJs {
-            address: mock_address()?.to_string(),
-            program: CompiledTeal(vec![]),
-        },
-    })
-}
-
 /// simulate a delay doing network requests
 pub async fn req_delay() {
     sleep(2000).await
@@ -106,7 +90,7 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
         image_url: Some("https://placekitten.com/1033/360".to_owned()),
         social_media_url: "https://twitter.com/foobardoesntexist".to_owned(),
         app_id: "111112222".to_owned(),
-        customer_escrow_address: mock_address()?.to_string(),
+        app_address: mock_address()?.to_string(),
         // note that the paths here have to match to what the UI expects, to open the correct views (the parameters/ids can be arbitrary)
         invest_link: format!("/{}", "111112222"),
         my_investment_link: format!("/{}/investment", "111112222"),

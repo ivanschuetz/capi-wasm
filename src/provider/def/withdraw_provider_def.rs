@@ -11,12 +11,13 @@ use crate::{
 };
 use crate::{
     dependencies::{capi_deps, funds_asset_specs},
-    service::drain_if_needed::drain_if_needed_txs,
+    service::drain_if_needed::drain_if_needed_tx,
 };
-use crate::{js::common::signed_js_tx_to_signed_tx1, service::drain_if_needed::submit_drain};
+use crate::{
+    js::common::signed_js_tx_to_signed_tx1, service::drain_if_needed::prepare_pars_and_submit_drain,
+};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::dependencies::teal_api;
 use base::flows::create_dao::storage::load_dao::TxId;
 use base::flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned};
 use base::flows::{
@@ -35,11 +36,10 @@ impl WithdrawProvider for WithdrawProviderDef {
         log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
         let algod = algod();
-        let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 
-        let dao = load_dao(&algod, pars.dao_id.parse()?, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, pars.dao_id.parse()?).await?;
 
         let inputs_par = WithdrawInputsPassthroughJs {
             sender: pars.sender.clone(),
@@ -67,7 +67,7 @@ impl WithdrawProvider for WithdrawProviderDef {
 
         let mut to_sign = vec![to_sign_for_withdrawal.withdraw_tx];
 
-        let maybe_to_sign_for_drain = drain_if_needed_txs(
+        let maybe_to_sign_for_drain = drain_if_needed_tx(
             &algod,
             &dao,
             &pars.sender.parse().map_err(Error::msg)?,
@@ -76,20 +76,13 @@ impl WithdrawProvider for WithdrawProviderDef {
         )
         .await?;
         // we append drain at the end since it's optional, so the indices of the non optional txs are fixed
-        let mut maybe_drain_tx_msg_pack = None;
-        let mut maybe_capi_share_tx_msg_pack = None;
         if let Some(to_sign_for_drain) = maybe_to_sign_for_drain {
             to_sign.push(to_sign_for_drain.app_call_tx);
-            maybe_drain_tx_msg_pack = Some(rmp_serde::to_vec_named(&to_sign_for_drain.drain_tx)?);
-            maybe_capi_share_tx_msg_pack =
-                Some(rmp_serde::to_vec_named(&to_sign_for_drain.capi_share_tx)?);
         }
 
         Ok(WithdrawResJs {
             to_sign: ToSignJs::new(to_sign)?,
             pt: SubmitWithdrawPassthroughParJs {
-                maybe_drain_tx_msg_pack,
-                maybe_capi_share_tx_msg_pack,
                 inputs: inputs_par.clone(),
             },
         })
@@ -108,21 +101,9 @@ impl WithdrawProvider for WithdrawProviderDef {
                 pars.txs.len()
             ));
         }
-        // sanity check
-        if pars.txs.len() == 1 && pars.pt.maybe_drain_tx_msg_pack.is_some() {
-            return Err(anyhow!(
-                "Invalid state: 0 txs with a passthrough draining tx",
-            ));
-        }
 
         if pars.txs.len() == 2 {
-            let drain_tx = &pars.pt.maybe_drain_tx_msg_pack
-                .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed drain tx"))?;
-
-            let capi_share_tx = &pars.pt.maybe_capi_share_tx_msg_pack
-                .ok_or_else(|| anyhow!("Invalid state: if there are signed (in js) drain txs there should be also a passthrough signed capi share tx"))?;
-
-            submit_drain(&algod, drain_tx, &pars.txs[1], capi_share_tx).await?;
+            prepare_pars_and_submit_drain(&algod, &pars.txs[1]).await?;
         }
 
         let withdraw_tx_id = submit_withdraw(

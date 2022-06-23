@@ -6,10 +6,9 @@ use crate::provider::income_vs_spending_provider::{
 use crate::service::number_formats::base_units_to_display_units;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::dependencies::teal_api;
 use base::{
     flows::{create_dao::storage::load_dao::load_dao, withdraw::withdrawals::withdrawals},
-    queries::received_payments::all_received_payments,
+    queries::received_payments::received_payments,
 };
 use chrono::{DateTime, Duration, Timelike, Utc};
 use mbase::dependencies::{algod, indexer};
@@ -24,21 +23,19 @@ pub struct IncomeVsSpendingProviderDef {}
 impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
     async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs> {
         let algod = algod();
-        let api = teal_api();
         let indexer = indexer();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse()?;
 
-        let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, dao_id).await?;
 
         let interval_data = to_interval_data(&pars.interval)?;
 
-        let mut income = all_received_payments(
+        let mut income = received_payments(
             &indexer,
             &dao.app_address(),
-            dao.customer_escrow.address(),
             dao.funds_asset_id,
             &None,
             &Some(interval_data.start),
@@ -51,9 +48,7 @@ impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
             &algod,
             &indexer,
             dao_id,
-            &api,
             funds_asset_specs.id,
-            &capi_deps,
             &None,
             &Some(interval_data.start),
         )

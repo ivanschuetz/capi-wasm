@@ -13,7 +13,6 @@ use crate::{
 use anyhow::Result;
 use async_trait::async_trait;
 use base::{
-    dependencies::teal_api,
     flows::create_dao::storage::load_dao::load_dao,
     queries::funds_activity::{funds_activity, FundsActivityEntryType},
 };
@@ -31,23 +30,14 @@ pub struct FundsActivityProviderDef {}
 impl FundsActivityProvider for FundsActivityProviderDef {
     async fn get(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
         let algod = algod();
-        let api = teal_api();
         let indexer = indexer();
         let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse()?;
-        let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, dao_id).await?;
 
-        let mut activity_entries = funds_activity(
-            &algod,
-            &indexer,
-            dao_id,
-            dao.customer_escrow.address(),
-            &api,
-            &capi_deps,
-            dao.funds_asset_id,
-        )
-        .await?;
+        let mut activity_entries =
+            funds_activity(&algod, &indexer, dao_id, &capi_deps, dao.funds_asset_id).await?;
         // sort descendingly by date (most recent activity first)
         activity_entries.sort_by(|p1, p2| p2.date.cmp(&p1.date));
 

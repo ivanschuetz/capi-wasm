@@ -1,6 +1,4 @@
-use super::{
-    mock_contract_account, mock_dao_for_users_view_data, mock_msgpack_tx, mock_to_sign, req_delay,
-};
+use super::{mock_dao_for_users_view_data, mock_to_sign, req_delay};
 use crate::dependencies::funds_asset_specs;
 use crate::error::FrError;
 use crate::provider::create_dao_provider::{
@@ -33,13 +31,7 @@ impl CreateDaoProvider for CreateDaoProviderMock {
             pt: SubmitSetupDaoPassthroughParJs {
                 specs: dao_specs,
                 creator: creator_address.to_string(),
-                customer_escrow_optin_to_funds_asset_tx_msg_pack: mock_msgpack_tx(
-                    &algod,
-                    &creator_address,
-                )
-                .await?,
                 shares_asset_id: 1234567890,
-                customer_escrow: mock_contract_account()?,
                 app_id: 121212121,
                 description: Some("Test description...".to_owned()),
                 compressed_image: None,

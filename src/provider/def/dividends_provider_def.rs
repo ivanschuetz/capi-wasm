@@ -7,7 +7,6 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::dependencies::teal_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
@@ -20,14 +19,13 @@ pub struct DividendsProviderDef {}
 impl DividendsProvider for DividendsProviderDef {
     async fn get(&self, pars: DividendsParJs) -> Result<String> {
         let algod = algod();
-        let api = teal_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 
         let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
         let dao_id: DaoId = pars.dao_id.parse()?;
 
-        let dao = load_dao(&algod, dao_id, &api, &capi_deps).await?;
+        let dao = load_dao(&algod, dao_id).await?;
         let central_state = dao_global_state(&algod, dao_id.0).await?;
 
         let investor_view_data =
