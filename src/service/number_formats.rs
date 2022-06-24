@@ -66,7 +66,8 @@ pub fn format_u64_readable(number: u64) -> Result<String> {
     format_decimal_readable(number.into())
 }
 
-/// Format number in a readable format (basically with readability separators e.g. 1,000,000 instead of 1000000)
+/// Format number in a readable format (basically with readability separators e.g. 1,000,000 instead of 1000000),
+/// and with 1 fractional, or no fractionals if it's 0
 pub fn format_decimal_readable(decimal: Decimal) -> Result<String> {
     // num_format doesn't support fractionals, so we use it to format only the whole part and append the decimals manually
     // this is hacky and probably has a better solution

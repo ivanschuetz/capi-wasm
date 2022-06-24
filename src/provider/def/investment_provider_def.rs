@@ -3,9 +3,10 @@ use crate::provider::investment_provider::{
     AvailableSharesParJs, AvailableSharesResJs, InvestmentProvider, LoadInvestorParJs,
     LoadInvestorResJs,
 };
+use crate::service::number_formats::base_units_to_display_units_readable;
 use crate::{
     dependencies::{capi_deps, funds_asset_specs},
-    service::{constants::PRECISION, number_formats::base_units_to_display_units_str},
+    service::constants::PRECISION,
 };
 use algonaut::algod::v2::Algod;
 use algonaut::core::Address;
@@ -94,14 +95,14 @@ impl InvestmentProvider for InvestmentProviderDef {
             investor_shares_count: investor_view_data.locked_shares.to_string(),
             investor_share: investor_dividend_percentage.format_percentage(),
 
-            investor_already_retrieved_amount: base_units_to_display_units_str(
+            investor_already_retrieved_amount: base_units_to_display_units_readable(
                 investor_view_data.retrieved,
                 &funds_asset_specs,
-            ),
-            investor_claimable_dividend: base_units_to_display_units_str(
+            )?,
+            investor_claimable_dividend: base_units_to_display_units_readable(
                 claimable_dividend,
                 &funds_asset_specs,
-            ),
+            )?,
             investor_claimable_dividend_microalgos: claimable_dividend.to_string(),
             investor_locked_shares: investor_view_data.locked_shares.to_string(),
             investor_unlocked_shares: investor_holdings.to_string(),
