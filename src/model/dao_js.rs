@@ -4,8 +4,9 @@ use crate::{
         base_units_to_display_units_readable, base_units_to_display_units_str, format_u64_readable,
     },
 };
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use base::flows::create_dao::model::Dao;
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,6 +32,12 @@ pub struct DaoJs {
     pub my_investment_link_rel: String,
     pub dao_link: String,
     pub creator_address: String,
+    pub raise_end_date: String,
+    pub raise_min_target_number: String,
+    pub raise_min_target: String,
+    pub total_raisable: String,
+    pub total_raisable_number: String,
+    pub funds_raised: String,
 }
 
 pub trait ToDaoJs {
@@ -50,6 +57,31 @@ impl ToDaoJs for Dao {
         funds_asset_specs: &FundsAssetSpecs,
     ) -> Result<DaoJs> {
         let dao_id_str = self.id().to_string();
+        let total_raisable = self
+            .token_supply
+            .val()
+            .checked_mul(self.share_price.val())
+            .ok_or_else(|| {
+                anyhow!(
+                    "Total raisable - error mul: {:?} * {:?}",
+                    self.token_supply,
+                    self.share_price
+                )
+            })?;
+
+        let now = Utc::now();
+        let past_raise_end_date = (now.timestamp() as i128)
+            .checked_sub(self.raise_end_date.0 as i128)
+            .ok_or_else(|| {
+                anyhow!(
+                    "Invalid end date: {:?} <= now ({})",
+                    self.raise_end_date,
+                    now
+                )
+            })?
+            >= 0;
+        let funds_raised = past_raise_end_date && self.raised.val() >= self.raise_min_target.val();
+
         Ok(DaoJs {
             name: self.name.clone(),
             description_id,
@@ -74,6 +106,12 @@ impl ToDaoJs for Dao {
                 self.share_price,
                 funds_asset_specs,
             ),
+            raise_end_date: self.raise_end_date.0.to_string(),
+            raise_min_target_number: self.raise_min_target.val().to_string(),
+            raise_min_target: format_u64_readable(self.raise_min_target.val())?,
+            total_raisable: format_u64_readable(total_raisable)?,
+            total_raisable_number: total_raisable.to_string(),
+            funds_raised: funds_raised.to_string(),
         })
     }
 }

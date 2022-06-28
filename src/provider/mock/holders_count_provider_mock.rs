@@ -21,7 +21,7 @@ impl HoldersCountProvider for HoldersCountProviderMock {
 
     async fn change(&self, _pars: HoldersChangeParJs) -> Result<HoldersChangeResJs> {
         Ok(HoldersChangeResJs {
-            change: "up".to_owned(),
+            change: "down".to_owned(),
         })
     }
 }

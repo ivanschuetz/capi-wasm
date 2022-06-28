@@ -34,6 +34,8 @@ pub struct CreateAssetsInputErrorsJs {
     pub investors_share: Option<ValidationErrorJs>,
     pub image: Option<ValidationErrorJs>,
     pub social_media_url: Option<ValidationErrorJs>,
+    pub min_raise_target: Option<ValidationErrorJs>,
+    pub min_raise_target_end_date: Option<ValidationErrorJs>,
 }
 
 impl From<ValidateDaoInputsError> for JsValue {
@@ -50,6 +52,10 @@ impl From<ValidateDaoInputsError> for JsValue {
                     investors_share: e.investors_share.map(to_validation_error_js),
                     image: e.compressed_image.map(to_validation_error_js),
                     social_media_url: e.social_media_url.map(to_validation_error_js),
+                    min_raise_target: e.min_raise_target.map(to_validation_error_js),
+                    min_raise_target_end_date: e
+                        .min_raise_target_end_date
+                        .map(to_validation_error_js),
                 };
                 match JsValue::from_serde(&errors_js) {
                     Ok(js) => js,

@@ -34,5 +34,6 @@ pub mod view_dao_provider;
 pub mod withdraw_provider;
 pub mod withdrawal_history_provider;
 pub mod wyre_provider;
+pub mod funds_raising_provider;
 
 pub use providers::providers;

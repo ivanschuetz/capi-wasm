@@ -18,6 +18,7 @@ use super::{
         description_provider_def::DescriptionProviderDef,
         dividends_provider_def::DividendsProviderDef, drain_provider_def::DrainProviderDef,
         funds_activity_provider_def::FundsActivityProviderDef,
+        funds_raising_provider_def::FundsRaisingProviderDef,
         holders_count_provider_def::HoldersCountProviderDef,
         income_vs_spending_provider_def::IncomeVsSpendingProviderDef,
         investment_provider_def::InvestmentProviderDef, lock_provider_def::LockProviderDef,
@@ -37,6 +38,7 @@ use super::{
     dividends_provider::DividendsProvider,
     drain_provider::DrainProvider,
     funds_activity_provider::FundsActivityProvider,
+    funds_raising_provider::FundsRaisingProvider,
     holders_count_provider::HoldersCountProvider,
     income_vs_spending_provider::IncomeVsSpendingProvider,
     investment_provider::InvestmentProvider,
@@ -54,6 +56,7 @@ use super::{
         description_provider_mock::DescriptionProviderMock,
         dividends_provider_mock::DividendsProviderMock, drain_provider_mock::DrainProviderMock,
         funds_activity_provider_mock::FundsActivityProviderMock,
+        funds_raising_provider_mock::FundsRaisingProviderMock,
         holders_count_provider_mock::HoldersCountProviderMock,
         income_vs_spending_provider_mock::IncomeVsSpendingProviderMock,
         investment_provider_mock::InvestmentProviderMock, lock_provider_mock::LockProviderMock,
@@ -124,6 +127,7 @@ pub struct Providers<'a> {
     pub description: &'a dyn DescriptionProvider,
     pub wyre: &'a dyn WyreProvider,
     pub rekey: &'a dyn RekeyProvider,
+    pub raised: &'a dyn FundsRaisingProvider,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -172,6 +176,7 @@ fn def_providers<'a>() -> Providers<'a> {
         description: &DescriptionProviderDef {},
         wyre: &WyreProviderDef {},
         rekey: &RekeyProviderDef {},
+        raised: &FundsRaisingProviderDef {},
     }
 }
 
@@ -210,5 +215,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         description: &DescriptionProviderMock {},
         wyre: &WyreProviderMock {},
         rekey: &RekeyProviderMock {},
+        raised: &FundsRaisingProviderMock {},
     }
 }

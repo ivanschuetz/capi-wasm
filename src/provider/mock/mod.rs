@@ -8,6 +8,7 @@ use algonaut::{
     util::sleep,
 };
 use anyhow::{anyhow, Result};
+use chrono::{Duration, Utc};
 
 pub mod add_roadmap_item_provider_mock;
 pub mod app_updates_provider_mock;
@@ -22,6 +23,7 @@ pub mod description_provider_mock;
 pub mod dividends_provider_mock;
 pub mod drain_provider_mock;
 pub mod funds_activity_provider_mock;
+pub mod funds_raising_provider_mock;
 pub mod holders_count_provider_mock;
 pub mod income_vs_spending_provider_mock;
 pub mod investment_provider_mock;
@@ -97,5 +99,11 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
         my_investment_link_rel: format!("investment/{}", "111112222"),
         dao_link: format!("/{}", "111112222"),
         creator_address: mock_address()?.to_string(),
+        raise_end_date: (Utc::now() + Duration::weeks(8)).timestamp().to_string(),
+        raise_min_target_number: 200_000.to_string(),
+        raise_min_target: format_u64_readable(200_000)?,
+        total_raisable: format_u64_readable(500_000)?,
+        total_raisable_number: 500_000.to_string(),
+        funds_raised: "true".to_owned(),
     })
 }

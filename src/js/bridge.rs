@@ -412,12 +412,25 @@ pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> 
 #[wasm_bindgen]
 pub async fn bridge_calculate_shares_price(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("bridge_calculate_shares_price", pars, async move |pars| {
-        providers()?
-            .calculate_total_price
-            .get(parse_bridge_pars(pars)?)
-            .await
-            .map_err(|e| e.into())
-            .and_then(|r| to_js_res(&r))
+        to_js(
+            providers()?
+                .calculate_total_price
+                .get(parse_bridge_pars(pars)?)
+                .await,
+        )
+    })
+    .await
+}
+
+#[wasm_bindgen]
+pub async fn bridge_calculate_max_funds(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_calculate_max_funds", pars, async move |pars| {
+        to_js(
+            providers()?
+                .calculate_total_price
+                .max_funds(parse_bridge_pars(pars)?)
+                .await,
+        )
     })
     .await
 }
@@ -500,6 +513,14 @@ pub async fn bridge_rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
 pub async fn bridge_submit_rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("bridge_submit_rekey_owner", pars, async move |pars| {
         to_bridge_res(providers()?.rekey.submit(parse_bridge_pars(pars)?).await)
+    })
+    .await
+}
+
+#[wasm_bindgen]
+pub async fn bridge_raised_funds(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_raised_funds", pars, async move |pars| {
+        to_js(providers()?.raised.data(parse_bridge_pars(pars)?).await)
     })
     .await
 }

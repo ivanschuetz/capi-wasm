@@ -848,6 +848,7 @@ dependencies = [
  "futures",
  "instant",
  "log",
+ "log4rs",
  "reqwest",
  "rmp-serde",
  "rust_decimal",
@@ -856,6 +857,7 @@ dependencies = [
  "tealdbg",
  "url",
  "urlencoding",
+ "wasm-logger",
 ]
 
 [[package]]
