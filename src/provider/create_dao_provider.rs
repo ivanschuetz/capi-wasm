@@ -14,6 +14,7 @@ use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::flows::create_dao::setup_dao_specs::HashableString;
 use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use mbase::models::funds::FundsAmount;
+use mbase::models::nft::Cid;
 use mbase::models::share_amount::ShareAmount;
 use mbase::models::shares_percentage::SharesPercentage;
 use mbase::models::timestamp::Timestamp;
@@ -42,6 +43,7 @@ pub struct ValidatedDaoInputs {
     pub share_price: FundsAmount,
     pub investors_share: SharesPercentage,
     pub image: Option<CompressedImage>,
+    pub image_cid: Option<Cid>,
     pub social_media_url: String,
     pub min_raise_target: FundsAmount,
     pub min_raise_target_end_date: Timestamp,
@@ -57,6 +59,7 @@ pub struct CreateDaoFormInputsJs {
     pub share_price: String,
     pub investors_share: String, // percentage (0..100), with decimals (max decimals number defined in validations)
     pub compressed_image: Option<Vec<u8>>,
+    pub image_cid: Option<String>,
     pub social_media_url: String,
     pub min_raise_target: String,
     pub min_raise_target_end_date: String,
@@ -122,6 +125,7 @@ pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<Setu
         inputs.investors_share,
         inputs.share_price,
         inputs.image.clone().map(|i| i.hash()),
+        inputs.image_cid.clone(),
         inputs.social_media_url.clone(),
         inputs.shares_for_investors,
         inputs.min_raise_target,
@@ -225,6 +229,8 @@ pub fn validate_dao_inputs(
         return Err(ValidateDaoInputsError::SharesForInvestorsGreaterThanSupply);
     }
 
+    let image_cid = inputs.image_cid.clone().map(Cid);
+
     Ok(ValidatedDaoInputs {
         name: dao_name,
         description: dao_description,
@@ -238,6 +244,7 @@ pub fn validate_dao_inputs(
         social_media_url,
         min_raise_target,
         min_raise_target_end_date,
+        image_cid,
     })
 }
 
@@ -473,4 +480,5 @@ pub struct SubmitSetupDaoPassthroughParJs {
     pub app_id: u64,
     pub description: Option<String>,
     pub compressed_image: Option<Vec<u8>>,
+    pub image_nft: Option<Vec<u8>>,
 }

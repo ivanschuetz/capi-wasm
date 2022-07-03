@@ -15,7 +15,9 @@ use async_trait::async_trait;
 use base::api::image_api::ImageApi;
 use base::dependencies::{image_api, teal_api};
 use base::flows::create_dao::model::{SetupDaoSigned, SetupDaoToSign};
-use base::flows::create_dao::setup::create_shares::{submit_create_assets, CrateDaoAssetsSigned};
+use base::flows::create_dao::setup::create_shares::{
+    submit_create_assets, CreateDaoAssetsSigned, CreateImageNftSigned,
+};
 use base::flows::create_dao::setup_dao::Programs;
 use base::flows::create_dao::setup_dao::{setup_dao_txs, submit_setup_dao};
 use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
@@ -26,6 +28,7 @@ use mbase::api::contract::Contract;
 use mbase::dependencies::algod;
 use mbase::models::dao_app_id::DaoAppId;
 use mbase::models::hash::GlobalStateHash;
+use mbase::models::nft::Cid;
 
 pub struct CreateDaoProviderDef {}
 
@@ -44,13 +47,32 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         let create_shares_signed_tx = &pars.create_assets_signed_txs[0];
         let create_app_signed_tx = &pars.create_assets_signed_txs[1];
 
+        let create_image_nft_signed = if pars.create_assets_signed_txs.len() == 3 {
+            if let Some(cid) = &pars.pt.inputs.image_cid {
+                Some((pars.create_assets_signed_txs[2].clone(), cid))
+            } else {
+                return Err(FrError::Msg(
+                    "Illegal state: if there's image tx, there should be a cid in pt".to_owned(),
+                ));
+            }
+        } else {
+            None
+        };
+
         let validated_inputs = validate_dao_inputs(&pars.pt.inputs, &funds_asset_specs)?;
 
         let submit_assets_res = submit_create_assets(
             &algod,
-            &CrateDaoAssetsSigned {
+            &CreateDaoAssetsSigned {
                 create_shares: signed_js_tx_to_signed_tx1(create_shares_signed_tx)?,
                 create_app: signed_js_tx_to_signed_tx1(create_app_signed_tx)?,
+                create_image_nft: match create_image_nft_signed {
+                    Some(signed) => Some(CreateImageNftSigned {
+                        tx: signed_js_tx_to_signed_tx1(&signed.0)?,
+                        cid: Cid(signed.1.to_owned()),
+                    }),
+                    None => None,
+                },
             },
         )
         .await;
@@ -86,6 +108,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             &programs,
             PRECISION,
             submit_assets_res.app_id,
+            submit_assets_res.image_nft.clone(),
         )
         .await?;
 
@@ -108,6 +131,11 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 app_id: submit_assets_res.app_id.0,
                 description: validated_inputs.description,
                 compressed_image: validated_inputs.image.map(|i| i.bytes()),
+                image_nft: if let Some(nft) = &submit_assets_res.image_nft {
+                    Some(rmp_serde::to_vec_named(nft).map_err(|e| FrError::Msg(e.to_string()))?)
+                } else {
+                    None
+                },
             },
         })
     }
@@ -134,6 +162,12 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         let app_funding_tx = &pars.txs[1];
         let transfer_shares_to_app_tx = &pars.txs[2];
 
+        let image_nft = if let Some(bytes) = pars.pt.image_nft {
+            Some(rmp_serde::from_slice(&bytes)?)
+        } else {
+            None
+        };
+
         log::debug!("Submitting the dao..");
 
         // clone descr_hash here to be able to use it after passing specs to signed struct
@@ -152,6 +186,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 shares_asset_id: pars.pt.shares_asset_id,
                 funds_asset_id: funds_asset_specs.id,
                 app_id: DaoAppId(pars.pt.app_id),
+                image_nft,
             },
         )
         .await?;
