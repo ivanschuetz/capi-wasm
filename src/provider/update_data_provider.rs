@@ -43,6 +43,7 @@ pub struct UpdateDataParJs {
     pub share_price: String,
 
     pub image: Option<Vec<u8>>,
+    pub image_url: Option<String>,
     pub social_media_url: String,
 }
 

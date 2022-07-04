@@ -14,7 +14,6 @@ use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::flows::create_dao::setup_dao_specs::HashableString;
 use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use mbase::models::funds::FundsAmount;
-use mbase::models::nft::Cid;
 use mbase::models::share_amount::ShareAmount;
 use mbase::models::shares_percentage::SharesPercentage;
 use mbase::models::timestamp::Timestamp;
@@ -43,7 +42,7 @@ pub struct ValidatedDaoInputs {
     pub share_price: FundsAmount,
     pub investors_share: SharesPercentage,
     pub image: Option<CompressedImage>,
-    pub image_cid: Option<Cid>,
+    pub image_url: Option<String>,
     pub social_media_url: String,
     pub min_raise_target: FundsAmount,
     pub min_raise_target_end_date: Timestamp,
@@ -59,7 +58,7 @@ pub struct CreateDaoFormInputsJs {
     pub share_price: String,
     pub investors_share: String, // percentage (0..100), with decimals (max decimals number defined in validations)
     pub compressed_image: Option<Vec<u8>>,
-    pub image_cid: Option<String>,
+    pub image_url: Option<String>,
     pub social_media_url: String,
     pub min_raise_target: String,
     pub min_raise_target_end_date: String,
@@ -125,7 +124,7 @@ pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<Setu
         inputs.investors_share,
         inputs.share_price,
         inputs.image.clone().map(|i| i.hash()),
-        inputs.image_cid.clone(),
+        inputs.image_url.clone(),
         inputs.social_media_url.clone(),
         inputs.shares_for_investors,
         inputs.min_raise_target,
@@ -144,6 +143,7 @@ pub fn validate_dao_inputs(
     let shares_for_investors_res = validate_shares_for_investors(&inputs.shares_for_investors);
     let share_price_res = validate_share_price(&inputs.share_price, funds_asset_specs);
     let compressed_image_res = validate_compressed_image_opt(&inputs.compressed_image);
+    let image_url_res = validate_image_url(&inputs.image_url);
     let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
     let investors_share_res = validate_investors_share(&inputs.investors_share);
     let min_raise_target_res = validate_min_raised_target(&inputs.min_raise_target);
@@ -157,6 +157,7 @@ pub fn validate_dao_inputs(
     let shares_for_investors_err = shares_for_investors_res.clone().err();
     let share_price_err = share_price_res.clone().err();
     let compressed_image_err = compressed_image_res.clone().err();
+    let image_url_err = image_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
     let investors_share_err = investors_share_res.clone().err();
     let min_raise_target_err = min_raise_target_res.clone().err();
@@ -170,6 +171,7 @@ pub fn validate_dao_inputs(
         shares_for_investors_err,
         share_price_err,
         compressed_image_err,
+        image_url_err,
         social_media_url_err,
         investors_share_err,
         min_raise_target_err,
@@ -186,6 +188,7 @@ pub fn validate_dao_inputs(
             shares_for_investors: shares_for_investors_res.err(),
             share_price: share_price_res.err(),
             compressed_image: compressed_image_res.err(),
+            image_url: image_url_res.err(),
             social_media_url: social_media_url_res.err(),
             investors_share: investors_share_res.err(),
             min_raise_target: min_raise_target_res.err(),
@@ -213,6 +216,7 @@ pub fn validate_dao_inputs(
         compressed_image_res.map_err(|e| to_single_field_val_error("compressed_image", e))?;
     let social_media_url =
         social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
+    let image_url = image_url_res.map_err(|e| to_single_field_val_error("image_url", e))?;
     let min_raise_target =
         min_raise_target_res.map_err(|e| to_single_field_val_error("min_raise_target", e))?;
     let min_raise_target_end_date = min_raised_target_end_date_res
@@ -229,8 +233,6 @@ pub fn validate_dao_inputs(
         return Err(ValidateDaoInputsError::SharesForInvestorsGreaterThanSupply);
     }
 
-    let image_cid = inputs.image_cid.clone().map(Cid);
-
     Ok(ValidatedDaoInputs {
         name: dao_name,
         description: dao_description,
@@ -244,7 +246,7 @@ pub fn validate_dao_inputs(
         social_media_url,
         min_raise_target,
         min_raise_target_end_date,
-        image_cid,
+        image_url,
     })
 }
 
@@ -290,6 +292,7 @@ pub struct CreateAssetsInputErrors {
     pub share_price: Option<ValidationError>,
     pub investors_share: Option<ValidationError>,
     pub compressed_image: Option<ValidationError>,
+    pub image_url: Option<ValidationError>,
     pub social_media_url: Option<ValidationError>,
     pub min_raise_target: Option<ValidationError>,
     pub min_raise_target_end_date: Option<ValidationError>,
@@ -352,6 +355,13 @@ pub fn validate_compressed_image_opt(
                 Err(e) => Err(e),
             }
         }
+        None => Ok(None),
+    }
+}
+
+pub fn validate_image_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
+    match url {
+        Some(url) => Ok(Some(validate_text_min_max_length(&url, 0, 200)?)),
         None => Ok(None),
     }
 }
@@ -480,5 +490,4 @@ pub struct SubmitSetupDaoPassthroughParJs {
     pub app_id: u64,
     pub description: Option<String>,
     pub compressed_image: Option<Vec<u8>>,
-    pub image_nft: Option<Vec<u8>>,
 }

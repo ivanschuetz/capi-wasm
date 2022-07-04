@@ -4,7 +4,7 @@ use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_dao_provider::{
     validate_compressed_image_opt, validate_dao_description_opt, validate_dao_name,
-    validate_social_media_url,
+    validate_image_url, validate_social_media_url,
 };
 use crate::provider::def::create_dao_provider_def::maybe_upload_image;
 use crate::provider::update_data_provider::{
@@ -105,7 +105,12 @@ impl UpdateDataProvider for UpdateDataProviderDef {
                 pars.txs.len()
             ));
         }
-        let tx = &pars.txs[0];
+        let update_tx = &pars.txs[0];
+        let maybe_increase_min_balance_tx = if pars.txs.len() == 2 {
+            Some(pars.txs[1].clone())
+        } else {
+            None
+        };
 
         let dao_id = pars.pt.dao_id.parse::<DaoId>().map_err(Error::msg)?;
         let image = pars.pt.image.map(CompressedImage::new);
@@ -114,17 +119,21 @@ impl UpdateDataProvider for UpdateDataProviderDef {
             None => None,
         };
 
-        let tx_id = submit_update_data(
+        submit_update_data(
             &algod,
             UpdateDaoDataSigned {
-                update: signed_js_tx_to_signed_tx1(tx)?,
+                update: signed_js_tx_to_signed_tx1(update_tx)?,
+                increase_min_balance_tx: match maybe_increase_min_balance_tx {
+                    Some(tx) => Some(signed_js_tx_to_signed_tx1(&tx)?),
+                    None => None,
+                },
             },
         )
         .await?;
 
         // Note that it's required to upload the image after the DAO update, because the image api checks the hash in the app's global state.
         let (maybe_image_url, maybe_image_upload_error) =
-            maybe_upload_image(&algod, &image_api, tx_id, dao_id.0, image, image_hash).await?;
+            maybe_upload_image(&image_api, dao_id.0, image, image_hash).await?;
 
         Ok(SubmitUpdateDataResJs {
             image_url: maybe_image_url,
@@ -141,11 +150,13 @@ fn validate_inputs(
     let dao_name_res = validate_dao_name(&pars.project_name);
     let dao_description_res = validate_dao_description_opt(&pars.project_desc);
     let image_res = validate_compressed_image_opt(&pars.image);
+    let image_url_res = validate_image_url(&pars.image_url);
     let social_media_url_res = validate_social_media_url(&pars.social_media_url);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_err = dao_description_res.clone().err();
     let compressed_image_err = image_res.clone().err();
+    let image_url_err = image_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
 
     if [
@@ -153,6 +164,7 @@ fn validate_inputs(
         dao_description_err,
         compressed_image_err,
         social_media_url_err,
+        image_url_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -170,6 +182,8 @@ fn validate_inputs(
     let dao_description =
         dao_description_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
     let image = image_res.map_err(|e| to_single_field_val_error("compressed_image", e))?;
+    let image_url = image_url_res.map_err(|e| to_single_field_val_error("image_url", e))?;
+
     let social_media_url =
         social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
 
@@ -181,6 +195,7 @@ fn validate_inputs(
             project_name: dao_name,
             project_desc: dao_description.map(|d| d.hash()),
             image_hash: image_hash.clone(),
+            image_url: image_url.clone(),
             social_media_url: social_media_url,
         },
     ))
