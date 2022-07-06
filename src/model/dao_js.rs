@@ -53,6 +53,7 @@ impl ToDaoJs for Dao {
     fn to_js(
         &self,
         description_id: Option<String>,
+        // TODO remove: replace with IPFS once we've the library working in react
         image_url: Option<String>,
         funds_asset_specs: &FundsAssetSpecs,
     ) -> Result<DaoJs> {
@@ -90,7 +91,9 @@ impl ToDaoJs for Dao {
             share_supply: format_u64_readable(self.token_supply.val())?,
             share_supply_number: self.token_supply.val().to_string(),
             investors_share: self.investors_share.value().to_string(),
+            // TODO remove and use the nft url (uncomment line below)
             image_url,
+            // image_url: self.image_nft.clone().map(|nft| nft.url),
             social_media_url: self.social_media_url.clone(),
             shares_asset_id: self.shares_asset_id.to_string(),
             app_id: self.app_id.to_string(),
