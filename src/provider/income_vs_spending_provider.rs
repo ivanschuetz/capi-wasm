@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Duration, Utc};
+use mbase::date_util::DateTimeExt;
 use serde::{Deserialize, Serialize};
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
@@ -35,7 +36,7 @@ pub struct IntervalData {
 }
 
 pub fn to_interval_data(interval_str: &str) -> Result<IntervalData> {
-    let end = Utc::now();
+    let end = Utc::now().zero_time()?;
     match interval_str {
         "days7" => Ok(IntervalData {
             start: end - Duration::days(6),

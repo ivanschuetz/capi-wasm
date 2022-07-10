@@ -248,6 +248,7 @@ pub fn group_and_format_data_points(
         ticks_count + 1
     ]; // +1 -> inclusive range
 
+    // aggregate data points on their respective ticks
     for point in points {
         // calculate tick (grouped date) on x-axis
         let tick_index_maybe_negative = ticks_between(point.date, start_time, interval_length)?;
