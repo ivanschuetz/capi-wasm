@@ -22,6 +22,7 @@ pub struct CalculateTotalPriceParJs {
     pub shares_amount: String,
     pub available_shares: String,
     pub share_supply: String,
+    pub locked_shares: Option<String>,
     pub investors_share: String,
     pub share_price: String,
 }

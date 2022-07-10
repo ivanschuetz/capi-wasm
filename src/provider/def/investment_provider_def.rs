@@ -34,8 +34,6 @@ pub struct InvestmentProviderDef {}
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl InvestmentProvider for InvestmentProviderDef {
     async fn available_shares(&self, pars: AvailableSharesParJs) -> Result<AvailableSharesResJs> {
-        log::debug!("bridge_load_investment, pars: {:?}", pars);
-
         let algod = algod();
 
         let dao_id: DaoId = pars.dao_id.parse()?;
@@ -52,8 +50,6 @@ impl InvestmentProvider for InvestmentProviderDef {
 
     // TODO parallelize requests if possible
     async fn get_investor_data(&self, pars: LoadInvestorParJs) -> Result<LoadInvestorResJs> {
-        log::debug!("bridge_load_investment, pars: {:?}", pars);
-
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;

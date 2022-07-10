@@ -7,7 +7,9 @@ use crate::{
         SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
         ValidationBuySharesInputsOrAnyhowError,
     },
-    service::{invest_or_lock::submit_apps_optins_from_js, number_formats::validate_share_amount},
+    service::{
+        invest_or_lock::submit_apps_optins_from_js, number_formats::validate_share_amount_positive,
+    },
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
@@ -37,7 +39,7 @@ impl BuySharesProvider for BuySharesProviderDef {
         let funds_asset_specs = funds_asset_specs()?;
 
         // TODO < available shares (maybe can be passed from frontend)
-        let validated_share_amount = validate_share_amount(&pars.share_count)?;
+        let validated_share_amount = validate_share_amount_positive(&pars.share_count)?;
 
         if let Some(app_opt_ins) = pars.app_opt_ins {
             submit_apps_optins_from_js(&algod, &app_opt_ins).await?;

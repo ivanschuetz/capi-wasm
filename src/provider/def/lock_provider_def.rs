@@ -5,7 +5,7 @@ use crate::provider::lock_provider::{
     LockParJs, LockProvider, LockResJs, SubmitLockParJs, SubmitLockResJs,
 };
 use crate::service::invest_or_lock::submit_apps_optins_from_js;
-use crate::service::number_formats::validate_share_amount;
+use crate::service::number_formats::validate_share_amount_positive;
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::flows::lock::lock::{submit_lock, LockSigned};
@@ -20,7 +20,7 @@ impl LockProvider for LockProviderDef {
     async fn txs(&self, pars: LockParJs) -> Result<LockResJs, FrError> {
         let algod = algod();
 
-        let validated_share_amount = validate_share_amount(&pars.share_count)?;
+        let validated_share_amount = validate_share_amount_positive(&pars.share_count)?;
 
         let dao = load_dao(&algod, pars.dao_id.parse()?).await?;
 

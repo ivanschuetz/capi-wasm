@@ -9,7 +9,7 @@ use crate::{
         },
         mock::mock_msgpack_tx,
     },
-    service::number_formats::validate_share_amount,
+    service::number_formats::validate_share_amount_positive,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -29,7 +29,7 @@ impl BuySharesProvider for BuySharesProviderMock {
         let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
 
         // validate to show error messages in mock
-        validate_share_amount(&pars.share_count)?;
+        validate_share_amount_positive(&pars.share_count)?;
 
         req_delay().await;
 

@@ -9,7 +9,8 @@ use crate::provider::calculate_total_price::{
     CalculateTotalPriceProvider, CalculateTotalPriceResJs,
 };
 use crate::service::number_formats::{
-    base_units_to_display_units_readable, validate_funds_amount_input, validate_share_amount,
+    base_units_to_display_units_readable, validate_funds_amount_input,
+    validate_share_amount_positive, validate_share_amount_positive_or_0,
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
@@ -31,10 +32,14 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceDef {
         let funds_asset_specs = funds_asset_specs()?;
 
         let validated_price = validate_funds_amount_input(&pars.share_price, &funds_asset_specs)?;
-        let validated_share_amount = validate_share_amount(&pars.shares_amount)?;
+        let validated_share_amount = validate_share_amount_positive(&pars.shares_amount)?;
 
         let available_shares = ShareAmount::new(pars.available_shares.parse().map_err(Error::msg)?);
         let share_supply = ShareAmount::new(pars.share_supply.parse().map_err(Error::msg)?);
+        let locked_shares = match pars.locked_shares {
+            Some(s) => Some(validate_share_amount_positive_or_0(&s)?),
+            None => None,
+        };
         let investors_share_dec = Decimal::from_str(&pars.investors_share).map_err(Error::msg)?;
         let investors_share = investors_share_dec.try_into()?;
 
@@ -53,8 +58,18 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceDef {
                 ))?,
         );
 
-        let profit_percentage =
-            calculate_profit_percentage(validated_share_amount, share_supply, investors_share)?;
+        // to calculate total dividend if the user buys the entered share amount:
+        // entered share amount + currently locked shares
+        // (remember: bought shares are automatically locked)
+        let total_shares_to_calculate_dividend = ShareAmount::new(
+            validated_share_amount.val() + locked_shares.map(|s| s.val()).unwrap_or(0),
+        );
+
+        let profit_percentage = calculate_profit_percentage(
+            total_shares_to_calculate_dividend,
+            share_supply,
+            investors_share,
+        )?;
 
         let total_price_display =
             base_units_to_display_units_readable(total_price, &funds_asset_specs)?;
@@ -74,7 +89,7 @@ impl CalculateTotalPriceProvider for CalculateTotalPriceDef {
         let funds_asset_specs = funds_asset_specs()?;
 
         let validated_price = validate_funds_amount_input(&pars.share_price, &funds_asset_specs)?;
-        let validated_share_amount = validate_share_amount(&pars.shares_amount)?;
+        let validated_share_amount = validate_share_amount_positive(&pars.shares_amount)?;
 
         let total_price = FundsAmount::new(
             validated_share_amount

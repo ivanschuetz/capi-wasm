@@ -23,16 +23,31 @@ pub fn validate_funds_amount_input(
     )
 }
 
-pub fn validate_share_amount(input: &str) -> Result<ShareAmount, ValidateSharesInputError> {
-    let share_count = input
-        .parse()
-        .map_err(|_| ValidateSharesInputError::Validation(ValidationError::NotAnInteger))?;
-
-    if share_count == 0 {
+// validates a share amount, that's expected to be > 0
+// e.g. when buying shares it doesn't make sense to buy 0
+pub fn validate_share_amount_positive(
+    input: &str,
+) -> Result<ShareAmount, ValidateSharesInputError> {
+    // more permissive validation first
+    let amount = validate_share_amount_positive_or_0(input)?;
+    // if 0, error
+    if amount.val() == 0 {
         return Err(ValidateSharesInputError::Validation(
             ValidationError::NotPositive,
         ));
     }
+    Ok(amount)
+}
+
+// validates a share amount, that's expected to be >= 0
+// e.g. when passing around the currently owned shares, it can be 0
+pub fn validate_share_amount_positive_or_0(
+    input: &str,
+) -> Result<ShareAmount, ValidateSharesInputError> {
+    let share_count = input
+        .parse()
+        .map_err(|_| ValidateSharesInputError::Validation(ValidationError::NotAnInteger))?;
+
     Ok(ShareAmount::new(share_count))
 }
 
