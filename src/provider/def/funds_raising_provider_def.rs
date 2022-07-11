@@ -1,9 +1,10 @@
+use crate::dependencies::funds_asset_specs;
 use crate::error::FrError;
 use crate::provider::funds_raising_provider::{
     FundsRaisingParsJs, FundsRaisingProvider, FundsRaisingResJs, FundsRaisingState,
     FundsRaisingStateJs,
 };
-use crate::service::number_formats::format_u64_readable;
+use crate::service::number_formats::base_units_to_display_units_readable;
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::Utc;
@@ -20,6 +21,7 @@ pub struct FundsRaisingProviderDef {}
 impl FundsRaisingProvider for FundsRaisingProviderDef {
     async fn data(&self, pars: FundsRaisingParsJs) -> Result<FundsRaisingResJs, FrError> {
         let algod = algod();
+        let funds_asset_specs = funds_asset_specs()?;
 
         let dao_id: DaoId = pars.dao_id.parse()?;
 
@@ -53,7 +55,7 @@ impl FundsRaisingProvider for FundsRaisingProviderDef {
 
         Ok(FundsRaisingResJs {
             raised_number: dao_state.raised.to_string(),
-            raised: format_u64_readable(dao_state.raised.val())?,
+            raised: base_units_to_display_units_readable(dao_state.raised, &funds_asset_specs)?,
             state: state_js,
             goal_exceeded_percentage: exceeded_percentage.map(|e| e.format_percentage()), // Some("40%".to_owned()),
         })

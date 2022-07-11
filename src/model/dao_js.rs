@@ -7,6 +7,7 @@ use crate::{
 use anyhow::{anyhow, Result};
 use base::flows::create_dao::model::Dao;
 use chrono::Utc;
+use mbase::models::funds::FundsAmount;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -58,17 +59,18 @@ impl ToDaoJs for Dao {
         funds_asset_specs: &FundsAssetSpecs,
     ) -> Result<DaoJs> {
         let dao_id_str = self.id().to_string();
-        let total_raisable = self
-            .token_supply
-            .val()
-            .checked_mul(self.share_price.val())
-            .ok_or_else(|| {
-                anyhow!(
-                    "Total raisable - error mul: {:?} * {:?}",
-                    self.token_supply,
-                    self.share_price
-                )
-            })?;
+        let total_raisable = FundsAmount::new(
+            self.token_supply
+                .val()
+                .checked_mul(self.share_price.val())
+                .ok_or_else(|| {
+                    anyhow!(
+                        "Total raisable - error mul: {:?} * {:?}",
+                        self.token_supply,
+                        self.share_price
+                    )
+                })?,
+        );
 
         let now = Utc::now();
         let past_raise_end_date = (now.timestamp() as i128)
@@ -111,9 +113,15 @@ impl ToDaoJs for Dao {
             ),
             raise_end_date: self.raise_end_date.0.to_string(),
             raise_min_target_number: self.raise_min_target.val().to_string(),
-            raise_min_target: format_u64_readable(self.raise_min_target.val())?,
-            total_raisable: format_u64_readable(total_raisable)?,
-            total_raisable_number: total_raisable.to_string(),
+            raise_min_target: base_units_to_display_units_readable(
+                self.raise_min_target,
+                funds_asset_specs,
+            )?,
+            total_raisable: base_units_to_display_units_readable(
+                total_raisable,
+                funds_asset_specs,
+            )?,
+            total_raisable_number: total_raisable.val().to_string(),
             funds_raised: funds_raised.to_string(),
         })
     }

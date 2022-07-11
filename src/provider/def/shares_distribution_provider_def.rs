@@ -3,6 +3,7 @@ use crate::provider::shares_distribution_provider::{
     ShareHoldingPercentageJs, SharedDistributionParJs, SharedDistributionResJs,
     SharesDistributionProvider,
 };
+use crate::service::number_formats::format_short;
 use algonaut::core::Address;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
@@ -75,7 +76,7 @@ pub fn not_owned_shares_holdings(
         address: "".to_owned(),
         label: "Not owned".to_owned(),
         address_browser_link: "".to_owned(),
-        amount: not_owned_amount.to_string(),
+        amount: format_short(not_owned_amount.as_decimal())?,
         percentage_formatted: not_owned_percentage.format_percentage(),
         percentage_number: not_owned_percentage.to_string(),
         type_: "not_owned".to_owned(),

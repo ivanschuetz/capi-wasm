@@ -2,7 +2,7 @@ use crate::dependencies::funds_asset_specs;
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::available_funds;
-use crate::service::number_formats::base_units_to_display_units;
+use crate::service::number_formats::base_units_to_display_units_readable;
 use crate::GlobalStateHashExt;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
@@ -59,8 +59,10 @@ impl ViewDaoProvider for ViewDaoProviderDef {
             dao: dao_view_data,
             shares_available: shares_available.to_string(),
             investors_share: investos_share_formatted,
-            available_funds: base_units_to_display_units(available_funds, &funds_asset_specs)
-                .to_string(),
+            available_funds: base_units_to_display_units_readable(
+                available_funds,
+                &funds_asset_specs,
+            )?,
             customer_payment_deeplink: customer_payment_deeplink.to_string(),
         })
     }

@@ -13,9 +13,10 @@ pub struct InvestmentProviderMock {}
 impl InvestmentProvider for InvestmentProviderMock {
     async fn available_shares(&self, _pars: AvailableSharesParJs) -> Result<AvailableSharesResJs> {
         req_delay().await;
-
+        let available_shares = 1_000;
         Ok(AvailableSharesResJs {
-            available_shares: "1000".to_owned(),
+            available_shares_number: available_shares.to_string(),
+            available_shares: available_shares.to_string(),
         })
     }
 

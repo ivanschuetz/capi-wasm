@@ -3,7 +3,7 @@ use crate::provider::investment_provider::{
     AvailableSharesParJs, AvailableSharesResJs, InvestmentProvider, LoadInvestorParJs,
     LoadInvestorResJs,
 };
-use crate::service::number_formats::base_units_to_display_units_readable;
+use crate::service::number_formats::{base_units_to_display_units_readable, format_short};
 use crate::{
     dependencies::{capi_deps, funds_asset_specs},
     service::constants::PRECISION,
@@ -44,7 +44,8 @@ impl InvestmentProvider for InvestmentProviderDef {
                 .await?;
 
         Ok(AvailableSharesResJs {
-            available_shares: dao_shares.available.to_string(),
+            available_shares_number: dao_shares.available.val().to_string(),
+            available_shares: format_short(dao_shares.available.as_decimal())?,
         })
     }
 

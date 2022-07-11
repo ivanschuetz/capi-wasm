@@ -1,3 +1,4 @@
+use super::{mock_address, mock_dao_for_users_view_data, req_delay};
 use crate::{
     provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs},
     service::number_formats::format_u64_readable,
@@ -5,8 +6,6 @@ use crate::{
 use algonaut::{core::MicroAlgos, transaction::url::LinkableTransactionBuilder};
 use anyhow::Result;
 use async_trait::async_trait;
-
-use super::{mock_address, mock_dao_for_users_view_data, req_delay};
 
 pub struct ViewDaoProviderMock {}
 

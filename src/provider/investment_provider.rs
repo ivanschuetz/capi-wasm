@@ -33,5 +33,6 @@ pub struct AvailableSharesParJs {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct AvailableSharesResJs {
+    pub available_shares_number: String,
     pub available_shares: String,
 }
