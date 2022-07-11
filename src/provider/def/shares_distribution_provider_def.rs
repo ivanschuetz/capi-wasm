@@ -56,7 +56,13 @@ pub fn not_owned_shares_holdings(
 ) -> Result<ShareHoldingPercentageJs> {
     let total_holders_amount: u64 = holders.iter().map(|h| h.amount.val()).sum();
 
-    let not_owned_amount: u64 = supply - total_holders_amount;
+    let not_owned_amount: u64 = supply.checked_sub(total_holders_amount).ok_or_else(|| {
+        anyhow!(
+            "Error supply - total amount: {} - {}",
+            supply,
+            total_holders_amount
+        )
+    })?;
     let not_owned_percentage = not_owned_amount
         .as_decimal()
         .checked_div(supply.as_decimal())
