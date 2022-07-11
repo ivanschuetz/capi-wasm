@@ -193,6 +193,9 @@ pub fn format_short(d: Decimal) -> Result<String> {
         format_one_fractional_with_suffix(r, "K")
     } else if d >= million && d < billion {
         let r = d.checked_div(million).unwrap();
+        format_one_fractional_with_suffix(r, "M")
+    } else if d >= billion && d < trillion {
+        let r = d.checked_div(billion).unwrap();
         format_one_fractional_with_suffix(r, "B")
     } else {
         let r = d.checked_div(trillion).unwrap();
