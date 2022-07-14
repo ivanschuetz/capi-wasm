@@ -23,6 +23,7 @@ use mbase::api::contract::Contract;
 use mbase::dependencies::algod;
 use mbase::models::dao_app_id::DaoAppId;
 use mbase::models::hash::GlobalStateHash;
+use mbase::models::timestamp::Timestamp;
 
 pub struct CreateDaoProviderDef {}
 
@@ -106,6 +107,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 app_id: submit_assets_res.app_id.0,
                 description: validated_inputs.description,
                 compressed_image: validated_inputs.image.map(|i| i.bytes()),
+                setup_date: to_sign.setup_date.0.to_string(),
             },
         })
     }
@@ -134,6 +136,8 @@ impl CreateDaoProvider for CreateDaoProviderDef {
 
         log::debug!("Submitting the dao..");
 
+        let setup_date: Timestamp = Timestamp(pars.pt.setup_date.parse()?);
+
         // clone descr_hash here to be able to use it after passing specs to signed struct
         let descr_hash = pars.pt.specs.descr_hash.clone();
         // clone image_hash here to be able to use it after passing specs to signed struct
@@ -151,6 +155,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 funds_asset_id: funds_asset_specs.id,
                 app_id: DaoAppId(pars.pt.app_id),
                 image_url: pars.pt.specs.image_url,
+                setup_date,
             },
         )
         .await?;

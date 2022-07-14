@@ -490,4 +490,5 @@ pub struct SubmitSetupDaoPassthroughParJs {
     pub app_id: u64,
     pub description: Option<String>,
     pub compressed_image: Option<Vec<u8>>,
+    pub setup_date: String,
 }

@@ -35,6 +35,7 @@ impl CreateDaoProvider for CreateDaoProviderMock {
                 app_id: 121212121,
                 description: Some("Test description...".to_owned()),
                 compressed_image: None,
+                setup_date: "0".to_owned(),
             },
         })
     }

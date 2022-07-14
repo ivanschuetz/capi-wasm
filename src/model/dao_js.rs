@@ -39,6 +39,7 @@ pub struct DaoJs {
     pub total_raisable: String,
     pub total_raisable_number: String,
     pub funds_raised: String,
+    pub setup_date: String,
 }
 
 pub trait ToDaoJs {
@@ -123,6 +124,7 @@ impl ToDaoJs for Dao {
             )?,
             total_raisable_number: total_raisable.val().to_string(),
             funds_raised: funds_raised.to_string(),
+            setup_date: self.setup_date.0.to_string(),
         })
     }
 }
