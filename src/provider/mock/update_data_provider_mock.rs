@@ -37,7 +37,8 @@ impl UpdateDataProvider for UpdateDataProviderMock {
             project_name: mock_dao.name,
             project_desc: Some("My project description".to_owned()),
             share_price: "1_000".to_owned(),
-            image_bytes: Some(image_bytes_base64),
+            image_bytes: Some(image_bytes_base64.clone()),
+            image_base64: Some(image_bytes_base64),
             social_media_url: "https://twitter.com/foobardoesntexist".to_owned(),
         })
     }

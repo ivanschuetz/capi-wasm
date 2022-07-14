@@ -95,8 +95,8 @@ impl ToDaoJs for Dao {
             share_supply_number: self.token_supply.val().to_string(),
             investors_share: self.investors_share.value().to_string(),
             // TODO remove and use the nft url (uncomment line below)
-            image_url,
-            // image_url: self.image_nft.clone().map(|nft| nft.url),
+            // image_url,
+            image_url: self.image_nft.clone().map(|nft| nft.url),
             social_media_url: self.social_media_url.clone(),
             shares_asset_id: self.shares_asset_id.to_string(),
             app_id: self.app_id.to_string(),

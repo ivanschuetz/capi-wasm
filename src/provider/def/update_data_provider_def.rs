@@ -43,19 +43,19 @@ impl UpdateDataProvider for UpdateDataProviderDef {
 
         let dao = load_dao(&algod, dao_id).await?;
 
-        let image_bytes = match dao.image_hash {
-            Some(hash) => {
-                let bytes = image_api.get_image(&hash.as_api_id()).await?;
-                let base64 = BASE64.encode(&bytes);
-                Some(base64)
-            }
-            None => None,
-        };
-
         let description = match dao.descr_hash {
             Some(hash) => {
                 let descr = image_api.get_descr(&hash.as_api_id()).await?;
                 Some(descr)
+            }
+            None => None,
+        };
+
+        let image_base64 = match dao.image_nft {
+            Some(nft) => {
+                let bytes = image_api.get(&nft.url).await?;
+                let base64 = BASE64.encode(&bytes);
+                Some(base64)
             }
             None => None,
         };
@@ -65,7 +65,8 @@ impl UpdateDataProvider for UpdateDataProviderDef {
             project_desc: description,
             share_price: app_state.share_price.to_string(),
 
-            image_bytes,
+            image_bytes: None,
+            image_base64,
             social_media_url: app_state.social_media_url,
         })
     }
@@ -85,8 +86,13 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         let (image, updatable_data) = validate_inputs(pars)?;
         let to_sign = update_data(&algod, &owner, dao_id.0, &updatable_data).await?;
 
+        let mut txs = vec![to_sign.update];
+        if let Some(pay) = to_sign.increase_min_balance_tx {
+            txs.push(pay);
+        }
+
         Ok(UpdateDataResJs {
-            to_sign: ToSignJs::new(vec![to_sign.update])?,
+            to_sign: ToSignJs::new(txs)?,
             pt: UpdateDataPassthroughJs {
                 dao_id: dao_id.to_string(),
                 image: image.map(|i| i.bytes()),
@@ -99,7 +105,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         let algod = algod();
         let image_api = image_api();
 
-        if pars.txs.len() != 1 {
+        if pars.txs.len() != 1 && pars.txs.len() != 2 {
             return Err(anyhow!(
                 "Unexpected update app data txs length: {}",
                 pars.txs.len()
