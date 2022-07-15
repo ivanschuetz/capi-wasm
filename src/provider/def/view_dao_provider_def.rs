@@ -1,7 +1,7 @@
-use crate::dependencies::funds_asset_specs;
+use crate::dependencies::{capi_deps, funds_asset_specs};
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
-use crate::service::available_funds::available_funds;
+use crate::service::available_funds::owned_funds;
 use crate::service::number_formats::base_units_to_display_units_readable;
 use crate::GlobalStateHashExt;
 use algonaut::core::MicroAlgos;
@@ -22,6 +22,7 @@ impl ViewDaoProvider for ViewDaoProviderDef {
         let algod = algod();
         let image_api = image_api();
         let funds_asset_specs = funds_asset_specs()?;
+        let capi_deps = capi_deps()?;
 
         let dao_id = pars.dao_id.parse()?;
 
@@ -34,7 +35,9 @@ impl ViewDaoProvider for ViewDaoProviderDef {
                 .build()
                 .as_url();
 
-        let available_funds = available_funds(&algod, &dao, funds_asset_specs.id).await?;
+        // TODO optimize: we're fetching the global state here again (it's also fetched to create the dao)
+        // maybe add available funds field to dao? or retrieve the global state first and create dao and this with it?
+        let owned_funds = owned_funds(&algod, &dao, funds_asset_specs.id, &capi_deps).await?;
 
         // TODO!! not-locked shares (use global function to get not-locked (name prob. "available" shares))
         let shares_available = algod
@@ -58,10 +61,7 @@ impl ViewDaoProvider for ViewDaoProviderDef {
             dao: dao_view_data,
             shares_available: shares_available.to_string(),
             investors_share: investos_share_formatted,
-            available_funds: base_units_to_display_units_readable(
-                available_funds,
-                &funds_asset_specs,
-            )?,
+            available_funds: base_units_to_display_units_readable(owned_funds, &funds_asset_specs)?,
             customer_payment_deeplink: customer_payment_deeplink.to_string(),
         })
     }
