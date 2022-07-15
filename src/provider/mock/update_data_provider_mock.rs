@@ -8,7 +8,7 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use base::{api::image_api::ImageApi, dependencies::image_api};
+use base::{api::fetcher::Fetcher, dependencies::fetcher};
 use data_encoding::BASE64;
 use mbase::dependencies::algod;
 
@@ -18,18 +18,15 @@ pub struct UpdateDataProviderMock {}
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UpdateDataProvider for UpdateDataProviderMock {
     async fn get(&self, _: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
-        let image_api = image_api();
+        let fetcher = fetcher();
 
         req_delay().await;
 
         // just a convienient source for our data
         let mock_dao = mock_dao_for_users_view_data()?;
 
-        // we've to fetch these from the api because we want to test a real image in the UI and hardcoded bytes here is too much
-        // this may break if the api delted the image
-        // TODO consider allowing image fetch to fail (everywhere) - so e.g. image api being down doesn't make everything fail
-        let image_bytes = image_api
-            .get_image("xqXI6IBs1tSlfNAARFXiFeq4376WBrv6Wcexg2C2gG4=")
+        let image_bytes = fetcher
+            .get("https://ipfs.io/ipfs/bafybeidqjugltb4jayljxd3kigzrypqppr7lwwd67zgac2bqndxejo3irm/img")
             .await?;
         let image_bytes_base64 = BASE64.encode(&image_bytes);
 
@@ -37,7 +34,6 @@ impl UpdateDataProvider for UpdateDataProviderMock {
             project_name: mock_dao.name,
             project_desc: Some("My project description".to_owned()),
             share_price: "1_000".to_owned(),
-            image_bytes: Some(image_bytes_base64.clone()),
             image_base64: Some(image_bytes_base64),
             social_media_url: "https://twitter.com/foobardoesntexist".to_owned(),
         })

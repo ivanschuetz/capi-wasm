@@ -12,8 +12,8 @@ use crate::provider::update_data_provider::{
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::api::image_api::ImageApi;
-use base::dependencies::image_api;
+use base::api::fetcher::Fetcher;
+use base::dependencies::fetcher;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::update_data::update_data::{
     submit_update_data, update_data, UpdatableDaoData, UpdateDaoDataSigned,
@@ -32,7 +32,7 @@ pub struct UpdateDataProviderDef {}
 impl UpdateDataProvider for UpdateDataProviderDef {
     async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
         let algod = algod();
-        let image_api = image_api();
+        let fetcher = fetcher();
 
         let dao_id = pars.dao_id.parse::<DaoId>().map_err(Error::msg)?;
 
@@ -42,13 +42,13 @@ impl UpdateDataProvider for UpdateDataProviderDef {
 
         // TODO optimize: fetch description separately, DaoJs has just url
         let description = match dao.descr_url {
-            Some(descr) => Some(String::from_utf8(image_api.get(&descr).await?)?),
+            Some(descr) => Some(String::from_utf8(fetcher.get(&descr).await?)?),
             None => None,
         };
 
         let image_base64 = match dao.image_nft {
             Some(nft) => {
-                let bytes = image_api.get(&nft.url).await?;
+                let bytes = fetcher.get(&nft.url).await?;
                 let base64 = BASE64.encode(&bytes);
                 Some(base64)
             }
@@ -60,7 +60,6 @@ impl UpdateDataProvider for UpdateDataProviderDef {
             project_desc: description,
             share_price: app_state.share_price.to_string(),
 
-            image_bytes: None,
             image_base64,
             social_media_url: app_state.social_media_url,
         })
