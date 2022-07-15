@@ -33,7 +33,7 @@ impl CreateDaoProvider for CreateDaoProviderMock {
                 creator: creator_address.to_string(),
                 shares_asset_id: 1234567890,
                 app_id: 121212121,
-                description: Some("Test description...".to_owned()),
+                description_url: None,
                 compressed_image: None,
                 setup_date: "0".to_owned(),
             },
@@ -45,7 +45,6 @@ impl CreateDaoProvider for CreateDaoProviderMock {
 
         Ok(CreateDaoRes {
             dao: mock_dao_for_users_view_data()?,
-            descr_error: None,
             image_error: None,
         })
     }

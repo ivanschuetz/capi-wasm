@@ -17,7 +17,7 @@ use base::flows::create_dao::model::{SetupDaoSigned, SetupDaoToSign};
 use base::flows::create_dao::setup::create_shares::{submit_create_assets, CreateDaoAssetsSigned};
 use base::flows::create_dao::setup_dao::Programs;
 use base::flows::create_dao::setup_dao::{setup_dao_txs, submit_setup_dao};
-use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
+use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::teal::TealApi;
 use mbase::api::contract::Contract;
 use mbase::dependencies::algod;
@@ -105,7 +105,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 creator: creator_address.to_string(),
                 shares_asset_id: submit_assets_res.shares_asset_id,
                 app_id: submit_assets_res.app_id.0,
-                description: validated_inputs.description,
+                description_url: validated_inputs.description_url,
                 compressed_image: validated_inputs.image.map(|i| i.bytes()),
                 setup_date: to_sign.setup_date.0.to_string(),
             },
@@ -138,8 +138,6 @@ impl CreateDaoProvider for CreateDaoProviderDef {
 
         let setup_date: Timestamp = Timestamp(pars.pt.setup_date.parse()?);
 
-        // clone descr_hash here to be able to use it after passing specs to signed struct
-        let descr_hash = pars.pt.specs.descr_hash.clone();
         // clone image_hash here to be able to use it after passing specs to signed struct
         let image_hash = pars.pt.specs.image_hash.clone();
 
@@ -162,15 +160,6 @@ impl CreateDaoProvider for CreateDaoProviderDef {
 
         log::debug!("Submit dao res: {:?}", submit_dao_res);
 
-        // Note that it's required to upload the description after DAO setup, because the api checks the hash in the app's global state.
-        let (_, maybe_descr_upload_error) = maybe_upload_descr(
-            &image_api,
-            DaoAppId(pars.pt.app_id),
-            pars.pt.description,
-            descr_hash.clone(),
-        )
-        .await?;
-
         // Note that it's required to upload the image after DAO setup, because the api checks the hash in the app's global state.
         let (maybe_image_url, maybe_image_upload_error) = maybe_upload_image(
             &image_api,
@@ -181,12 +170,9 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         .await?;
 
         Ok(CreateDaoRes {
-            dao: submit_dao_res.dao.to_js(
-                descr_hash.map(|h| h.as_str()),
-                maybe_image_url,
-                &funds_asset_specs,
-            )?,
-            descr_error: maybe_descr_upload_error,
+            dao: submit_dao_res
+                .dao
+                .to_js(maybe_image_url, &funds_asset_specs)?,
             image_error: maybe_image_upload_error,
         })
     }
@@ -247,55 +233,4 @@ async fn upload_image(
             };
 
     Ok((possible_image_url, possible_image_upload_error))
-}
-
-/// Returns: Url of the uploaded descr (if upload was succesful), error message otherwise
-/// The error message is not an error as we don't want to abort the DAO setup (which with current implementation would leave the user in an incomplete state),
-/// we only show a message to the user and tell them to try again later from the settings
-/// this flow may be improved in the future
-/// TODO refactor with maybe_upload_image
-pub async fn maybe_upload_descr(
-    api: &dyn ImageApi,
-    app_id: DaoAppId,
-    descr: Option<String>,
-    descr_hash: Option<GlobalStateHash>,
-) -> Result<(Option<String>, Option<String>)> {
-    // Note that it's required to upload the image after DAO setup, because the image api checks that the hash is in the app's global state.
-    match (descr, descr_hash) {
-        (Some(descr), Some(hash)) => {
-            // double checking that the hash which we stored in the DAO (passed to the setup dao tx when generating the txs)
-            // matches the just calculated hash of the image (which we get from passthrough data)
-            // no specific reason for why they should be different, but better more checks than less
-            if descr.hash() != hash {
-                return Err(anyhow!("Passthrough descr hash != descr hash"));
-            }
-            upload_descr(api, app_id, hash, descr).await
-        }
-        // user provided no image: no image url, no error
-        (None, None) => Ok((None, None)),
-        _ => Err(anyhow!(
-            "Invalid combination: either descr and hash are set or none are set"
-        )),
-    }
-}
-
-/// Returns: Url of the uploaded descr (if upload was succesful), error message otherwise
-/// The error message is not an error as we don't want to abort the DAO setup (which with current implementation would leave the user in an incomplete state),
-/// we only show a message to the user and tell them to try again later from the settings
-/// this flow may be improved in the future
-/// TODO refactor with upload_image
-async fn upload_descr(
-    api: &dyn ImageApi,
-    app_id: DaoAppId,
-    descr_hash: GlobalStateHash,
-    descr: String,
-) -> Result<(Option<String>, Option<String>)> {
-    let (possible_url, possible_upload_error) = match api
-            .upload_descr(app_id, descr.as_bytes().to_vec())
-            .await {
-                Ok(_) => (Some(descr_hash.as_api_id()), None),
-                Err(e) => (None, Some(format!("Error storing image: {e}. Please try uploading it again from the project's settings.")))
-            };
-
-    Ok((possible_url, possible_upload_error))
 }

@@ -20,6 +20,7 @@ pub struct UpdatableDataParJs {
     pub dao_id: String,
 }
 
+/// Data to prefill update form
 #[derive(Debug, Clone, Serialize)]
 pub struct UpdatableDataResJs {
     pub project_name: String,
@@ -41,7 +42,7 @@ pub struct UpdateDataParJs {
     pub owner: String,
 
     pub project_name: String,
-    pub project_desc: Option<String>,
+    pub project_desc_url: Option<String>,
     // TODO remove? not updatable currently
     pub share_price: String,
 

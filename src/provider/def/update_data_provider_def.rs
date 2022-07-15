@@ -3,7 +3,7 @@ use crate::inputs_validation::ValidationError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_dao_provider::{
-    validate_compressed_image_opt, validate_dao_description_opt, validate_dao_name,
+    validate_compressed_image_opt, validate_dao_description_url_opt, validate_dao_name,
     validate_image_url, validate_social_media_url,
 };
 use crate::provider::def::create_dao_provider_def::maybe_upload_image;
@@ -15,7 +15,7 @@ use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::api::image_api::ImageApi;
 use base::dependencies::image_api;
-use base::flows::create_dao::setup_dao_specs::{CompressedImage, HashableString};
+use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::update_data::update_data::{
     submit_update_data, update_data, UpdatableDaoData, UpdateDaoDataSigned,
@@ -43,11 +43,9 @@ impl UpdateDataProvider for UpdateDataProviderDef {
 
         let dao = load_dao(&algod, dao_id).await?;
 
-        let description = match dao.descr_hash {
-            Some(hash) => {
-                let descr = image_api.get_descr(&hash.as_api_id()).await?;
-                Some(descr)
-            }
+        // TODO optimize: fetch description separately, DaoJs has just url
+        let description = match dao.descr_url {
+            Some(descr) => Some(String::from_utf8(image_api.get(&descr).await?)?),
             None => None,
         };
 
@@ -154,7 +152,7 @@ fn validate_inputs(
     pars: UpdateDataParJs,
 ) -> Result<(Option<CompressedImage>, UpdatableDaoData), ValidateDataUpdateInputsError> {
     let dao_name_res = validate_dao_name(&pars.project_name);
-    let dao_description_res = validate_dao_description_opt(&pars.project_desc);
+    let dao_description_res = validate_dao_description_url_opt(&pars.project_desc_url);
     let image_res = validate_compressed_image_opt(&pars.image);
     let image_url_res = validate_image_url(&pars.image_url);
     let social_media_url_res = validate_social_media_url(&pars.social_media_url);
@@ -199,7 +197,7 @@ fn validate_inputs(
         image,
         UpdatableDaoData {
             project_name: dao_name,
-            project_desc: dao_description.map(|d| d.hash()),
+            project_desc_url: dao_description,
             image_hash: image_hash.clone(),
             image_url: image_url.clone(),
             social_media_url: social_media_url,

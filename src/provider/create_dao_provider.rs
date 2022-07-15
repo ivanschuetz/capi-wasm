@@ -11,7 +11,6 @@ use anyhow::Result;
 use async_trait::async_trait;
 use base::flows::create_dao::model::CreateSharesSpecs;
 use base::flows::create_dao::setup_dao_specs::CompressedImage;
-use base::flows::create_dao::setup_dao_specs::HashableString;
 use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use mbase::models::funds::FundsAmount;
 use mbase::models::share_amount::ShareAmount;
@@ -34,7 +33,7 @@ pub trait CreateDaoProvider {
 
 pub struct ValidatedDaoInputs {
     pub name: String,
-    pub description: Option<String>,
+    pub description_url: Option<String>,
     pub creator: Address,
     pub token_name: String,
     pub share_supply: ShareAmount,
@@ -52,7 +51,7 @@ pub struct ValidatedDaoInputs {
 pub struct CreateDaoFormInputsJs {
     pub creator: String, // not strictly a form input ("field"), but for purpose here it can be
     pub dao_name: String,
-    pub dao_description: Option<String>,
+    pub dao_descr_url: Option<String>,
     pub share_count: String,
     pub shares_for_investors: String,
     pub share_price: String,
@@ -67,9 +66,6 @@ pub struct CreateDaoFormInputsJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDaoRes {
     pub dao: DaoJs,
-    // set if there was an error uploading the description
-    // note that this does not affect anything else - if storing the description fails, the dao is still saved successfully
-    pub descr_error: Option<String>,
     // set if there was an error uploading the image
     // note that this does not affect anything else - if storing the image fails, the dao is still saved successfully
     pub image_error: Option<String>,
@@ -116,7 +112,7 @@ impl CreateDaoFormInputsJs {
 pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
     SetupDaoSpecs::new(
         inputs.name.clone(),
-        inputs.description.clone().map(|d| d.hash()),
+        inputs.description_url.clone(),
         CreateSharesSpecs {
             token_name: inputs.token_name.clone(),
             supply: inputs.share_supply,
@@ -137,7 +133,7 @@ pub fn validate_dao_inputs(
     funds_asset_specs: &FundsAssetSpecs,
 ) -> Result<ValidatedDaoInputs, ValidateDaoInputsError> {
     let dao_name_res = validate_dao_name(&inputs.dao_name);
-    let dao_description_res = validate_dao_description_opt(&inputs.dao_description);
+    let dao_description_url_res = validate_dao_description_url_opt(&inputs.dao_descr_url);
     let creator_address_res = validate_address(&inputs.creator);
     let share_supply_res = validate_share_supply(&inputs.share_count);
     let shares_for_investors_res = validate_shares_for_investors(&inputs.shares_for_investors);
@@ -151,7 +147,7 @@ pub fn validate_dao_inputs(
         validate_min_raised_target_end_date(&inputs.min_raise_target_end_date);
 
     let dao_name_err = dao_name_res.clone().err();
-    let dao_description_err = dao_description_res.clone().err();
+    let dao_description_url_err = dao_description_url_res.clone().err();
     let creator_address_err = creator_address_res.clone().err();
     let share_supply_err = share_supply_res.clone().err();
     let shares_for_investors_err = shares_for_investors_res.clone().err();
@@ -165,7 +161,7 @@ pub fn validate_dao_inputs(
 
     if [
         dao_name_err,
-        dao_description_err,
+        dao_description_url_err,
         creator_address_err,
         share_supply_err,
         shares_for_investors_err,
@@ -182,7 +178,7 @@ pub fn validate_dao_inputs(
     {
         let errors = CreateAssetsInputErrors {
             name: dao_name_res.err(),
-            description: dao_description_res.err(),
+            description: dao_description_url_res.err(),
             creator: creator_address_res.err(),
             share_supply: share_supply_res.err(),
             shares_for_investors: shares_for_investors_res.err(),
@@ -201,8 +197,8 @@ pub fn validate_dao_inputs(
     // this is to protect from programmatic errors - being careful, because we want to avoid crashes in WASM at any cost.
     // ideally ensure it via the compiler - couldn't find how quickly other than nesting all the validations with match which is not a great alternative.
     let dao_name = dao_name_res.map_err(|e| to_single_field_val_error("dao_name", e))?;
-    let dao_description =
-        dao_description_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
+    let dao_description_url =
+        dao_description_url_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
     let creator_address =
         creator_address_res.map_err(|e| to_single_field_val_error("creator_address", e))?;
     let investors_share =
@@ -235,7 +231,7 @@ pub fn validate_dao_inputs(
 
     Ok(ValidatedDaoInputs {
         name: dao_name,
-        description: dao_description,
+        description_url: dao_description_url,
         creator: creator_address,
         token_name: asset_name,
         share_supply,
@@ -302,17 +298,21 @@ pub fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
     validate_text_min_max_length(name, 2, 40)
 }
 
-pub fn validate_dao_description_opt(
+pub fn validate_dao_description_url_opt(
     descr: &Option<String>,
 ) -> Result<Option<String>, ValidationError> {
     match descr {
-        Some(d) => Ok(Some(validate_dao_description(d)?)),
+        Some(d) => Ok(Some(validate_dao_description_url(d)?)),
         None => Ok(None),
     }
 }
 
-fn validate_dao_description(descr: &str) -> Result<String, ValidationError> {
-    validate_text_min_max_length(descr, 0, 2000)
+/// Note: validation of the description itself is separate (currently in js - could be done in wasm, just isolated),
+/// we upload to ipfs in js because of the js web3.storage library we're using
+/// and we prefer to keep this in js, as with white label we've to keep these kind of services/libraries replaceable to operators.
+fn validate_dao_description_url(descr: &str) -> Result<String, ValidationError> {
+    // 150 is just a reasonable upper bound (a bit more than 2x of an IPFS url using ipfs.io gateway)
+    validate_text_min_max_length(descr, 0, 150)
 }
 
 pub fn validate_address(str: &str) -> Result<Address, ValidationError> {
@@ -488,7 +488,7 @@ pub struct SubmitSetupDaoPassthroughParJs {
     pub creator: String,
     pub shares_asset_id: u64,
     pub app_id: u64,
-    pub description: Option<String>,
+    pub description_url: Option<String>,
     pub compressed_image: Option<Vec<u8>>,
     pub setup_date: String,
 }

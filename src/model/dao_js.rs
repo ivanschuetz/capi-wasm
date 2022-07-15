@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DaoJs {
     pub name: String,
-    pub description_id: Option<String>,
+    pub descr_url: Option<String>,
     pub share_supply: String,
     // TODO consider passing a msgpack version of the dao back and forth to access non-display properties in wasm,
     // regular fields should be only for display purpose - so we don't need these additional not formatted "_number" or "_algo" fields.
@@ -45,7 +45,6 @@ pub struct DaoJs {
 pub trait ToDaoJs {
     fn to_js(
         &self,
-        description_id: Option<String>,
         image_url: Option<String>,
         funds_asset_specs: &FundsAssetSpecs,
     ) -> Result<DaoJs>;
@@ -54,7 +53,6 @@ pub trait ToDaoJs {
 impl ToDaoJs for Dao {
     fn to_js(
         &self,
-        description_id: Option<String>,
         // TODO remove: replace with IPFS once we've the library working in react
         image_url: Option<String>,
         funds_asset_specs: &FundsAssetSpecs,
@@ -88,7 +86,7 @@ impl ToDaoJs for Dao {
 
         Ok(DaoJs {
             name: self.name.clone(),
-            description_id,
+            descr_url: self.descr_url.clone(),
             share_price: base_units_to_display_units_readable(self.share_price, funds_asset_specs)?,
             share_asset_name: self.token_name.clone(),
             share_supply: format_u64_readable(self.token_supply.val())?,
