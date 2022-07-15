@@ -9,11 +9,8 @@ mod provider;
 mod service;
 
 use anyhow::{anyhow, Result};
-use base::api::image_api::ImageApi;
 use mbase::{
-    models::{
-        hash::GlobalStateHash, share_amount::ShareAmount, shares_percentage::SharesPercentage,
-    },
+    models::{share_amount::ShareAmount, shares_percentage::SharesPercentage},
     util::decimal_util::AsDecimal,
 };
 use rust_decimal::Decimal;
@@ -39,14 +36,4 @@ fn calculate_profit_percentage(
         ))?;
 
     Ok(perc)
-}
-
-pub trait GlobalStateHashExt {
-    fn as_api_url(&self, api: &dyn ImageApi) -> String;
-}
-
-impl GlobalStateHashExt for GlobalStateHash {
-    fn as_api_url(&self, api: &dyn ImageApi) -> String {
-        api.image_url(&self.as_api_id())
-    }
 }

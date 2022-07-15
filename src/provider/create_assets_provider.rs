@@ -32,7 +32,6 @@ pub struct CreateAssetsInputErrorsJs {
     pub share_supply: Option<ValidationErrorJs>,
     pub share_price: Option<ValidationErrorJs>,
     pub investors_share: Option<ValidationErrorJs>,
-    pub image: Option<ValidationErrorJs>,
     pub social_media_url: Option<ValidationErrorJs>,
     pub min_raise_target: Option<ValidationErrorJs>,
     pub min_raise_target_end_date: Option<ValidationErrorJs>,
@@ -50,7 +49,6 @@ impl From<ValidateDaoInputsError> for JsValue {
                     share_supply: e.share_supply.map(to_validation_error_js),
                     share_price: e.share_price.map(to_validation_error_js),
                     investors_share: e.investors_share.map(to_validation_error_js),
-                    image: e.compressed_image.map(to_validation_error_js),
                     social_media_url: e.social_media_url.map(to_validation_error_js),
                     min_raise_target: e.min_raise_target.map(to_validation_error_js),
                     min_raise_target_end_date: e

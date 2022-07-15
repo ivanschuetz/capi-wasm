@@ -3,12 +3,10 @@ use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::owned_funds;
 use crate::service::number_formats::base_units_to_display_units_readable;
-use crate::GlobalStateHashExt;
 use algonaut::core::MicroAlgos;
 use algonaut::transaction::url::LinkableTransactionBuilder;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::dependencies::image_api;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use mbase::dependencies::algod;
 use mbase::util::decimal_util::DecimalExt;
@@ -20,7 +18,6 @@ pub struct ViewDaoProviderDef {}
 impl ViewDaoProvider for ViewDaoProviderDef {
     async fn get(&self, pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
         let algod = algod();
-        let image_api = image_api();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;
 
@@ -52,10 +49,7 @@ impl ViewDaoProvider for ViewDaoProviderDef {
 
         let investos_share_formatted = dao.investors_share.value().format_percentage();
 
-        let dao_view_data = dao.to_js(
-            dao.image_hash.clone().map(|h| h.as_api_url(&image_api)),
-            &funds_asset_specs,
-        )?;
+        let dao_view_data = dao.to_js(&funds_asset_specs)?;
 
         Ok(ViewDaoResJs {
             dao: dao_view_data,

@@ -12,7 +12,7 @@ use crate::{
 pub trait UpdateDataProvider {
     async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs>;
     async fn txs(&self, pars: UpdateDataParJs) -> Result<UpdateDataResJs, FrError>;
-    async fn submit(&self, pars: SubmitUpdateDataParJs) -> Result<SubmitUpdateDataResJs>;
+    async fn submit(&self, pars: SubmitUpdateDataParJs) -> Result<()>;
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,12 +66,4 @@ pub struct SubmitUpdateDataParJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateDataPassthroughJs {
     pub dao_id: String,
-    pub image: Option<Vec<u8>>,
-    pub image_hash: Option<Vec<u8>>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct SubmitUpdateDataResJs {
-    pub image_url: Option<String>,
-    pub image_upload_error: Option<String>,
 }

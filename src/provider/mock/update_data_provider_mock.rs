@@ -2,8 +2,8 @@ use super::{mock_dao_for_users_view_data, mock_to_sign, req_delay};
 use crate::{
     error::FrError,
     provider::update_data_provider::{
-        SubmitUpdateDataParJs, SubmitUpdateDataResJs, UpdatableDataParJs, UpdatableDataResJs,
-        UpdateDataParJs, UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
+        SubmitUpdateDataParJs, UpdatableDataParJs, UpdatableDataResJs, UpdateDataParJs,
+        UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
     },
 };
 use anyhow::{Error, Result};
@@ -55,18 +55,13 @@ impl UpdateDataProvider for UpdateDataProviderMock {
             to_sign: mock_to_sign(&algod, &owner).await?,
             pt: UpdateDataPassthroughJs {
                 dao_id: mock_dao.app_id,
-                image: None,
-                image_hash: None,
             },
         })
     }
 
-    async fn submit(&self, _: SubmitUpdateDataParJs) -> Result<SubmitUpdateDataResJs> {
+    async fn submit(&self, _: SubmitUpdateDataParJs) -> Result<()> {
         req_delay().await;
 
-        Ok(SubmitUpdateDataResJs {
-            image_url: None,
-            image_upload_error: None,
-        })
+        Ok(())
     }
 }

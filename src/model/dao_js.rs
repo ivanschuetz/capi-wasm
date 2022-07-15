@@ -43,20 +43,11 @@ pub struct DaoJs {
 }
 
 pub trait ToDaoJs {
-    fn to_js(
-        &self,
-        image_url: Option<String>,
-        funds_asset_specs: &FundsAssetSpecs,
-    ) -> Result<DaoJs>;
+    fn to_js(&self, funds_asset_specs: &FundsAssetSpecs) -> Result<DaoJs>;
 }
 
 impl ToDaoJs for Dao {
-    fn to_js(
-        &self,
-        // TODO remove: replace with IPFS once we've the library working in react
-        image_url: Option<String>,
-        funds_asset_specs: &FundsAssetSpecs,
-    ) -> Result<DaoJs> {
+    fn to_js(&self, funds_asset_specs: &FundsAssetSpecs) -> Result<DaoJs> {
         let dao_id_str = self.id().to_string();
         let total_raisable = FundsAmount::new(
             self.token_supply

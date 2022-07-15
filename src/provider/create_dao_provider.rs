@@ -10,7 +10,6 @@ use algonaut::core::Address;
 use anyhow::Result;
 use async_trait::async_trait;
 use base::flows::create_dao::model::CreateSharesSpecs;
-use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use mbase::models::funds::FundsAmount;
 use mbase::models::share_amount::ShareAmount;
@@ -40,7 +39,6 @@ pub struct ValidatedDaoInputs {
     pub shares_for_investors: ShareAmount,
     pub share_price: FundsAmount,
     pub investors_share: SharesPercentage,
-    pub image: Option<CompressedImage>,
     pub image_url: Option<String>,
     pub social_media_url: String,
     pub min_raise_target: FundsAmount,
@@ -66,9 +64,6 @@ pub struct CreateDaoFormInputsJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDaoRes {
     pub dao: DaoJs,
-    // set if there was an error uploading the image
-    // note that this does not affect anything else - if storing the image fails, the dao is still saved successfully
-    pub image_error: Option<String>,
 }
 
 #[derive(Debug)]
@@ -119,7 +114,6 @@ pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<Setu
         },
         inputs.investors_share,
         inputs.share_price,
-        inputs.image.clone().map(|i| i.hash()),
         inputs.image_url.clone(),
         inputs.social_media_url.clone(),
         inputs.shares_for_investors,
@@ -138,7 +132,6 @@ pub fn validate_dao_inputs(
     let share_supply_res = validate_share_supply(&inputs.share_count);
     let shares_for_investors_res = validate_shares_for_investors(&inputs.shares_for_investors);
     let share_price_res = validate_share_price(&inputs.share_price, funds_asset_specs);
-    let compressed_image_res = validate_compressed_image_opt(&inputs.compressed_image);
     let image_url_res = validate_image_url(&inputs.image_url);
     let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
     let investors_share_res = validate_investors_share(&inputs.investors_share);
@@ -153,7 +146,6 @@ pub fn validate_dao_inputs(
     let share_supply_err = share_supply_res.clone().err();
     let shares_for_investors_err = shares_for_investors_res.clone().err();
     let share_price_err = share_price_res.clone().err();
-    let compressed_image_err = compressed_image_res.clone().err();
     let image_url_err = image_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
     let investors_share_err = investors_share_res.clone().err();
@@ -167,7 +159,6 @@ pub fn validate_dao_inputs(
         share_supply_err,
         shares_for_investors_err,
         share_price_err,
-        compressed_image_err,
         image_url_err,
         social_media_url_err,
         investors_share_err,
@@ -184,7 +175,6 @@ pub fn validate_dao_inputs(
             share_supply: share_supply_res.err(),
             shares_for_investors: shares_for_investors_res.err(),
             share_price: share_price_res.err(),
-            compressed_image: compressed_image_res.err(),
             image_url: image_url_res.err(),
             social_media_url: social_media_url_res.err(),
             investors_share: investors_share_res.err(),
@@ -209,8 +199,6 @@ pub fn validate_dao_inputs(
     let shares_for_investors = shares_for_investors_res
         .map_err(|e| to_single_field_val_error("shares_for_investors", e))?;
     let share_price = share_price_res.map_err(|e| to_single_field_val_error("share_price", e))?;
-    let compressed_image =
-        compressed_image_res.map_err(|e| to_single_field_val_error("compressed_image", e))?;
     let social_media_url =
         social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
     let image_url = image_url_res.map_err(|e| to_single_field_val_error("image_url", e))?;
@@ -239,7 +227,6 @@ pub fn validate_dao_inputs(
         shares_for_investors,
         share_price,
         investors_share,
-        image: compressed_image,
         social_media_url,
         min_raise_target,
         min_raise_target_end_date,
@@ -288,7 +275,6 @@ pub struct CreateAssetsInputErrors {
     pub shares_for_investors: Option<ValidationError>,
     pub share_price: Option<ValidationError>,
     pub investors_share: Option<ValidationError>,
-    pub compressed_image: Option<ValidationError>,
     pub image_url: Option<ValidationError>,
     pub social_media_url: Option<ValidationError>,
     pub min_raise_target: Option<ValidationError>,
@@ -344,43 +330,11 @@ fn validate_text_min_max_length(
     Ok(text.to_owned())
 }
 
-pub fn validate_compressed_image_opt(
-    bytes: &Option<Vec<u8>>,
-) -> Result<Option<CompressedImage>, ValidationError> {
-    match bytes {
-        Some(bytes) => {
-            // map empty image error to no image - this sanitizes getting empty array from js instead of none
-            match validate_compressed_image(bytes) {
-                Ok(image) => Ok(Some(image)),
-                Err(ValidationError::Empty) => Ok(None),
-                Err(e) => Err(e),
-            }
-        }
-        None => Ok(None),
-    }
-}
-
 pub fn validate_image_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
     match url {
         Some(url) => Ok(Some(validate_text_min_max_length(&url, 0, 200)?)),
         None => Ok(None),
     }
-}
-
-fn validate_compressed_image(bytes: &Vec<u8>) -> Result<CompressedImage, ValidationError> {
-    let max_size = 500_000;
-    let size = bytes.len();
-
-    if bytes.is_empty() {
-        return Err(ValidationError::Empty); // image with no bytes makes no sense
-    } else if bytes.len() > 500_000 {
-        return Err(ValidationError::CompressedImageSize {
-            max: format!("{} bytes", max_size),
-            actual: format!("{} bytes", size),
-        });
-    }
-
-    Ok(CompressedImage::new(bytes.clone()))
 }
 
 fn generate_asset_name(validated_dao_name: &str) -> Result<String> {
@@ -492,6 +446,5 @@ pub struct SubmitSetupDaoPassthroughParJs {
     pub shares_asset_id: u64,
     pub app_id: u64,
     pub description_url: Option<String>,
-    pub compressed_image: Option<Vec<u8>>,
     pub setup_date: String,
 }

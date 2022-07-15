@@ -3,19 +3,17 @@ use crate::inputs_validation::ValidationError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_dao_provider::{
-    validate_compressed_image_opt, validate_dao_description_url_opt, validate_dao_name,
-    validate_image_url, validate_social_media_url,
+    validate_dao_description_url_opt, validate_dao_name, validate_image_url,
+    validate_social_media_url,
 };
-use crate::provider::def::create_dao_provider_def::maybe_upload_image;
 use crate::provider::update_data_provider::{
-    SubmitUpdateDataParJs, SubmitUpdateDataResJs, UpdatableDataParJs, UpdatableDataResJs,
-    UpdateDataParJs, UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
+    SubmitUpdateDataParJs, UpdatableDataParJs, UpdatableDataResJs, UpdateDataParJs,
+    UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::api::image_api::ImageApi;
 use base::dependencies::image_api;
-use base::flows::create_dao::setup_dao_specs::CompressedImage;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::update_data::update_data::{
     submit_update_data, update_data, UpdatableDaoData, UpdateDaoDataSigned,
@@ -23,7 +21,6 @@ use base::flows::update_data::update_data::{
 use data_encoding::BASE64;
 use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
-use mbase::models::hash::GlobalStateHash;
 use mbase::state::dao_app_state::dao_global_state;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -81,7 +78,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         // and use this version to retrieve the program
         // the teal has to be updated to store the version, either in the same field as the address or a separate field with all the escrow's versions
 
-        let (image, updatable_data) = validate_inputs(pars)?;
+        let updatable_data = validate_inputs(pars)?;
         let to_sign = update_data(&algod, &owner, dao_id.0, &updatable_data).await?;
 
         let mut txs = vec![to_sign.update];
@@ -93,15 +90,12 @@ impl UpdateDataProvider for UpdateDataProviderDef {
             to_sign: ToSignJs::new(txs)?,
             pt: UpdateDataPassthroughJs {
                 dao_id: dao_id.to_string(),
-                image: image.map(|i| i.bytes()),
-                image_hash: updatable_data.image_hash.map(|h| h.bytes()),
             },
         })
     }
 
-    async fn submit(&self, pars: SubmitUpdateDataParJs) -> Result<SubmitUpdateDataResJs> {
+    async fn submit(&self, pars: SubmitUpdateDataParJs) -> Result<()> {
         let algod = algod();
-        let image_api = image_api();
 
         if pars.txs.len() != 1 && pars.txs.len() != 2 {
             return Err(anyhow!(
@@ -116,13 +110,6 @@ impl UpdateDataProvider for UpdateDataProviderDef {
             None
         };
 
-        let dao_id = pars.pt.dao_id.parse::<DaoId>().map_err(Error::msg)?;
-        let image = pars.pt.image.map(CompressedImage::new);
-        let image_hash = match pars.pt.image_hash {
-            Some(bytes) => Some(GlobalStateHash::from_bytes(bytes)?),
-            None => None,
-        };
-
         submit_update_data(
             &algod,
             UpdateDaoDataSigned {
@@ -135,14 +122,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         )
         .await?;
 
-        // Note that it's required to upload the image after the DAO update, because the image api checks the hash in the app's global state.
-        let (maybe_image_url, maybe_image_upload_error) =
-            maybe_upload_image(&image_api, dao_id.0, image, image_hash).await?;
-
-        Ok(SubmitUpdateDataResJs {
-            image_url: maybe_image_url,
-            image_upload_error: maybe_image_upload_error,
-        })
+        Ok(())
     }
 }
 
@@ -150,23 +130,20 @@ impl UpdateDataProvider for UpdateDataProviderDef {
 /// it returns additionally the image, which is returned to js
 fn validate_inputs(
     pars: UpdateDataParJs,
-) -> Result<(Option<CompressedImage>, UpdatableDaoData), ValidateDataUpdateInputsError> {
+) -> Result<UpdatableDaoData, ValidateDataUpdateInputsError> {
     let dao_name_res = validate_dao_name(&pars.project_name);
     let dao_description_res = validate_dao_description_url_opt(&pars.project_desc_url);
-    let image_res = validate_compressed_image_opt(&pars.image);
     let image_url_res = validate_image_url(&pars.image_url);
     let social_media_url_res = validate_social_media_url(&pars.social_media_url);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_err = dao_description_res.clone().err();
-    let compressed_image_err = image_res.clone().err();
     let image_url_err = image_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
 
     if [
         dao_name_err,
         dao_description_err,
-        compressed_image_err,
         social_media_url_err,
         image_url_err,
     ]
@@ -176,7 +153,7 @@ fn validate_inputs(
         let errors = ValidateUpateDataInputErrors {
             name: dao_name_res.err(),
             description: dao_description_res.err(),
-            image: image_res.err(),
+            image_url: image_url_res.err(),
             social_media_url: social_media_url_res.err(),
         };
         return Err(ValidateDataUpdateInputsError::AllFieldsValidation(errors));
@@ -185,31 +162,24 @@ fn validate_inputs(
     let dao_name = dao_name_res.map_err(|e| to_single_field_val_error("dao_name", e))?;
     let dao_description =
         dao_description_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
-    let image = image_res.map_err(|e| to_single_field_val_error("compressed_image", e))?;
     let image_url = image_url_res.map_err(|e| to_single_field_val_error("image_url", e))?;
 
     let social_media_url =
         social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
 
-    let image_hash = image.as_ref().map(|i| i.hash());
-
-    Ok((
-        image,
-        UpdatableDaoData {
-            project_name: dao_name,
-            project_desc_url: dao_description,
-            image_hash: image_hash.clone(),
-            image_url: image_url.clone(),
-            social_media_url: social_media_url,
-        },
-    ))
+    Ok(UpdatableDaoData {
+        project_name: dao_name,
+        project_desc_url: dao_description,
+        image_url: image_url.clone(),
+        social_media_url,
+    })
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ValidateUpateDataInputErrors {
     pub name: Option<ValidationError>,
     pub description: Option<ValidationError>,
-    pub image: Option<ValidationError>,
+    pub image_url: Option<ValidationError>,
     pub social_media_url: Option<ValidationError>,
 }
 
@@ -241,7 +211,7 @@ impl From<ValidateDataUpdateInputsError> for FrError {
                 let mut hm = HashMap::new();
                 insert_if_some(&mut hm, "name", errors.name);
                 insert_if_some(&mut hm, "description", errors.description);
-                insert_if_some(&mut hm, "image", errors.image);
+                insert_if_some(&mut hm, "image", errors.image_url);
                 insert_if_some(&mut hm, "social_media_url", errors.social_media_url);
                 FrError::Validations(hm)
             }
