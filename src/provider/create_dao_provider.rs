@@ -142,7 +142,8 @@ pub fn validate_dao_inputs(
     let image_url_res = validate_image_url(&inputs.image_url);
     let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
     let investors_share_res = validate_investors_share(&inputs.investors_share);
-    let min_raise_target_res = validate_min_raised_target(&inputs.min_raise_target);
+    let min_raise_target_res =
+        validate_min_raised_target(&inputs.min_raise_target, funds_asset_specs);
     let min_raised_target_end_date_res =
         validate_min_raised_target_end_date(&inputs.min_raise_target_end_date);
 
@@ -458,9 +459,11 @@ pub fn validate_social_media_url(input: &str) -> Result<String, ValidationError>
     Ok(input.to_owned())
 }
 
-fn validate_min_raised_target(input: &str) -> Result<FundsAmount, ValidationError> {
-    let amount: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
-    Ok(FundsAmount::new(amount))
+fn validate_min_raised_target(
+    input: &str,
+    funds_asset_specs: &FundsAssetSpecs,
+) -> Result<FundsAmount, ValidationError> {
+    validate_funds_amount_input(input, funds_asset_specs)
 }
 
 fn validate_min_raised_target_end_date(input: &str) -> Result<Timestamp, ValidationError> {
