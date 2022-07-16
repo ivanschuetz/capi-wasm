@@ -30,6 +30,8 @@ pub struct InvestParJs {
     pub investor_address: String,
     // not set if the user was already opted in (checked in previous step)
     pub app_opt_ins: Option<Vec<SignedTxFromJs>>,
+    // passed as parameter (reuse UI value), to prevent 2 additional requests to calculate them
+    pub available_shares: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -74,6 +76,12 @@ impl From<anyhow::Error> for ValidationBuySharesInputsOrAnyhowError {
 impl From<ValidateSharesInputError> for ValidationBuySharesInputsOrAnyhowError {
     fn from(e: ValidateSharesInputError) -> Self {
         ValidationBuySharesInputsOrAnyhowError::Validation(e)
+    }
+}
+
+impl From<ValidationError> for ValidationBuySharesInputsOrAnyhowError {
+    fn from(e: ValidationError) -> Self {
+        ValidateSharesInputError::Validation(e).into()
     }
 }
 

@@ -1,6 +1,7 @@
 use crate::{
     dependencies::funds_asset_specs,
     error::FrError,
+    inputs_validation::ValidationError,
     js::{common::signed_js_tx_to_signed_tx1, to_sign_js::ToSignJs},
     provider::buy_shares::{
         BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
@@ -24,7 +25,10 @@ use base::{
     network_util::wait_for_pending_transaction,
     state::account_state::asset_holdings,
 };
-use mbase::{dependencies::algod, models::asset_amount::AssetAmount};
+use mbase::{
+    dependencies::algod,
+    models::{asset_amount::AssetAmount, share_amount::ShareAmount},
+};
 
 pub struct BuySharesProviderDef {}
 
@@ -38,18 +42,20 @@ impl BuySharesProvider for BuySharesProviderDef {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
 
-        // TODO < available shares (maybe can be passed from frontend)
         let validated_share_amount = validate_share_amount_positive(&pars.share_count)?;
+        let available_shares: ShareAmount =
+            ShareAmount::new(pars.available_shares.parse().map_err(Error::msg)?);
+
+        if validated_share_amount.val() > available_shares.val() {
+            return Err(ValidationError::ShareCountLargerThanAvailable.into());
+        }
+
+        let dao_id = pars.dao_id.parse()?;
+        let dao = load_dao(&algod, dao_id).await?;
 
         if let Some(app_opt_ins) = pars.app_opt_ins {
             submit_apps_optins_from_js(&algod, &app_opt_ins).await?;
         }
-
-        log::debug!("Loading the dao...");
-
-        let dao_id = pars.dao_id.parse()?;
-
-        let dao = load_dao(&algod, dao_id).await?;
 
         let to_sign = invest_txs(
             &algod,

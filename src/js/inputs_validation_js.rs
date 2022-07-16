@@ -15,7 +15,7 @@ pub fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
         ValidationError::NotADecimal => "not_dec",
         ValidationError::NotTimestamp => "not_timestamp",
         ValidationError::TooManyFractionalDigits { .. } => "max_fractionals",
-        ValidationError::CompressedImageSize { .. } => "max_img_size",
+        ValidationError::ShareCountLargerThanAvailable { .. } => "count_le_supply",
         ValidationError::Unexpected(_) => "unexpected",
     }
     .to_owned();
