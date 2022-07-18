@@ -10,6 +10,7 @@ use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::flows::lock::lock::{submit_lock, LockSigned};
 use base::flows::{create_dao::storage::load_dao::load_dao, lock::lock::lock};
+use base::network_util::wait_for_pending_transaction;
 use mbase::dependencies::algod;
 
 pub struct LockProviderDef {}
@@ -58,7 +59,7 @@ impl LockProvider for LockProviderDef {
         let central_app_call_tx = &pars.txs[0];
         let shares_xfer_tx = &pars.txs[1];
 
-        let res = submit_lock(
+        let tx_id = submit_lock(
             &algod,
             LockSigned {
                 central_app_call_setup_tx: signed_js_tx_to_signed_tx1(central_app_call_tx)?,
@@ -67,7 +68,9 @@ impl LockProvider for LockProviderDef {
         )
         .await?;
 
-        log::debug!("Submit lock res: {:?}", res);
+        log::debug!("Submit lock res: {:?}", tx_id);
+
+        let _ = wait_for_pending_transaction(&algod, &tx_id).await?;
 
         Ok(SubmitLockResJs {})
     }
