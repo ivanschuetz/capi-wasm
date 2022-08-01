@@ -11,10 +11,10 @@ use anyhow::Result;
 use async_trait::async_trait;
 use base::dependencies::teal_api;
 use base::flows::create_dao::setup::create_shares::create_assets;
-use base::flows::create_dao::setup_dao_specs::SetupDaoSpecs;
 use base::teal::TealApi;
 use mbase::api::contract::Contract;
 use mbase::dependencies::algod;
+use mbase::models::setup_dao_specs::SetupDaoSpecs;
 
 pub struct CreateAssetsProviderDef {}
 

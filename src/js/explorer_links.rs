@@ -1,6 +1,5 @@
-use base::flows::create_dao::storage::load_dao::TxId;
-
 use algonaut::core::Address;
+use mbase::models::tx_id::TxId;
 
 use crate::dependencies::explorer_base_url;
 

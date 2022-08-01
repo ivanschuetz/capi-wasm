@@ -1,7 +1,7 @@
 use crate::js::common::{signed_js_tx_to_signed_tx1, SignedTxFromJs};
 use algonaut::algod::v2::Algod;
 use anyhow::{anyhow, Result};
-use base::network_util::wait_for_pending_transaction;
+use mbase::util::network_util::wait_for_pending_transaction;
 
 pub async fn submit_apps_optins_from_js(algod: &Algod, optins: &[SignedTxFromJs]) -> Result<()> {
     if optins.len() != 1 {

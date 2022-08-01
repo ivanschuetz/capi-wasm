@@ -1,12 +1,11 @@
 use algonaut::algod::v2::Algod;
 use anyhow::{anyhow, Result};
 use base::{
-    capi_deps::CapiAssetDaoDeps,
     flows::{create_dao::model::Dao, drain::drain::calculate_dao_and_capi_escrow_xfer_amounts},
     state::account_state::funds_holdings,
 };
 use mbase::{
-    models::funds::{FundsAmount, FundsAssetId},
+    models::{funds::{FundsAmount, FundsAssetId}, capi_deps::CapiAssetDaoDeps},
     state::dao_app_state::dao_global_state,
 };
 

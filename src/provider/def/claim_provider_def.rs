@@ -10,8 +10,8 @@ use async_trait::async_trait;
 use base::diagnostics::log_claim_diagnostics;
 use base::flows::claim::claim::{claim, submit_claim, ClaimSigned};
 use base::flows::create_dao::storage::load_dao::load_dao;
-use base::network_util::wait_for_pending_transaction;
 use mbase::dependencies::algod;
+use mbase::util::network_util::wait_for_pending_transaction;
 
 pub struct ClaimProviderDef {}
 

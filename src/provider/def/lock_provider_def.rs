@@ -10,8 +10,8 @@ use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::flows::lock::lock::{submit_lock, LockSigned};
 use base::flows::{create_dao::storage::load_dao::load_dao, lock::lock::lock};
-use base::network_util::wait_for_pending_transaction;
 use mbase::dependencies::algod;
+use mbase::util::network_util::wait_for_pending_transaction;
 
 pub struct LockProviderDef {}
 

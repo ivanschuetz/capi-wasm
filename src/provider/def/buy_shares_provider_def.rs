@@ -22,12 +22,12 @@ use base::{
             model::InvestSigned,
         },
     },
-    network_util::wait_for_pending_transaction,
     state::account_state::asset_holdings,
 };
 use mbase::{
     dependencies::algod,
     models::{asset_amount::AssetAmount, share_amount::ShareAmount},
+    util::network_util::wait_for_pending_transaction,
 };
 
 pub struct BuySharesProviderDef {}

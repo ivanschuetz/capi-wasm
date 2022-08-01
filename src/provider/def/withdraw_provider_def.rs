@@ -18,7 +18,6 @@ use crate::{
 };
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
-use base::flows::create_dao::storage::load_dao::TxId;
 use base::flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned};
 use base::flows::{
     create_dao::storage::load_dao::load_dao,
@@ -26,6 +25,7 @@ use base::flows::{
 };
 use mbase::dependencies::algod;
 use mbase::models::funds::FundsAmount;
+use mbase::models::tx_id::TxId;
 
 pub struct WithdrawProviderDef {}
 

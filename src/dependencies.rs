@@ -1,8 +1,10 @@
 use anyhow::{anyhow, Error, Result};
-use base::capi_deps::{CapiAddress, CapiAssetDaoDeps};
 use mbase::{
     dependencies::{network, DataType, Network},
-    models::funds::FundsAssetId,
+    models::{
+        capi_deps::{CapiAddress, CapiAssetDaoDeps},
+        funds::FundsAssetId,
+    },
 };
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
