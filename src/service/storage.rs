@@ -4,6 +4,7 @@ use wasm_bindgen::JsValue;
 use web_sys::Storage;
 
 pub fn storage_get_str(key: &str) -> Result<Option<String>> {
+    log::debug!("Will retrieve local storage key: {key}");
     let res = storage()?.get_item(key).map_err(to_anyhow)?;
     log::debug!("local storage got string: {res:?} for key: {key}");
     Ok(res)
