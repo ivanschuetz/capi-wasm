@@ -43,6 +43,7 @@ pub struct ValidatedDaoInputs {
     pub social_media_url: String,
     pub min_raise_target: FundsAmount,
     pub min_raise_target_end_date: Timestamp,
+    pub prospectus_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -59,6 +60,7 @@ pub struct CreateDaoFormInputsJs {
     pub social_media_url: String,
     pub min_raise_target: String,
     pub min_raise_target_end_date: String,
+    pub prospectus_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -119,6 +121,7 @@ pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<Setu
         inputs.shares_for_investors,
         inputs.min_raise_target,
         inputs.min_raise_target_end_date,
+        inputs.prospectus_url.clone(),
     )
 }
 
@@ -139,6 +142,7 @@ pub fn validate_dao_inputs(
         validate_min_raised_target(&inputs.min_raise_target, funds_asset_specs);
     let min_raised_target_end_date_res =
         validate_min_raised_target_end_date(&inputs.min_raise_target_end_date);
+    let prospectus_url_res = validate_prospectus_url(&inputs.prospectus_url);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_url_err = dao_description_url_res.clone().err();
@@ -151,6 +155,7 @@ pub fn validate_dao_inputs(
     let investors_share_err = investors_share_res.clone().err();
     let min_raise_target_err = min_raise_target_res.clone().err();
     let validate_min_raised_target_end_date_err = min_raised_target_end_date_res.clone().err();
+    let prospectus_url_err = prospectus_url_res.clone().err();
 
     if [
         dao_name_err,
@@ -164,6 +169,7 @@ pub fn validate_dao_inputs(
         investors_share_err,
         min_raise_target_err,
         validate_min_raised_target_end_date_err,
+        prospectus_url_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -180,6 +186,7 @@ pub fn validate_dao_inputs(
             investors_share: investors_share_res.err(),
             min_raise_target: min_raise_target_res.err(),
             min_raise_target_end_date: min_raised_target_end_date_res.err(),
+            prospectus_url: prospectus_url_res.err(),
         };
         return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
     }
@@ -206,6 +213,8 @@ pub fn validate_dao_inputs(
         min_raise_target_res.map_err(|e| to_single_field_val_error("min_raise_target", e))?;
     let min_raise_target_end_date = min_raised_target_end_date_res
         .map_err(|e| to_single_field_val_error("min_raise_target_end_date", e))?;
+    let prospectus_url =
+        prospectus_url_res.map_err(|e| to_single_field_val_error("prospectus_url", e))?;
 
     // derived from other fields
     let asset_name = generate_asset_name(&dao_name).map_err(|_| {
@@ -231,6 +240,7 @@ pub fn validate_dao_inputs(
         min_raise_target,
         min_raise_target_end_date,
         image_url,
+        prospectus_url,
     })
 }
 
@@ -279,6 +289,7 @@ pub struct CreateAssetsInputErrors {
     pub social_media_url: Option<ValidationError>,
     pub min_raise_target: Option<ValidationError>,
     pub min_raise_target_end_date: Option<ValidationError>,
+    pub prospectus_url: Option<ValidationError>,
 }
 
 pub fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
@@ -331,6 +342,13 @@ fn validate_text_min_max_length(
 }
 
 pub fn validate_image_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
+    match url {
+        Some(url) => Ok(Some(validate_text_min_max_length(&url, 0, 200)?)),
+        None => Ok(None),
+    }
+}
+
+pub fn validate_prospectus_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
     match url {
         Some(url) => Ok(Some(validate_text_min_max_length(&url, 0, 200)?)),
         None => Ok(None),

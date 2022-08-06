@@ -82,6 +82,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             PRECISION,
             submit_assets_res.app_id,
             dao_specs.image_url.clone(),
+            dao_specs.prospectus_url.clone(),
         )
         .await?;
 
