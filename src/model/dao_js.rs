@@ -40,6 +40,7 @@ pub struct DaoJs {
     pub total_raisable_number: String,
     pub funds_raised: String,
     pub setup_date: String,
+    pub prospectus_url: Option<String>,
 }
 
 pub trait ToDaoJs {
@@ -74,6 +75,7 @@ impl ToDaoJs for Dao {
             })?
             >= 0;
         let funds_raised = past_raise_end_date && self.raised.val() >= self.raise_min_target.val();
+        log::debug!("???? prospectus: {:?}", self.prospectus_url);
 
         Ok(DaoJs {
             name: self.name.clone(),
@@ -114,6 +116,7 @@ impl ToDaoJs for Dao {
             total_raisable_number: total_raisable.val().to_string(),
             funds_raised: funds_raised.to_string(),
             setup_date: self.setup_date.0.to_string(),
+            prospectus_url: self.prospectus_url.clone(),
         })
     }
 }

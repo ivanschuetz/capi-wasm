@@ -106,5 +106,6 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
         total_raisable_number: 500_000.to_string(),
         funds_raised: "true".to_owned(),
         setup_date: Utc::now().timestamp().to_string(),
+        prospectus_url: None,
     })
 }

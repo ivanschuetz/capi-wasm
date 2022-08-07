@@ -147,6 +147,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 app_id: DaoAppId(pars.pt.app_id),
                 image_url: pars.pt.specs.image_url,
                 setup_date,
+                prospectus_url: pars.pt.specs.prospectus_url,
             },
         )
         .await?;
