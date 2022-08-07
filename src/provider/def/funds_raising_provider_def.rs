@@ -75,11 +75,12 @@ fn percentage_delta(percentage: Decimal) -> Result<Decimal, FrError> {
 }
 
 fn raised_diff_percentage(dao_state: &CentralAppGlobalState) -> Result<Decimal, FrError> {
+    // Note that min funds target is illegal state: the project should have always a funds target
     Ok((dao_state.raised.as_decimal())
         .checked_div(dao_state.min_funds_target.as_decimal())
         .ok_or_else(|| {
             FrError::Msg(format!(
-                "Error div: {:?} / {:?}",
+                "Error div: {:?} (raised) / {:?} (min funds target)",
                 dao_state.raised, dao_state.min_funds_target
             ))
         })?)
