@@ -138,7 +138,7 @@ fn validate_funds_amount(
 
     if amount.is_sign_negative() || amount.is_zero() {
         return Err(ValidationError::Min {
-            min: 0.to_string(),
+            min: 1.to_string(),
             actual: amount.to_string(),
         });
     };
