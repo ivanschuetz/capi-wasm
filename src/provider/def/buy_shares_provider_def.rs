@@ -26,7 +26,8 @@ use base::{
 };
 use mbase::{
     dependencies::algod,
-    models::{asset_amount::AssetAmount, share_amount::ShareAmount},
+    models::{asset_amount::AssetAmount, share_amount::ShareAmount, timestamp::Timestamp},
+    state::dao_app_state::SignedProspectus,
     util::network_util::wait_for_pending_transaction,
 };
 
@@ -53,6 +54,12 @@ impl BuySharesProvider for BuySharesProviderDef {
         let dao_id = pars.dao_id.parse()?;
         let dao = load_dao(&algod, dao_id).await?;
 
+        let signed_prospectus = SignedProspectus {
+            url: pars.signed_prospectus.url,
+            hash: pars.signed_prospectus.hash,
+            timestamp: Timestamp::now(),
+        };
+
         if let Some(app_opt_ins) = pars.app_opt_ins {
             submit_apps_optins_from_js(&algod, &app_opt_ins).await?;
         }
@@ -66,11 +73,12 @@ impl BuySharesProvider for BuySharesProviderDef {
             validated_share_amount,
             funds_asset_specs.id,
             dao.share_price,
+            signed_prospectus,
         )
         .await?;
 
         let to_sign_txs = vec![
-            to_sign.central_app_setup_tx,
+            to_sign.app_call,
             to_sign.payment_tx,
             to_sign.shares_asset_optin_tx,
         ];

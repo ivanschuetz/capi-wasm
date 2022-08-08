@@ -18,7 +18,7 @@ use super::{
         description_provider_def::DescriptionProviderDef,
         dividends_provider_def::DividendsProviderDef, drain_provider_def::DrainProviderDef,
         funds_activity_provider_def::FundsActivityProviderDef,
-        funds_raising_provider_def::FundsRaisingProviderDef,
+        funds_raising_provider_def::FundsRaisingProviderDef, hash_provider_def::HashProviderDef,
         holders_count_provider_def::HoldersCountProviderDef,
         income_vs_spending_provider_def::IncomeVsSpendingProviderDef,
         investment_provider_def::InvestmentProviderDef, lock_provider_def::LockProviderDef,
@@ -128,6 +128,7 @@ pub struct Providers<'a> {
     pub wyre: &'a dyn WyreProvider,
     pub rekey: &'a dyn RekeyProvider,
     pub raised: &'a dyn FundsRaisingProvider,
+    pub hash: HashProviderDef,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -177,6 +178,7 @@ fn def_providers<'a>() -> Providers<'a> {
         wyre: &WyreProviderDef {},
         rekey: &RekeyProviderDef {},
         raised: &FundsRaisingProviderDef {},
+        hash: HashProviderDef {},
     }
 }
 
@@ -216,5 +218,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         wyre: &WyreProviderMock {},
         rekey: &RekeyProviderMock {},
         raised: &FundsRaisingProviderMock {},
+        hash: HashProviderDef {},
     }
 }

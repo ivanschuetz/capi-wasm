@@ -12,6 +12,7 @@ pub mod description_provider;
 pub mod dividends_provider;
 pub mod drain_provider;
 pub mod funds_activity_provider;
+pub mod funds_raising_provider;
 pub mod holders_count_provider;
 pub mod income_vs_spending_provider;
 pub mod investment_provider;
@@ -34,6 +35,5 @@ pub mod view_dao_provider;
 pub mod withdraw_provider;
 pub mod withdrawal_history_provider;
 pub mod wyre_provider;
-pub mod funds_raising_provider;
 
 pub use providers::providers;

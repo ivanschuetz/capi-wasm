@@ -525,6 +525,14 @@ pub async fn bridge_raised_funds(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
+#[wasm_bindgen]
+pub async fn bridge_calculate_hash(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_calculate_hash", pars, async move |pars| {
+        to_js(providers()?.hash.hash(parse_bridge_pars(pars)?).await)
+    })
+    .await
+}
+
 fn to_js<T>(res: Result<T, FrError>) -> Result<JsValue, JsValue>
 where
     T: Serialize,

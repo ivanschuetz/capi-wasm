@@ -32,6 +32,14 @@ pub struct InvestParJs {
     pub app_opt_ins: Option<Vec<SignedTxFromJs>>,
     // passed as parameter (reuse UI value), to prevent 2 additional requests to calculate them
     pub available_shares: String,
+
+    pub signed_prospectus: SignedProspectusJs,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SignedProspectusJs {
+    pub url: String,
+    pub hash: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
