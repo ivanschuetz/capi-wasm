@@ -68,7 +68,17 @@ impl From<ValidateDaoInputsError> for JsValue {
                     Err(e) => to_js_value(e),
                 }
             }
-            _ => to_js_value(format!("Error processing inputs: {error:?}")),
+
+            _ => to_js_value(match error {
+                ValidateDaoInputsError::AllFieldsValidation(e) => format!("{e:?}"),
+                ValidateDaoInputsError::SingleFieldValidation { field, error } => {
+                    format!("{field:?} => {error:?}")
+                }
+                ValidateDaoInputsError::SharesForInvestorsGreaterThanSupply => {
+                    format!("SharesForInvestorsGreaterThanSupply")
+                }
+                ValidateDaoInputsError::NonValidation(msg) => msg,
+            }),
         }
     }
 }

@@ -2,7 +2,7 @@ use algonaut::transaction::{SignedTransaction, Transaction};
 use anyhow::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use wasm_bindgen::JsValue;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -65,8 +65,8 @@ pub fn signed_js_txs_to_signed_tx1(txs: &[SignedTxFromJs]) -> Result<Vec<SignedT
     Ok(res)
 }
 
-pub fn to_js_value<T: Debug>(t: T) -> JsValue {
-    JsValue::from_str(&format!("{:?}", t))
+pub fn to_js_value<T: Display>(t: T) -> JsValue {
+    JsValue::from_str(&format!("{}", t))
 }
 
 pub fn parse_bridge_pars<T: DeserializeOwned>(pars: JsValue) -> Result<T, JsValue> {

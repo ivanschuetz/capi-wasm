@@ -119,7 +119,7 @@ impl CreateDaoFormInputsJs {
     ) -> Result<SetupDaoSpecs, ValidateDaoInputsError> {
         let validated_inputs = validate_dao_inputs(self, funds_asset_specs)?;
         validated_inputs_to_dao_specs(&validated_inputs)
-            .map_err(|e| ValidateDaoInputsError::NonValidation(format!("Unexpected: {e:?}")))
+            .map_err(|e| ValidateDaoInputsError::NonValidation(format!("Unexpected: {e}")))
     }
 }
 
