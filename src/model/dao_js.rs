@@ -7,7 +7,7 @@ use crate::{
 use anyhow::{anyhow, Result};
 use base::flows::create_dao::model::Dao;
 use chrono::Utc;
-use mbase::models::funds::FundsAmount;
+use mbase::{models::funds::FundsAmount, state::dao_app_state::Prospectus};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,7 +40,7 @@ pub struct DaoJs {
     pub total_raisable_number: String,
     pub funds_raised: String,
     pub setup_date: String,
-    pub prospectus_url: Option<String>,
+    pub prospectus: Option<Prospectus>,
 }
 
 pub trait ToDaoJs {
@@ -75,7 +75,6 @@ impl ToDaoJs for Dao {
             })?
             >= 0;
         let funds_raised = past_raise_end_date && self.raised.val() >= self.raise_min_target.val();
-        log::debug!("???? prospectus: {:?}", self.prospectus_url);
 
         Ok(DaoJs {
             name: self.name.clone(),
@@ -116,7 +115,7 @@ impl ToDaoJs for Dao {
             total_raisable_number: total_raisable.val().to_string(),
             funds_raised: funds_raised.to_string(),
             setup_date: self.setup_date.0.to_string(),
-            prospectus_url: self.prospectus_url.clone(),
+            prospectus: self.prospectus.clone(),
         })
     }
 }

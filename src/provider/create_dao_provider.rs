@@ -7,14 +7,17 @@ use crate::js::to_sign_js::ToSignJs;
 use crate::model::dao_js::DaoJs;
 use crate::service::number_formats::validate_funds_amount_input;
 use algonaut::core::Address;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use base::hashable::hash;
+use data_encoding::BASE64;
 use mbase::models::create_shares_specs::CreateSharesSpecs;
 use mbase::models::funds::FundsAmount;
 use mbase::models::setup_dao_specs::SetupDaoSpecs;
 use mbase::models::share_amount::ShareAmount;
 use mbase::models::shares_percentage::SharesPercentage;
 use mbase::models::timestamp::Timestamp;
+use mbase::state::dao_app_state::Prospectus;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
@@ -44,6 +47,19 @@ pub struct ValidatedDaoInputs {
     pub min_raise_target: FundsAmount,
     pub min_raise_target_end_date: Timestamp,
     pub prospectus_url: Option<String>,
+    pub prospectus_bytes: Option<Vec<u8>>,
+}
+
+impl ValidatedDaoInputs {
+    pub fn prospectus_data(&self) -> Result<Option<(String, Vec<u8>)>> {
+        match (&self.prospectus_url, &self.prospectus_bytes) {
+            (Some(url), Some(bytes)) => Ok(Some((url.clone(), bytes.clone()))),
+            (None, None) => Ok(None),
+            _ => Err(anyhow!(
+                "Invalid state: prospectus url and hash should both be set or none"
+            )),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -61,6 +77,7 @@ pub struct CreateDaoFormInputsJs {
     pub min_raise_target: String,
     pub min_raise_target_end_date: String,
     pub prospectus_url: Option<String>,
+    pub prospectus_bytes: Option<Vec<u8>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -107,6 +124,14 @@ impl CreateDaoFormInputsJs {
 }
 
 pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
+    let prospectus = match inputs.prospectus_data()? {
+        Some((url, bytes)) => Some(Prospectus {
+            hash: BASE64.encode(&hash(&bytes).0),
+            url,
+        }),
+        None => None,
+    };
+
     SetupDaoSpecs::new(
         inputs.name.clone(),
         inputs.description_url.clone(),
@@ -121,7 +146,7 @@ pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<Setu
         inputs.shares_for_investors,
         inputs.min_raise_target,
         inputs.min_raise_target_end_date,
-        inputs.prospectus_url.clone(),
+        prospectus,
     )
 }
 
@@ -143,6 +168,7 @@ pub fn validate_dao_inputs(
     let min_raised_target_end_date_res =
         validate_min_raised_target_end_date(&inputs.min_raise_target_end_date);
     let prospectus_url_res = validate_prospectus_url(&inputs.prospectus_url);
+    let prospectus_bytes_res = validate_prospectus_bytes(&inputs.prospectus_bytes);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_url_err = dao_description_url_res.clone().err();
@@ -156,6 +182,7 @@ pub fn validate_dao_inputs(
     let min_raise_target_err = min_raise_target_res.clone().err();
     let validate_min_raised_target_end_date_err = min_raised_target_end_date_res.clone().err();
     let prospectus_url_err = prospectus_url_res.clone().err();
+    let prospectus_bytes_err = prospectus_bytes_res.clone().err();
 
     if [
         dao_name_err,
@@ -170,6 +197,7 @@ pub fn validate_dao_inputs(
         min_raise_target_err,
         validate_min_raised_target_end_date_err,
         prospectus_url_err,
+        prospectus_bytes_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -187,6 +215,7 @@ pub fn validate_dao_inputs(
             min_raise_target: min_raise_target_res.err(),
             min_raise_target_end_date: min_raised_target_end_date_res.err(),
             prospectus_url: prospectus_url_res.err(),
+            prospectus_bytes: prospectus_bytes_res.err(),
         };
         return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
     }
@@ -215,6 +244,8 @@ pub fn validate_dao_inputs(
         .map_err(|e| to_single_field_val_error("min_raise_target_end_date", e))?;
     let prospectus_url =
         prospectus_url_res.map_err(|e| to_single_field_val_error("prospectus_url", e))?;
+    let prospectus_bytes =
+        prospectus_bytes_res.map_err(|e| to_single_field_val_error("prospectus_bytes", e))?;
 
     // derived from other fields
     let asset_name = generate_asset_name(&dao_name).map_err(|_| {
@@ -241,6 +272,7 @@ pub fn validate_dao_inputs(
         min_raise_target_end_date,
         image_url,
         prospectus_url,
+        prospectus_bytes,
     })
 }
 
@@ -290,6 +322,7 @@ pub struct CreateAssetsInputErrors {
     pub min_raise_target: Option<ValidationError>,
     pub min_raise_target_end_date: Option<ValidationError>,
     pub prospectus_url: Option<ValidationError>,
+    pub prospectus_bytes: Option<ValidationError>,
 }
 
 pub fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
@@ -351,6 +384,23 @@ pub fn validate_image_url(url: &Option<String>) -> Result<Option<String>, Valida
 pub fn validate_prospectus_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
     match url {
         Some(url) => Ok(Some(validate_text_min_max_length(&url, 0, 200)?)),
+        None => Ok(None),
+    }
+}
+
+pub fn validate_prospectus_bytes(
+    bytes: &Option<Vec<u8>>,
+) -> Result<Option<Vec<u8>>, ValidationError> {
+    match bytes {
+        Some(bytes) => {
+            if bytes.is_empty() {
+                Err(ValidationError::Unexpected(
+                    "Prospectus bytes must be either None or not empty".to_owned(),
+                ))
+            } else {
+                Ok(Some(bytes.clone()))
+            }
+        }
         None => Ok(None),
     }
 }

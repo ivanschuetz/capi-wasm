@@ -82,7 +82,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
             PRECISION,
             submit_assets_res.app_id,
             dao_specs.image_url.clone(),
-            dao_specs.prospectus_url.clone(),
+            dao_specs.prospectus.clone(),
         )
         .await?;
 
@@ -147,7 +147,7 @@ impl CreateDaoProvider for CreateDaoProviderDef {
                 app_id: DaoAppId(pars.pt.app_id),
                 image_url: pars.pt.specs.image_url,
                 setup_date,
-                prospectus_url: pars.pt.specs.prospectus_url,
+                prospectus: pars.pt.specs.prospectus,
             },
         )
         .await?;
