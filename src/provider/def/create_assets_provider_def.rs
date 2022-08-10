@@ -5,7 +5,7 @@ use crate::provider::create_assets_provider::{
 };
 use crate::provider::create_dao_provider::{validate_dao_inputs, ValidationDaoInputsOrAnyhowError};
 use crate::provider::create_dao_provider::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs};
-use crate::service::constants::PRECISION;
+use crate::service::constants::{MAX_RAISABLE_AMOUNT, PRECISION};
 use algonaut::core::Address;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -14,6 +14,7 @@ use base::flows::create_dao::setup::create_shares::create_assets;
 use base::teal::TealApi;
 use mbase::api::contract::Contract;
 use mbase::dependencies::algod;
+use mbase::models::funds::FundsAmount;
 use mbase::models::setup_dao_specs::SetupDaoSpecs;
 
 pub struct CreateAssetsProviderDef {}
@@ -60,6 +61,7 @@ async fn create_dao_assets_txs(
         &last_clear_tmpl,
         PRECISION,
         &capi_deps,
+        FundsAmount::new(MAX_RAISABLE_AMOUNT),
     )
     .await?;
 

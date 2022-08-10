@@ -1,1 +1,2 @@
 pub const PRECISION: u64 = 10000;
+pub const MAX_RAISABLE_AMOUNT: u64 = 5_000_000_000_000; // 5 Mio

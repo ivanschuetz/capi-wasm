@@ -5,7 +5,7 @@ use crate::provider::update_app_provider::{
     SubmitUpdateAppParJs, SubmitUpdateAppResJs, UpdateAppProvider, UpdateDaoAppParJs,
     UpdateDaoAppResJs,
 };
-use crate::service::constants::PRECISION;
+use crate::service::constants::{PRECISION, MAX_RAISABLE_AMOUNT};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::dependencies::teal_api;
@@ -18,6 +18,7 @@ use base::teal::TealApi;
 use mbase::api::contract::Contract;
 use mbase::api::version::Version;
 use mbase::dependencies::algod;
+use mbase::models::funds::FundsAmount;
 
 pub struct UpdateAppProviderDef {}
 
@@ -60,6 +61,7 @@ impl UpdateAppProvider for UpdateAppProviderDef {
             &capi_deps.address,
             capi_deps.escrow_percentage,
             dao.share_price,
+            FundsAmount::new(MAX_RAISABLE_AMOUNT),
         )
         .await?;
         let clear_source = render_and_compile_app_clear(&algod, &clear_template).await?;
