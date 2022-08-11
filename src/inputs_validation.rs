@@ -17,11 +17,9 @@ pub enum ValidationError {
     },
     Min {
         min: String,
-        actual: String,
     },
     Max {
         max: String,
-        actual: String,
     },
     Address,
     NotPositive, // (greater than 0)
@@ -34,6 +32,15 @@ pub enum ValidationError {
         actual: String,
     },
     ShareCountLargerThanAvailable,
+    MustBeLessThanMaxInvestAmount,
+    MustBeGreaterThanMinInvestAmount,
+    BuyingLessSharesThanMinAmount {
+        min: String,
+    },
+    BuyingMoreSharesThanMaxTotalAmount {
+        max: String,
+        currently_owned: String,
+    },
     /// Related to validation but not directly attributable to the user (e.g. overflows when converting entered quantities to base units).
     /// Shouldn't happen normally - the conditions leading to these errors should be validated.
     Unexpected(String),

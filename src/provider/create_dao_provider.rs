@@ -48,6 +48,8 @@ pub struct ValidatedDaoInputs {
     pub min_raise_target_end_date: Timestamp,
     pub prospectus_url: Option<String>,
     pub prospectus_bytes: Option<Vec<u8>>,
+    pub min_invest_amount: ShareAmount,
+    pub max_invest_amount: ShareAmount,
 }
 
 impl ValidatedDaoInputs {
@@ -78,6 +80,8 @@ pub struct CreateDaoFormInputsJs {
     pub min_raise_target_end_date: String,
     pub prospectus_url: Option<String>,
     pub prospectus_bytes: Option<Vec<u8>>,
+    pub min_invest_amount: String,
+    pub max_invest_amount: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -147,6 +151,8 @@ pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<Setu
         inputs.min_raise_target,
         inputs.min_raise_target_end_date,
         prospectus,
+        inputs.min_invest_amount,
+        inputs.max_invest_amount,
     )
 }
 
@@ -169,6 +175,8 @@ pub fn validate_dao_inputs(
         validate_min_raised_target_end_date(&inputs.min_raise_target_end_date);
     let prospectus_url_res = validate_prospectus_url(&inputs.prospectus_url);
     let prospectus_bytes_res = validate_prospectus_bytes(&inputs.prospectus_bytes);
+    let min_invest_amount_res = validate_min_invest_amount(&inputs.min_invest_amount);
+    let max_invest_amount_res = validate_max_invest_amount(&inputs.max_invest_amount);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_url_err = dao_description_url_res.clone().err();
@@ -183,6 +191,8 @@ pub fn validate_dao_inputs(
     let validate_min_raised_target_end_date_err = min_raised_target_end_date_res.clone().err();
     let prospectus_url_err = prospectus_url_res.clone().err();
     let prospectus_bytes_err = prospectus_bytes_res.clone().err();
+    let min_invest_amount_err = min_invest_amount_res.clone().err();
+    let max_invest_amount_err = max_invest_amount_res.clone().err();
 
     if [
         dao_name_err,
@@ -198,6 +208,8 @@ pub fn validate_dao_inputs(
         validate_min_raised_target_end_date_err,
         prospectus_url_err,
         prospectus_bytes_err,
+        min_invest_amount_err,
+        max_invest_amount_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -216,6 +228,8 @@ pub fn validate_dao_inputs(
             min_raise_target_end_date: min_raised_target_end_date_res.err(),
             prospectus_url: prospectus_url_res.err(),
             prospectus_bytes: prospectus_bytes_res.err(),
+            min_invest_amount: min_invest_amount_res.err(),
+            max_invest_amount: max_invest_amount_res.err(),
         };
         return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
     }
@@ -246,6 +260,10 @@ pub fn validate_dao_inputs(
         prospectus_url_res.map_err(|e| to_single_field_val_error("prospectus_url", e))?;
     let prospectus_bytes =
         prospectus_bytes_res.map_err(|e| to_single_field_val_error("prospectus_bytes", e))?;
+    let min_invest_amount =
+        min_invest_amount_res.map_err(|e| to_single_field_val_error("min_invest_amount", e))?;
+    let max_invest_amount =
+        max_invest_amount_res.map_err(|e| to_single_field_val_error("max_invest_amount", e))?;
 
     // derived from other fields
     let asset_name = generate_asset_name(&dao_name).map_err(|_| {
@@ -254,8 +272,35 @@ pub fn validate_dao_inputs(
         ))
     })?;
 
+    // TODO should these check available shares instead of supply?
+
     if shares_for_investors > share_supply {
         return Err(ValidateDaoInputsError::SharesForInvestorsGreaterThanSupply);
+    }
+
+    if min_invest_amount > share_supply {
+        let errors = CreateAssetsInputErrors {
+            min_invest_amount: Some(ValidationError::ShareCountLargerThanAvailable),
+            ..CreateAssetsInputErrors::default()
+        };
+        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
+    }
+
+    if max_invest_amount > share_supply {
+        let errors = CreateAssetsInputErrors {
+            max_invest_amount: Some(ValidationError::ShareCountLargerThanAvailable),
+            ..CreateAssetsInputErrors::default()
+        };
+        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
+    }
+
+    if min_invest_amount > max_invest_amount {
+        let errors = CreateAssetsInputErrors {
+            min_invest_amount: Some(ValidationError::MustBeLessThanMaxInvestAmount),
+            max_invest_amount: Some(ValidationError::MustBeGreaterThanMinInvestAmount),
+            ..CreateAssetsInputErrors::default()
+        };
+        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
     }
 
     Ok(ValidatedDaoInputs {
@@ -273,6 +318,8 @@ pub fn validate_dao_inputs(
         image_url,
         prospectus_url,
         prospectus_bytes,
+        min_invest_amount,
+        max_invest_amount,
     })
 }
 
@@ -323,6 +370,8 @@ pub struct CreateAssetsInputErrors {
     pub min_raise_target_end_date: Option<ValidationError>,
     pub prospectus_url: Option<ValidationError>,
     pub prospectus_bytes: Option<ValidationError>,
+    pub min_invest_amount: Option<ValidationError>,
+    pub max_invest_amount: Option<ValidationError>,
 }
 
 pub fn validate_dao_name(name: &str) -> Result<String, ValidationError> {
@@ -419,7 +468,6 @@ fn validate_share_supply(input: &str) -> Result<ShareAmount, ValidationError> {
     if share_count == 0 {
         return Err(ValidationError::Min {
             min: 1u8.to_string(),
-            actual: share_count.to_string(),
         });
     }
     Ok(ShareAmount::new(share_count))
@@ -430,7 +478,21 @@ fn validate_shares_for_investors(input: &str) -> Result<ShareAmount, ValidationE
     if share_count == 0 {
         return Err(ValidationError::Min {
             min: 1u8.to_string(),
-            actual: share_count.to_string(),
+        });
+    }
+    Ok(ShareAmount::new(share_count))
+}
+
+fn validate_min_invest_amount(input: &str) -> Result<ShareAmount, ValidationError> {
+    let share_count: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
+    Ok(ShareAmount::new(share_count))
+}
+
+fn validate_max_invest_amount(input: &str) -> Result<ShareAmount, ValidationError> {
+    let share_count: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
+    if share_count == 0 {
+        return Err(ValidationError::Min {
+            min: 1u8.to_string(),
         });
     }
     Ok(ShareAmount::new(share_count))
@@ -454,12 +516,10 @@ fn validate_investors_share(input: &str) -> Result<SharesPercentage, ValidationE
     if value < min {
         Err(ValidationError::Min {
             min: min.to_string(),
-            actual: value.to_string(),
         })
     } else if value > max {
         Err(ValidationError::Max {
             max: max.to_string(),
-            actual: value.to_string(),
         })
     } else {
         // from here we use (0..1) percentage - 100 based is just for user friendliness

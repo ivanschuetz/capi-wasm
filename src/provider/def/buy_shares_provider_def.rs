@@ -12,6 +12,7 @@ use crate::{
         invest_or_lock::submit_apps_optins_from_js, number_formats::validate_share_amount_positive,
     },
 };
+use algonaut::{algod::v2::Algod, core::Address};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::{
@@ -26,8 +27,13 @@ use base::{
 };
 use mbase::{
     dependencies::algod,
-    models::{asset_amount::AssetAmount, share_amount::ShareAmount, timestamp::Timestamp},
-    state::dao_app_state::SignedProspectus,
+    models::{
+        asset_amount::AssetAmount, dao_id::DaoId, share_amount::ShareAmount, timestamp::Timestamp,
+    },
+    state::{
+        app_state::ApplicationLocalStateError,
+        dao_app_state::{dao_investor_state, SignedProspectus},
+    },
     util::network_util::wait_for_pending_transaction,
 };
 
@@ -43,6 +49,8 @@ impl BuySharesProvider for BuySharesProviderDef {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
 
+        let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
+
         let validated_share_amount = validate_share_amount_positive(&pars.share_count)?;
         let available_shares: ShareAmount =
             ShareAmount::new(pars.available_shares.parse().map_err(Error::msg)?);
@@ -53,6 +61,30 @@ impl BuySharesProvider for BuySharesProviderDef {
 
         let dao_id = pars.dao_id.parse()?;
         let dao = load_dao(&algod, dao_id).await?;
+
+        // note that we check for upper limit before than lower limit
+        // as upper limit uses total (not just what's being bought)
+        // to not possibly show the an unnecessary lower limit validation
+        // e.g. user is buying 1 share, they already own max, lower limit is 10.
+        // we show them "max limit" message (which stops them from trying to buy)
+        // and not "min limit", which could make them try again with 10 shares.
+        let if_buy_calculation =
+            calc_total_shares_if_buys(&algod, &investor_address, dao_id, validated_share_amount)
+                .await?;
+        if if_buy_calculation.total_if_buy.val() > dao.max_invest_amount.val() {
+            return Err(ValidationError::BuyingMoreSharesThanMaxTotalAmount {
+                max: dao.max_invest_amount.val().to_string(),
+                currently_owned: if_buy_calculation.currently_owned.val().to_string(),
+            }
+            .into());
+        }
+
+        if validated_share_amount.val() < dao.min_invest_amount.val() {
+            return Err(ValidationError::BuyingLessSharesThanMinAmount {
+                min: dao.min_invest_amount.val().to_string(),
+            }
+            .into());
+        }
 
         let signed_prospectus = SignedProspectus {
             url: pars.signed_prospectus.url,
@@ -67,7 +99,7 @@ impl BuySharesProvider for BuySharesProviderDef {
         let to_sign = invest_txs(
             &algod,
             &dao,
-            &pars.investor_address.parse().map_err(Error::msg)?,
+            &investor_address,
             dao.app_id,
             dao.shares_asset_id,
             validated_share_amount,
@@ -145,4 +177,40 @@ impl BuySharesProvider for BuySharesProviderDef {
             message: "Success, you bought some shares!".to_owned(),
         })
     }
+}
+
+async fn calc_total_shares_if_buys(
+    algod: &Algod,
+    investor: &Address,
+    dao_id: DaoId,
+    amount_to_buy: ShareAmount,
+) -> Result<IfBuySharesCalculation> {
+    let investor_state_res = dao_investor_state(&algod, investor, dao_id.0).await;
+    let owned_shares = match investor_state_res {
+        Ok(state) => ShareAmount::new(state.shares.val()),
+        Err(e) => {
+            // not opted in -> currently owns 0 shares
+            if e == ApplicationLocalStateError::NotOptedIn {
+                ShareAmount::new(0)
+            } else {
+                Err(e)?
+            }
+        }
+    };
+
+    Ok(IfBuySharesCalculation {
+        currently_owned: owned_shares,
+        total_if_buy: ShareAmount::new(
+            owned_shares
+                .val()
+                .checked_add(amount_to_buy.val())
+                .ok_or_else(|| anyhow!("Error adding: {:?} + {:?}", owned_shares, amount_to_buy))?,
+        ),
+    })
+}
+
+#[derive(Debug)]
+struct IfBuySharesCalculation {
+    currently_owned: ShareAmount,
+    total_if_buy: ShareAmount,
 }

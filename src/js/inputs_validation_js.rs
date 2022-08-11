@@ -17,6 +17,10 @@ pub fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
         ValidationError::TooManyFractionalDigits { .. } => "max_fractionals",
         ValidationError::ShareCountLargerThanAvailable { .. } => "count_le_supply",
         ValidationError::Unexpected(_) => "unexpected",
+        ValidationError::MustBeLessThanMaxInvestAmount => "must_be_less_max_invest",
+        ValidationError::MustBeGreaterThanMinInvestAmount => "must_be_more_min_min_invest",
+        ValidationError::BuyingLessSharesThanMinAmount { .. } => "buying_less_shares_than_min",
+        ValidationError::BuyingMoreSharesThanMaxTotalAmount { .. } => "buying_more_shares_than_max",
     }
     .to_owned();
 
@@ -37,16 +41,27 @@ pub fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
             _ => None,
         },
         min: match &error {
-            ValidationError::Min { min, actual } => Some(ValidationErrorMinJs {
+            ValidationError::Min { min } => Some(ValidationErrorMinJs {
                 min: min.to_owned(),
-                actual: actual.to_owned(),
+            }),
+            ValidationError::BuyingLessSharesThanMinAmount { min } => Some(ValidationErrorMinJs {
+                min: min.to_owned(),
             }),
             _ => None,
         },
         max: match &error {
-            ValidationError::Max { max, actual } => Some(ValidationErrorMaxJs {
+            ValidationError::Max { max } => Some(ValidationErrorMaxJs {
                 max: max.to_owned(),
-                actual: actual.to_owned(),
+            }),
+            _ => None,
+        },
+        max_share_buy: match &error {
+            ValidationError::BuyingMoreSharesThanMaxTotalAmount {
+                max,
+                currently_owned,
+            } => Some(ValidationErrorMaxBuySharesJs {
+                max: max.to_owned(),
+                currently_owned: currently_owned.to_owned(),
             }),
             _ => None,
         },
@@ -73,6 +88,7 @@ pub struct ValidationErrorJs {
     pub max_length: Option<ValidationErrorMaxLengthJs>,
     pub min: Option<ValidationErrorMinJs>,
     pub max: Option<ValidationErrorMaxJs>,
+    pub max_share_buy: Option<ValidationErrorMaxBuySharesJs>,
     pub max_fractionals: Option<TooManyFractionalDigitsJs>,
     pub unexpected: Option<String>,
 }
@@ -92,13 +108,17 @@ pub struct ValidationErrorMaxLengthJs {
 #[derive(Debug, Clone, Serialize)]
 pub struct ValidationErrorMinJs {
     pub min: String,
-    pub actual: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ValidationErrorMaxJs {
     pub max: String,
-    pub actual: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ValidationErrorMaxBuySharesJs {
+    pub max: String,
+    pub currently_owned: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

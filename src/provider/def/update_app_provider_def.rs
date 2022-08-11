@@ -5,7 +5,7 @@ use crate::provider::update_app_provider::{
     SubmitUpdateAppParJs, SubmitUpdateAppResJs, UpdateAppProvider, UpdateDaoAppParJs,
     UpdateDaoAppResJs,
 };
-use crate::service::constants::{PRECISION, MAX_RAISABLE_AMOUNT};
+use crate::service::constants::{MAX_RAISABLE_AMOUNT, PRECISION};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 use base::dependencies::teal_api;

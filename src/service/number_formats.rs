@@ -121,10 +121,7 @@ fn validate_algos(amount: Decimal) -> Result<MicroAlgos, ValidationError> {
     let amount = amount.normalize();
 
     if amount.is_sign_negative() || amount.is_zero() {
-        return Err(ValidationError::Min {
-            min: 0.to_string(),
-            actual: amount.to_string(),
-        });
+        return Err(ValidationError::Min { min: 0.to_string() });
     };
 
     Ok(MicroAlgos(to_base_units(amount, 6)?))
@@ -137,10 +134,7 @@ fn validate_funds_amount(
     let amount = amount.normalize();
 
     if amount.is_sign_negative() || amount.is_zero() {
-        return Err(ValidationError::Min {
-            min: 1.to_string(),
-            actual: amount.to_string(),
-        });
+        return Err(ValidationError::Min { min: 1.to_string() });
     };
 
     Ok(FundsAmount::new(to_base_units(
