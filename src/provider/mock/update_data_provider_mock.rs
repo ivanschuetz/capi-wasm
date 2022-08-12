@@ -36,6 +36,9 @@ impl UpdateDataProvider for UpdateDataProviderMock {
             share_price: "1_000".to_owned(),
             image_base64: Some(image_bytes_base64),
             social_media_url: "https://twitter.com/foobardoesntexist".to_owned(),
+            prospectus: None,
+            min_invest_amount: 3.to_string(),
+            max_invest_amount: 10.to_string(),
         })
     }
 

@@ -4,7 +4,8 @@ use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_dao_provider::{
     validate_dao_description_url_opt, validate_dao_name, validate_image_url,
-    validate_social_media_url,
+    validate_max_invest_amount, validate_min_invest_amount, validate_prospectus_bytes,
+    validate_prospectus_url, validate_social_media_url,
 };
 use crate::provider::update_data_provider::{
     SubmitUpdateDataParJs, UpdatableDataParJs, UpdatableDataResJs, UpdateDataParJs,
@@ -21,7 +22,7 @@ use base::flows::update_data::update_data::{
 use data_encoding::BASE64;
 use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
-use mbase::state::dao_app_state::dao_global_state;
+use mbase::state::dao_app_state::{dao_global_state, Prospectus};
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -62,6 +63,10 @@ impl UpdateDataProvider for UpdateDataProviderDef {
 
             image_base64,
             social_media_url: app_state.social_media_url,
+
+            prospectus: app_state.prospectus.clone(),
+            min_invest_amount: app_state.min_invest_amount.val().to_string(),
+            max_invest_amount: app_state.max_invest_amount.val().to_string(),
         })
     }
 
@@ -134,17 +139,29 @@ fn validate_inputs(
     let dao_description_res = validate_dao_description_url_opt(&pars.project_desc_url);
     let image_url_res = validate_image_url(&pars.image_url);
     let social_media_url_res = validate_social_media_url(&pars.social_media_url);
+    let prospectus_url_res = validate_prospectus_url(&pars.prospectus_url);
+    let prospectus_bytes_res = validate_prospectus_bytes(&pars.prospectus_bytes);
+    let min_invest_shares_res = validate_min_invest_amount(&pars.min_invest_amount);
+    let max_invest_shares_res = validate_max_invest_amount(&pars.max_invest_amount);
 
     let dao_name_err = dao_name_res.clone().err();
     let dao_description_err = dao_description_res.clone().err();
     let image_url_err = image_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
+    let prospectus_url_err = prospectus_url_res.clone().err();
+    let prospectus_bytes_err = prospectus_bytes_res.clone().err();
+    let min_invest_amount_err = min_invest_shares_res.clone().err();
+    let max_invest_amount_err = max_invest_shares_res.clone().err();
 
     if [
         dao_name_err,
         dao_description_err,
         social_media_url_err,
         image_url_err,
+        prospectus_url_err,
+        prospectus_bytes_err,
+        min_invest_amount_err,
+        max_invest_amount_err,
     ]
     .iter()
     .any(|e| e.is_some())
@@ -154,6 +171,10 @@ fn validate_inputs(
             description: dao_description_res.err(),
             image_url: image_url_res.err(),
             social_media_url: social_media_url_res.err(),
+            min_invest_shares: min_invest_shares_res.err(),
+            max_invest_shares: max_invest_shares_res.err(),
+            prospectus_url: prospectus_url_res.err(),
+            prospectus_bytes: prospectus_bytes_res.err(),
         };
         return Err(ValidateDataUpdateInputsError::AllFieldsValidation(errors));
     }
@@ -166,11 +187,31 @@ fn validate_inputs(
     let social_media_url =
         social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
 
+    let prospectus_url =
+        prospectus_url_res.map_err(|e| to_single_field_val_error("prospectus_url", e))?;
+    let prospectus_bytes =
+        prospectus_bytes_res.map_err(|e| to_single_field_val_error("prospectus_bytes", e))?;
+    let min_invest_shares =
+        min_invest_shares_res.map_err(|e| to_single_field_val_error("min_invest_amount", e))?;
+    let max_invest_shares =
+        max_invest_shares_res.map_err(|e| to_single_field_val_error("max_invest_amount", e))?;
+
+    let prospectus = match (prospectus_bytes, prospectus_url) {
+        (Some(bytes), Some(url)) => Some(Prospectus::new(&bytes, url)),
+        (None, None) => None,
+        _ => Err(ValidateDataUpdateInputsError::NonValidation(
+            "Invalid combination: prospectus fields must be both set or not set".to_owned(),
+        ))?,
+    };
+
     Ok(UpdatableDaoData {
         project_name: dao_name,
         project_desc_url: dao_description,
         image_url: image_url.clone(),
         social_media_url,
+        prospectus,
+        min_invest_shares,
+        max_invest_shares
     })
 }
 
@@ -180,6 +221,10 @@ pub struct ValidateUpateDataInputErrors {
     pub description: Option<ValidationError>,
     pub image_url: Option<ValidationError>,
     pub social_media_url: Option<ValidationError>,
+    pub min_invest_shares: Option<ValidationError>,
+    pub max_invest_shares: Option<ValidationError>,
+    pub prospectus_url: Option<ValidationError>,
+    pub prospectus_bytes: Option<ValidationError>,
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -212,6 +257,10 @@ impl From<ValidateDataUpdateInputsError> for FrError {
                 insert_if_some(&mut hm, "description", errors.description);
                 insert_if_some(&mut hm, "image", errors.image_url);
                 insert_if_some(&mut hm, "social_media_url", errors.social_media_url);
+                insert_if_some(&mut hm, "prospectus_bytes", errors.prospectus_bytes);
+                insert_if_some(&mut hm, "prospectus_url", errors.prospectus_url);
+                insert_if_some(&mut hm, "min_invest_shares", errors.min_invest_shares);
+                insert_if_some(&mut hm, "max_invest_shares", errors.max_invest_shares);
                 FrError::Validations(hm)
             }
             ValidateDataUpdateInputsError::SingleFieldValidation { field, error } => {

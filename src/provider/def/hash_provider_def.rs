@@ -1,6 +1,6 @@
 use crate::error::FrError;
-use base::hashable::hash;
 use data_encoding::BASE64;
+use mbase::models::hashable::hash;
 use serde::Deserialize;
 
 pub struct HashProviderDef {}

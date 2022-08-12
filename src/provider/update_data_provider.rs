@@ -1,5 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use mbase::state::dao_app_state::Prospectus;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -29,6 +30,10 @@ pub struct UpdatableDataResJs {
 
     pub image_base64: Option<String>, // js image cropper library expects base64
     pub social_media_url: String,
+
+    pub prospectus: Option<Prospectus>,
+    pub min_invest_amount: String,
+    pub max_invest_amount: String,
 }
 
 /// Specs to create assets (we need to sign this first, to get asset ids for the rest of the flow)
@@ -46,6 +51,11 @@ pub struct UpdateDataParJs {
     pub image: Option<Vec<u8>>,
     pub image_url: Option<String>,
     pub social_media_url: String,
+
+    pub prospectus_url: Option<String>,
+    pub prospectus_bytes: Option<Vec<u8>>,
+    pub min_invest_amount: String,
+    pub max_invest_amount: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

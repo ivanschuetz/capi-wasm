@@ -9,8 +9,6 @@ use crate::service::number_formats::validate_funds_amount_input;
 use algonaut::core::Address;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use base::hashable::hash;
-use data_encoding::BASE64;
 use mbase::models::create_shares_specs::CreateSharesSpecs;
 use mbase::models::funds::FundsAmount;
 use mbase::models::setup_dao_specs::SetupDaoSpecs;
@@ -129,10 +127,7 @@ impl CreateDaoFormInputsJs {
 
 pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
     let prospectus = match inputs.prospectus_data()? {
-        Some((url, bytes)) => Some(Prospectus {
-            hash: BASE64.encode(&hash(&bytes).0),
-            url,
-        }),
+        Some((url, bytes)) => Some(Prospectus::new(&bytes, url)),
         None => None,
     };
 
@@ -483,12 +478,12 @@ fn validate_shares_for_investors(input: &str) -> Result<ShareAmount, ValidationE
     Ok(ShareAmount::new(share_count))
 }
 
-fn validate_min_invest_amount(input: &str) -> Result<ShareAmount, ValidationError> {
+pub fn validate_min_invest_amount(input: &str) -> Result<ShareAmount, ValidationError> {
     let share_count: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
     Ok(ShareAmount::new(share_count))
 }
 
-fn validate_max_invest_amount(input: &str) -> Result<ShareAmount, ValidationError> {
+pub fn validate_max_invest_amount(input: &str) -> Result<ShareAmount, ValidationError> {
     let share_count: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
     if share_count == 0 {
         return Err(ValidationError::Min {
