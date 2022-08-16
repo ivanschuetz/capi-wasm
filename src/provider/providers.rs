@@ -22,7 +22,8 @@ use super::{
         holders_count_provider_def::HoldersCountProviderDef,
         income_vs_spending_provider_def::IncomeVsSpendingProviderDef,
         investment_provider_def::InvestmentProviderDef, lock_provider_def::LockProviderDef,
-        my_daos_provider_def::MyDaosProviderDef, my_shares_provider_def::MySharesProviderDef,
+        metadata_provider_def::MetadataProviderDef, my_daos_provider_def::MyDaosProviderDef,
+        my_shares_provider_def::MySharesProviderDef,
         optin_to_app_provider_def::OptinToAppProviderDef, pay_dao_provider_def::PayDaoProviderDef,
         reclaim_provider_def::ReclaimProviderDef, rekey_provider_def::RekeyProviderDef,
         roadmap_provider_def::RoadmapProviderDef,
@@ -129,6 +130,7 @@ pub struct Providers<'a> {
     pub rekey: &'a dyn RekeyProvider,
     pub raised: &'a dyn FundsRaisingProvider,
     pub hash: HashProviderDef,
+    pub metadata: MetadataProviderDef,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -179,6 +181,7 @@ fn def_providers<'a>() -> Providers<'a> {
         rekey: &RekeyProviderDef {},
         raised: &FundsRaisingProviderDef {},
         hash: HashProviderDef {},
+        metadata: MetadataProviderDef {},
     }
 }
 
@@ -219,5 +222,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         rekey: &RekeyProviderMock {},
         raised: &FundsRaisingProviderMock {},
         hash: HashProviderDef {},
+        metadata: MetadataProviderDef {},
     }
 }

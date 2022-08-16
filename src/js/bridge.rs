@@ -533,6 +533,14 @@ pub async fn bridge_calculate_hash(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
+#[wasm_bindgen]
+pub async fn bridge_wasm_version() -> Result<JsValue, JsValue> {
+    log_wrap_sync_no_pars("bridge_wasm_version", move || {
+        to_js(providers()?.metadata.wasm_version())
+    })
+    .await
+}
+
 fn to_js<T>(res: Result<T, FrError>) -> Result<JsValue, JsValue>
 where
     T: Serialize,
@@ -543,6 +551,8 @@ where
     }
 }
 
+/// Wrap function call with logging
+/// Used for async functions with parameters
 async fn log_wrap<Fut>(
     label: &str,
     pars: JsValue,
@@ -555,6 +565,39 @@ where
     let res = handler(pars.clone()).await;
     if let Err(e) = res.as_ref() {
         log::error!("Error calling {label}: {e:?}, pars: {pars:?}");
+    }
+    res
+}
+
+/// Wrap function call with logging
+/// Used for async functions without parameters
+/// (dead code: might be used in the future)
+#[allow(dead_code)]
+async fn log_wrap_no_pars<Fut>(
+    label: &str,
+    handler: impl FnOnce() -> Fut + Send,
+) -> Result<JsValue, JsValue>
+where
+    Fut: Future<Output = Result<JsValue, JsValue>>,
+{
+    log::debug!("{label}");
+    let res = handler().await;
+    if let Err(e) = res.as_ref() {
+        log::error!("Error calling {label}: {e:?}");
+    }
+    res
+}
+
+/// Wrap function call with logging
+/// Used for sync functions without parameters
+async fn log_wrap_sync_no_pars(
+    label: &str,
+    handler: impl FnOnce() -> Result<JsValue, JsValue> + Send,
+) -> Result<JsValue, JsValue> {
+    log::debug!("{label}");
+    let res = handler();
+    if let Err(e) = res.as_ref() {
+        log::error!("Error calling {label}: {e:?}");
     }
     res
 }

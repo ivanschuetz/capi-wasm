@@ -33,3 +33,4 @@ pub mod withdrawal_history_provider_def;
 pub mod wyre_provider_def;
 pub mod funds_raising_provider_def;
 pub mod hash_provider_def;
+pub mod metadata_provider_def;
