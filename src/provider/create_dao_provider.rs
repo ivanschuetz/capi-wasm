@@ -270,7 +270,11 @@ pub fn validate_dao_inputs(
     // TODO should these check available shares instead of supply?
 
     if shares_for_investors > share_supply {
-        return Err(ValidateDaoInputsError::SharesForInvestorsGreaterThanSupply);
+        let errors = CreateAssetsInputErrors {
+            shares_for_investors: Some(ValidationError::SharesForInvestorsGreaterThanSupply),
+            ..CreateAssetsInputErrors::default()
+        };
+        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
     }
 
     if min_invest_amount > share_supply {
@@ -345,7 +349,6 @@ pub enum ValidateDaoInputsError {
         field: String,
         error: ValidationError,
     },
-    SharesForInvestorsGreaterThanSupply,
     NonValidation(String),
 }
 

@@ -37,6 +37,7 @@ pub struct CreateAssetsInputErrorsJs {
     pub min_raise_target_end_date: Option<ValidationErrorJs>,
     pub min_invest_shares: Option<ValidationErrorJs>,
     pub max_invest_shares: Option<ValidationErrorJs>,
+    pub shares_for_investors: Option<ValidationErrorJs>,
 
     // note that these are not text inputs, but still, inputs
     pub image_url: Option<ValidationErrorJs>,
@@ -66,6 +67,7 @@ impl From<ValidateDaoInputsError> for JsValue {
                     prospectus_bytes: e.prospectus_bytes.map(to_validation_error_js),
                     min_invest_shares: e.min_invest_amount.map(to_validation_error_js),
                     max_invest_shares: e.max_invest_amount.map(to_validation_error_js),
+                    shares_for_investors: e.shares_for_investors.map(to_validation_error_js),
                 };
                 match JsValue::from_serde(&errors_js) {
                     Ok(js) => js,
@@ -77,9 +79,6 @@ impl From<ValidateDaoInputsError> for JsValue {
                 ValidateDaoInputsError::AllFieldsValidation(e) => format!("{e:?}"),
                 ValidateDaoInputsError::SingleFieldValidation { field, error } => {
                     format!("{field:?} => {error:?}")
-                }
-                ValidateDaoInputsError::SharesForInvestorsGreaterThanSupply => {
-                    format!("SharesForInvestorsGreaterThanSupply")
                 }
                 ValidateDaoInputsError::NonValidation(msg) => msg,
             }),

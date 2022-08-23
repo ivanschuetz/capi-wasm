@@ -34,6 +34,7 @@ pub enum ValidationError {
     ShareCountLargerThanAvailable,
     MustBeLessThanMaxInvestAmount,
     MustBeGreaterThanMinInvestAmount,
+    SharesForInvestorsGreaterThanSupply,
     BuyingLessSharesThanMinAmount {
         min: String,
     },

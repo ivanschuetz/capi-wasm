@@ -21,6 +21,9 @@ pub fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
         ValidationError::MustBeGreaterThanMinInvestAmount => "must_be_more_min_min_invest",
         ValidationError::BuyingLessSharesThanMinAmount { .. } => "buying_less_shares_than_min",
         ValidationError::BuyingMoreSharesThanMaxTotalAmount { .. } => "buying_more_shares_than_max",
+        ValidationError::SharesForInvestorsGreaterThanSupply => {
+            "shares_for_investors_greater_than_supply"
+        }
     }
     .to_owned();
 
