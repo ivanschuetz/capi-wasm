@@ -9,6 +9,7 @@ use crate::service::number_formats::validate_funds_amount_input;
 use algonaut::core::Address;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use chrono::Utc;
 use mbase::models::create_shares_specs::CreateSharesSpecs;
 use mbase::models::funds::FundsAmount;
 use mbase::models::setup_dao_specs::SetupDaoSpecs;
@@ -552,8 +553,17 @@ fn validate_min_raised_target(
 }
 
 fn validate_min_raised_target_end_date(input: &str) -> Result<Timestamp, ValidationError> {
-    let timestamp: u64 = input.parse().map_err(|_| ValidationError::NotTimestamp)?;
-    Ok(Timestamp(timestamp))
+    let timestamp = Timestamp(input.parse().map_err(|_| ValidationError::NotTimestamp)?);
+    // we'll treat invalid conversion to date, as invalid timestamp
+    // this comes from casting to i64, which is required by NaiveDateTime
+    let date = timestamp
+        .to_date()
+        .map_err(|_| ValidationError::NotTimestamp)?;
+
+    if date <= Utc::now() {
+        return Err(ValidationError::MustBeAfterNow);
+    }
+    Ok(timestamp)
 }
 
 pub fn to_single_field_val_error(field_name: &str, e: ValidationError) -> ValidateDaoInputsError {

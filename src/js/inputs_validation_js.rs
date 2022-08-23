@@ -24,6 +24,7 @@ pub fn to_validation_error_js(error: ValidationError) -> ValidationErrorJs {
         ValidationError::SharesForInvestorsGreaterThanSupply => {
             "shares_for_investors_greater_than_supply"
         }
+        ValidationError::MustBeAfterNow => "mus_be_after_now",
     }
     .to_owned();
 

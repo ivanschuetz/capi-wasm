@@ -32,6 +32,7 @@ pub enum ValidationError {
         actual: String,
     },
     ShareCountLargerThanAvailable,
+    MustBeAfterNow,
     MustBeLessThanMaxInvestAmount,
     MustBeGreaterThanMinInvestAmount,
     SharesForInvestorsGreaterThanSupply,
