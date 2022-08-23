@@ -53,7 +53,12 @@ pub struct UpdateDataParJs {
     pub social_media_url: String,
 
     pub prospectus_url: Option<String>,
+    // bytes and hash are OR:
+    // if uploading a new prospectus, we have bytes (to generate the hash in rust)
+    // if not updating it, we have the hash of the old prospectus
     pub prospectus_bytes: Option<Vec<u8>>,
+    pub prospectus_hash: Option<String>,
+
     pub min_invest_amount: String,
     pub max_invest_amount: String,
 }

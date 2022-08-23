@@ -5,7 +5,7 @@ use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_dao_provider::{
     validate_dao_description_url_opt, validate_dao_name, validate_image_url,
     validate_max_invest_amount, validate_min_invest_amount, validate_prospectus_bytes,
-    validate_prospectus_url, validate_social_media_url,
+    validate_prospectus_url, validate_social_media_url, validate_text_min_max_length,
 };
 use crate::provider::update_data_provider::{
     SubmitUpdateDataParJs, UpdatableDataParJs, UpdatableDataResJs, UpdateDataParJs,
@@ -141,6 +141,7 @@ fn validate_inputs(
     let social_media_url_res = validate_social_media_url(&pars.social_media_url);
     let prospectus_url_res = validate_prospectus_url(&pars.prospectus_url);
     let prospectus_bytes_res = validate_prospectus_bytes(&pars.prospectus_bytes);
+    let prospectus_hash_res = validate_prospectus_hash(&pars.prospectus_hash);
     let min_invest_shares_res = validate_min_invest_amount(&pars.min_invest_amount);
     let max_invest_shares_res = validate_max_invest_amount(&pars.max_invest_amount);
 
@@ -150,6 +151,7 @@ fn validate_inputs(
     let social_media_url_err = social_media_url_res.clone().err();
     let prospectus_url_err = prospectus_url_res.clone().err();
     let prospectus_bytes_err = prospectus_bytes_res.clone().err();
+    let prospectus_hash_err = prospectus_hash_res.clone().err();
     let min_invest_amount_err = min_invest_shares_res.clone().err();
     let max_invest_amount_err = max_invest_shares_res.clone().err();
 
@@ -160,6 +162,7 @@ fn validate_inputs(
         image_url_err,
         prospectus_url_err,
         prospectus_bytes_err,
+        prospectus_hash_err,
         min_invest_amount_err,
         max_invest_amount_err,
     ]
@@ -175,6 +178,7 @@ fn validate_inputs(
             max_invest_shares: max_invest_shares_res.err(),
             prospectus_url: prospectus_url_res.err(),
             prospectus_bytes: prospectus_bytes_res.err(),
+            prospectus_hash: prospectus_hash_res.err(),
         };
         return Err(ValidateDataUpdateInputsError::AllFieldsValidation(errors));
     }
@@ -191,18 +195,21 @@ fn validate_inputs(
         prospectus_url_res.map_err(|e| to_single_field_val_error("prospectus_url", e))?;
     let prospectus_bytes =
         prospectus_bytes_res.map_err(|e| to_single_field_val_error("prospectus_bytes", e))?;
+    let prospectus_hash =
+        prospectus_hash_res.map_err(|e| to_single_field_val_error("prospectus_hash", e))?;
     let min_invest_shares =
         min_invest_shares_res.map_err(|e| to_single_field_val_error("min_invest_amount", e))?;
     let max_invest_shares =
         max_invest_shares_res.map_err(|e| to_single_field_val_error("max_invest_amount", e))?;
 
-    let prospectus = match (prospectus_bytes, prospectus_url) {
-        (Some(bytes), Some(url)) => Some(Prospectus::new(&bytes, url)),
-        (None, None) => None,
-        _ => Err(ValidateDataUpdateInputsError::NonValidation(
-            "Invalid combination: prospectus fields must be both set or not set".to_owned(),
-        ))?,
-    };
+    if prospectus_bytes.is_some() && prospectus_hash.is_some() {
+        // there are OR, so can't be set at the same time
+        return Err(ValidateDataUpdateInputsError::NonValidation(
+            "prospectus_bytes_and_hash_set".to_owned(),
+        ));
+    }
+
+    let prospectus = to_maybe_prospectus(prospectus_url, prospectus_hash, prospectus_bytes)?;
 
     Ok(UpdatableDaoData {
         project_name: dao_name,
@@ -211,7 +218,38 @@ fn validate_inputs(
         social_media_url,
         prospectus,
         min_invest_shares,
-        max_invest_shares
+        max_invest_shares,
+    })
+}
+
+/// If hash is set, it means that we're getting an unchanged prospectus (the hash of the already saved prospectus)
+/// If bytes is set, it means that we're getting a new prospectus (the hash will be generated)
+/// Hash and bytes must not be set at the same time. Url must always be set.
+fn to_maybe_prospectus(
+    url: Option<String>,
+    hash: Option<String>,
+    bytes: Option<Vec<u8>>,
+) -> Result<Option<Prospectus>, ValidateDataUpdateInputsError> {
+    let existing_prospectus = match (hash, url.clone()) {
+        (Some(hash), Some(url)) => Some(Prospectus { hash, url }),
+        (None, None) => None,
+        (None, Some(_)) => None,
+        _ => Err(ValidateDataUpdateInputsError::NonValidation(
+            "Invalid combination: if there's a prospectus hash, there must be an URL too"
+                .to_owned(),
+        ))?,
+    };
+
+    Ok(if existing_prospectus.is_some() {
+        existing_prospectus
+    } else {
+        match (bytes, url) {
+            (Some(bytes), Some(url)) => Some(Prospectus::new(&bytes, url)),
+            (None, None) => None,
+            _ => Err(ValidateDataUpdateInputsError::NonValidation(
+                "Invalid combination: prospectus fields must be both set or not set".to_owned(),
+            ))?,
+        }
     })
 }
 
@@ -225,6 +263,7 @@ pub struct ValidateUpateDataInputErrors {
     pub max_invest_shares: Option<ValidationError>,
     pub prospectus_url: Option<ValidationError>,
     pub prospectus_bytes: Option<ValidationError>,
+    pub prospectus_hash: Option<ValidationError>,
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -280,5 +319,12 @@ fn insert_if_some(
 ) {
     if let Some(value) = value {
         hm.insert(key.to_owned(), value);
+    }
+}
+
+pub fn validate_prospectus_hash(url: &Option<String>) -> Result<Option<String>, ValidationError> {
+    match url {
+        Some(url) => Ok(Some(validate_text_min_max_length(&url, 0, 200)?)),
+        None => Ok(None),
     }
 }

@@ -398,7 +398,7 @@ pub fn validate_address(str: &str) -> Result<Address, ValidationError> {
     str.parse().map_err(|_| ValidationError::Address)
 }
 
-fn validate_text_min_max_length(
+pub fn validate_text_min_max_length(
     text: &str,
     min: usize,
     max: usize,
