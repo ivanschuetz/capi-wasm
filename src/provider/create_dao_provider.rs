@@ -483,6 +483,11 @@ fn validate_shares_for_investors(input: &str) -> Result<ShareAmount, ValidationE
 
 pub fn validate_min_invest_amount(input: &str) -> Result<ShareAmount, ValidationError> {
     let share_count: u64 = input.parse().map_err(|_| ValidationError::NotAnInteger)?;
+    if share_count == 0 {
+        return Err(ValidationError::Min {
+            min: 1u8.to_string(),
+        });
+    }
     Ok(ShareAmount::new(share_count))
 }
 
