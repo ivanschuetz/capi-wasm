@@ -90,6 +90,7 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
         share_price_number_algo: "100".to_owned(),
         shares_asset_id: "1231231231".to_owned(),
         image_url: Some("https://placekitten.com/1033/360".to_owned()),
+        homepage_url: "https://doesnotexist.com".to_owned(),
         social_media_url: "https://twitter.com/foobardoesntexist".to_owned(),
         app_id: "111112222".to_owned(),
         app_address: mock_address()?.to_string(),

@@ -43,6 +43,7 @@ pub struct ValidatedDaoInputs {
     pub investors_share: SharesPercentage,
     pub image_url: Option<String>,
     pub social_media_url: String,
+    pub homepage_url: String,
     pub min_raise_target: FundsAmount,
     pub min_raise_target_end_date: Timestamp,
     pub prospectus_url: Option<String>,
@@ -75,6 +76,7 @@ pub struct CreateDaoFormInputsJs {
     pub compressed_image: Option<Vec<u8>>,
     pub image_url: Option<String>,
     pub social_media_url: String,
+    pub homepage_url: String,
     pub min_raise_target: String,
     pub min_raise_target_end_date: String,
     pub prospectus_url: Option<String>,
@@ -143,6 +145,7 @@ pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<Setu
         inputs.share_price,
         inputs.image_url.clone(),
         inputs.social_media_url.clone(),
+        inputs.homepage_url.clone(),
         inputs.shares_for_investors,
         inputs.min_raise_target,
         inputs.min_raise_target_end_date,
@@ -164,6 +167,7 @@ pub fn validate_dao_inputs(
     let share_price_res = validate_share_price(&inputs.share_price, funds_asset_specs);
     let image_url_res = validate_image_url(&inputs.image_url);
     let social_media_url_res = validate_social_media_url(&inputs.social_media_url);
+    let homepage_url_res = validate_homepage_url(&inputs.homepage_url);
     let investors_share_res = validate_investors_share(&inputs.investors_share);
     let min_raise_target_res =
         validate_min_raised_target(&inputs.min_raise_target, funds_asset_specs);
@@ -182,6 +186,7 @@ pub fn validate_dao_inputs(
     let share_price_err = share_price_res.clone().err();
     let image_url_err = image_url_res.clone().err();
     let social_media_url_err = social_media_url_res.clone().err();
+    let homepage_url_err = homepage_url_res.clone().err();
     let investors_share_err = investors_share_res.clone().err();
     let min_raise_target_err = min_raise_target_res.clone().err();
     let validate_min_raised_target_end_date_err = min_raised_target_end_date_res.clone().err();
@@ -199,6 +204,7 @@ pub fn validate_dao_inputs(
         share_price_err,
         image_url_err,
         social_media_url_err,
+        homepage_url_err,
         investors_share_err,
         min_raise_target_err,
         validate_min_raised_target_end_date_err,
@@ -218,6 +224,7 @@ pub fn validate_dao_inputs(
             shares_for_investors: shares_for_investors_res.err(),
             share_price: share_price_res.err(),
             image_url: image_url_res.err(),
+            homepage_url: homepage_url_res.err(),
             social_media_url: social_media_url_res.err(),
             investors_share: investors_share_res.err(),
             min_raise_target: min_raise_target_res.err(),
@@ -247,6 +254,8 @@ pub fn validate_dao_inputs(
     let share_price = share_price_res.map_err(|e| to_single_field_val_error("share_price", e))?;
     let social_media_url =
         social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
+    let homepage_url =
+        homepage_url_res.map_err(|e| to_single_field_val_error("homepage_url", e))?;
     let image_url = image_url_res.map_err(|e| to_single_field_val_error("image_url", e))?;
     let min_raise_target =
         min_raise_target_res.map_err(|e| to_single_field_val_error("min_raise_target", e))?;
@@ -313,6 +322,7 @@ pub fn validate_dao_inputs(
         share_price,
         investors_share,
         social_media_url,
+        homepage_url,
         min_raise_target,
         min_raise_target_end_date,
         image_url,
@@ -365,6 +375,7 @@ pub struct CreateAssetsInputErrors {
     pub investors_share: Option<ValidationError>,
     pub image_url: Option<ValidationError>,
     pub social_media_url: Option<ValidationError>,
+    pub homepage_url: Option<ValidationError>,
     pub min_raise_target: Option<ValidationError>,
     pub min_raise_target_end_date: Option<ValidationError>,
     pub prospectus_url: Option<ValidationError>,
@@ -534,6 +545,14 @@ fn validate_investors_share(input: &str) -> Result<SharesPercentage, ValidationE
 }
 
 pub fn validate_social_media_url(input: &str) -> Result<String, ValidationError> {
+    validate_url(input)
+}
+
+pub fn validate_homepage_url(input: &str) -> Result<String, ValidationError> {
+    validate_url(input)
+}
+
+pub fn validate_url(input: &str) -> Result<String, ValidationError> {
     let count = input.len();
     let max_chars = 100;
     if count > max_chars {
