@@ -26,8 +26,6 @@ pub struct DaoJs {
     pub image_url: Option<String>,
     // TODO this is optional too, make it optional everywhere
     pub social_media_url: String,
-    // TODO this is optional too, make it optional everywhere
-    pub homepage_url: String,
     pub app_id: String,
     pub app_address: String,
     pub invest_link: String,
@@ -90,7 +88,6 @@ impl ToDaoJs for Dao {
             // image_url,
             image_url: self.image_nft.clone().map(|nft| nft.url),
             social_media_url: self.social_media_url.clone(),
-            homepage_url: self.homepage_url.clone(),
             shares_asset_id: self.shares_asset_id.to_string(),
             app_id: self.app_id.to_string(),
             app_address: self.app_id.address().to_string(),
