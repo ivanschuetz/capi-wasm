@@ -541,6 +541,31 @@ pub async fn bridge_wasm_version() -> Result<JsValue, JsValue> {
     .await
 }
 
+#[wasm_bindgen]
+pub async fn bridge_set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_set_dev_settings", pars, async move |pars| {
+        to_js(
+            providers()?
+                .dev_settings
+                .txs(parse_bridge_pars(pars)?)
+                .await,
+        )
+    })
+    .await
+}
+#[wasm_bindgen]
+pub async fn bridge_submit_set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_submit_set_dev_settings", pars, async move |pars| {
+        to_bridge_res(
+            providers()?
+                .dev_settings
+                .submit(parse_bridge_pars(pars)?)
+                .await,
+        )
+    })
+    .await
+}
+
 fn to_js<T>(res: Result<T, FrError>) -> Result<JsValue, JsValue>
 where
     T: Serialize,

@@ -15,7 +15,7 @@ use super::{
         calculate_total_price_def::CalculateTotalPriceDef, claim_provider_def::ClaimProviderDef,
         create_assets_provider_def::CreateAssetsProviderDef,
         create_dao_provider_def::CreateDaoProviderDef, dao_provider_def::DaoUserViewProviderDef,
-        description_provider_def::DescriptionProviderDef,
+        description_provider_def::DescriptionProviderDef, dev_provider_def::DevProviderDef,
         dividends_provider_def::DividendsProviderDef, drain_provider_def::DrainProviderDef,
         funds_activity_provider_def::FundsActivityProviderDef,
         funds_raising_provider_def::FundsRaisingProviderDef, hash_provider_def::HashProviderDef,
@@ -131,6 +131,7 @@ pub struct Providers<'a> {
     pub raised: &'a dyn FundsRaisingProvider,
     pub hash: HashProviderDef,
     pub metadata: MetadataProviderDef,
+    pub dev_settings: DevProviderDef,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -182,6 +183,7 @@ fn def_providers<'a>() -> Providers<'a> {
         raised: &FundsRaisingProviderDef {},
         hash: HashProviderDef {},
         metadata: MetadataProviderDef {},
+        dev_settings: DevProviderDef {},
     }
 }
 
@@ -223,5 +225,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         raised: &FundsRaisingProviderMock {},
         hash: HashProviderDef {},
         metadata: MetadataProviderDef {},
+        dev_settings: DevProviderDef {},
     }
 }

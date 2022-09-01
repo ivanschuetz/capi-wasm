@@ -552,7 +552,7 @@ fn validate_min_raised_target(
     validate_funds_amount_input(input, funds_asset_specs)
 }
 
-fn validate_min_raised_target_end_date(input: &str) -> Result<Timestamp, ValidationError> {
+pub fn validate_min_raised_target_end_date(input: &str) -> Result<Timestamp, ValidationError> {
     let timestamp = Timestamp(input.parse().map_err(|_| ValidationError::NotTimestamp)?);
     // we'll treat invalid conversion to date, as invalid timestamp
     // this comes from casting to i64, which is required by NaiveDateTime
