@@ -41,6 +41,7 @@ pub struct DaoJs {
     pub funds_raised: String,
     pub setup_date: String,
     pub prospectus: Option<Prospectus>,
+    pub team_url: Option<String>,
 }
 
 pub trait ToDaoJs {
@@ -116,6 +117,7 @@ impl ToDaoJs for Dao {
             funds_raised: funds_raised.to_string(),
             setup_date: self.setup_date.0.to_string(),
             prospectus: self.prospectus.clone(),
+            team_url: self.team_url.clone(),
         })
     }
 }

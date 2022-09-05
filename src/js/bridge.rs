@@ -553,6 +553,7 @@ pub async fn bridge_set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> 
     })
     .await
 }
+
 #[wasm_bindgen]
 pub async fn bridge_submit_set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("bridge_submit_set_dev_settings", pars, async move |pars| {
@@ -562,6 +563,56 @@ pub async fn bridge_submit_set_dev_settings(pars: JsValue) -> Result<JsValue, Js
                 .submit(parse_bridge_pars(pars)?)
                 .await,
         )
+    })
+    .await
+}
+
+#[wasm_bindgen]
+pub async fn bridge_get_team(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_get_team", pars, async move |pars| {
+        to_bridge_res(providers()?.team.get(parse_bridge_pars(pars)?).await)
+    })
+    .await
+}
+
+#[wasm_bindgen]
+pub async fn bridge_add_team_member(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_add_team_member", pars, async move |pars| {
+        to_bridge_res(
+            providers()?
+                .team
+                .add_team_member(parse_bridge_pars(pars)?)
+                .await,
+        )
+    })
+    .await
+}
+
+#[wasm_bindgen]
+pub async fn bridge_edit_team_member(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_edit_team_member", pars, async move |pars| {
+        to_bridge_res(
+            providers()?
+                .team
+                .edit_team_member(parse_bridge_pars(pars)?)
+                .await,
+        )
+    })
+    .await
+}
+
+#[wasm_bindgen]
+pub async fn bridge_set_team(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_set_team", pars, async move |pars| {
+        to_bridge_res(providers()?.team.set(parse_bridge_pars(pars)?).await)
+    })
+    .await
+}
+
+#[wasm_bindgen]
+pub async fn bridge_submit_set_team(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("bridge_submit_set_team", pars, async move |pars| {
+        to_bridge_res(providers()?.team.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }

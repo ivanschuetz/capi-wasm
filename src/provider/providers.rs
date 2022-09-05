@@ -29,7 +29,8 @@ use super::{
         roadmap_provider_def::RoadmapProviderDef,
         shares_count_provider_def::SharesCountProviderDef,
         shares_distribution_provider_def::SharesDistributionProviderDef,
-        unlock_provider_def::UnlockProviderDef, update_app_provider_def::UpdateAppProviderDef,
+        team_provider_def::TeamProviderDef, unlock_provider_def::UnlockProviderDef,
+        update_app_provider_def::UpdateAppProviderDef,
         update_data_provider_def::UpdateDataProviderDef, view_dao_provider_def::ViewDaoProviderDef,
         withdraw_provider_def::WithdrawProviderDef,
         withdrawal_history_provider_def::WithdrawalHistoryProviderDef,
@@ -67,7 +68,8 @@ use super::{
         rekey_provider_mock::RekeyProviderMock, roadmap_provider_mock::RoadmapProviderMock,
         shares_count_provider_mock::SharesCountProviderMock,
         shares_distribution_provider_mock::SharesDistributionProviderMock,
-        unlock_provider_mock::UnlockProviderMock, update_app_provider_mock::UpdateAppProviderMock,
+        team_provider_mock::TeamProviderMock, unlock_provider_mock::UnlockProviderMock,
+        update_app_provider_mock::UpdateAppProviderMock,
         update_data_provider_mock::UpdateDataProviderMock,
         view_dao_provider_mock::ViewDaoProviderMock, withdraw_provider_mock::WithdrawProviderMock,
         withdrawal_history_provider_mock::WithdrawalHistoryProviderMock,
@@ -82,6 +84,7 @@ use super::{
     roadmap_provider::RoadmapProvider,
     shares_count_provider::SharesCountProvider,
     shares_distribution_provider::SharesDistributionProvider,
+    team_provider::TeamProvider,
     unlock_provider::UnlockProvider,
     update_app_provider::UpdateAppProvider,
     update_data_provider::UpdateDataProvider,
@@ -132,6 +135,7 @@ pub struct Providers<'a> {
     pub hash: HashProviderDef,
     pub metadata: MetadataProviderDef,
     pub dev_settings: DevProviderDef,
+    pub team: &'a dyn TeamProvider,
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
@@ -184,6 +188,7 @@ fn def_providers<'a>() -> Providers<'a> {
         hash: HashProviderDef {},
         metadata: MetadataProviderDef {},
         dev_settings: DevProviderDef {},
+        team: &TeamProviderDef {},
     }
 }
 
@@ -226,5 +231,6 @@ fn mock_providers<'a>() -> Providers<'a> {
         hash: HashProviderDef {},
         metadata: MetadataProviderDef {},
         dev_settings: DevProviderDef {},
+        team: &TeamProviderMock {},
     }
 }

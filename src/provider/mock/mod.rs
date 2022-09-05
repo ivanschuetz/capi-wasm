@@ -37,6 +37,7 @@ pub mod rekey_provider_mock;
 pub mod roadmap_provider_mock;
 pub mod shares_count_provider_mock;
 pub mod shares_distribution_provider_mock;
+pub mod team_provider_mock;
 pub mod unlock_provider_mock;
 pub mod update_app_provider_mock;
 pub mod update_data_provider_mock;
@@ -107,5 +108,6 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
         funds_raised: "true".to_owned(),
         setup_date: Utc::now().timestamp().to_string(),
         prospectus: None,
+        team_url: None,
     })
 }
