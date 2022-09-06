@@ -26,6 +26,7 @@ use base::flows::{
 use mbase::dependencies::algod;
 use mbase::models::funds::FundsAmount;
 use mbase::models::tx_id::TxId;
+use mbase::util::network_util::wait_for_pending_transaction;
 
 pub struct WithdrawProviderDef {}
 
@@ -115,6 +116,8 @@ impl WithdrawProvider for WithdrawProviderDef {
         .await?;
 
         log::debug!("Submit withdrawal tx id: {:?}", withdraw_tx_id);
+
+        let _ = wait_for_pending_transaction(&algod, &withdraw_tx_id).await?;
 
         Ok(SubmitWithdrawResJs {
             saved_withdrawal: withdrawal_view_data(
