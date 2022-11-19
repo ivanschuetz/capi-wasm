@@ -8,9 +8,9 @@ use serde::Serialize;
 use std::{convert::TryInto, future::Future};
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-pub async fn bridge_create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_create_dao_assets", pars, async move |pars| {
+#[wasm_bindgen(js_name=createDaoAssetsTxs)]
+pub async fn create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("create_dao_assets", pars, async move |pars| {
         providers()?
             .create_assets
             .txs(parse_bridge_pars(pars)?)
@@ -21,17 +21,17 @@ pub async fn bridge_create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsVa
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_create_dao", pars, async move |pars| {
+#[wasm_bindgen(js_name=createDao)]
+pub async fn create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("create_dao", pars, async move |pars| {
         to_js(providers()?.create_dao.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_create_dao", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitCreateDao)]
+pub async fn submit_create_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_create_dao", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .create_dao
@@ -42,9 +42,9 @@ pub async fn bridge_submit_create_dao(pars: JsValue) -> Result<JsValue, JsValue>
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_load_funds_activity(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_load_funds_activity", pars, async move |pars| {
+#[wasm_bindgen(js_name=loadFundsActivity)]
+pub async fn load_funds_activity(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("load_funds_activity", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .funds_activity
@@ -56,16 +56,16 @@ pub async fn bridge_load_funds_activity(pars: JsValue) -> Result<JsValue, JsValu
 }
 
 #[wasm_bindgen]
-pub async fn bridge_balance(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_balance", pars, async move |pars| {
+pub async fn balance(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("balance", pars, async move |pars| {
         to_bridge_res(providers()?.balance.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_buy_shares", pars, async move |pars| {
+#[wasm_bindgen(js_name=buyShares)]
+pub async fn buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("buy_shares", pars, async move |pars| {
         providers()?
             .buy_shares
             .txs(parse_bridge_pars(pars)?)
@@ -76,9 +76,9 @@ pub async fn bridge_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_get_user_shares_count(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_get_user_shares_count", pars, async move |pars| {
+#[wasm_bindgen(js_name=getUserSharesCount)]
+pub async fn get_user_shares_count(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("get_user_shares_count", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .shares_count
@@ -89,25 +89,25 @@ pub async fn bridge_get_user_shares_count(pars: JsValue) -> Result<JsValue, JsVa
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_load_dao(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_load_dao", pars, async move |pars| {
+#[wasm_bindgen(js_name=loadDao)]
+pub async fn load_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("load_dao", pars, async move |pars| {
         to_bridge_res(providers()?.dao.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_opt_in_to_apps_if_needed(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_opt_in_to_apps_if_needed", pars, async move |pars| {
+#[wasm_bindgen(js_name=optInToAppsIfNeeded)]
+pub async fn opt_in_to_apps_if_needed(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("opt_in_to_apps_if_needed", pars, async move |pars| {
         to_bridge_res(providers()?.app_optin.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_buy_shares", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitBuyShares)]
+pub async fn submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_buy_shares", pars, async move |pars| {
         to_js(
             providers()?
                 .buy_shares
@@ -119,16 +119,16 @@ pub async fn bridge_submit_buy_shares(pars: JsValue) -> Result<JsValue, JsValue>
 }
 
 #[wasm_bindgen]
-pub async fn bridge_claim(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_claim", pars, async move |pars| {
+pub async fn claim(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("claim", pars, async move |pars| {
         to_bridge_res(providers()?.claim.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_load_investment(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_load_investment", pars, async move |pars| {
+#[wasm_bindgen(js_name=loadInvestment)]
+pub async fn load_investment(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("load_investment", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .investment
@@ -139,9 +139,9 @@ pub async fn bridge_load_investment(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_load_available_shares(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_load_available_shares", pars, async move |pars| {
+#[wasm_bindgen(js_name=loadAvailableShares)]
+pub async fn load_available_shares(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("load_available_shares", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .investment
@@ -152,49 +152,49 @@ pub async fn bridge_load_available_shares(pars: JsValue) -> Result<JsValue, JsVa
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_claim(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_claim", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitClaim)]
+pub async fn submit_claim(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_claim", pars, async move |pars| {
         to_bridge_res(providers()?.claim.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
 #[wasm_bindgen]
-pub async fn bridge_lock(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_lock", pars, async move |pars| {
+pub async fn lock(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("lock", pars, async move |pars| {
         to_js(providers()?.lock.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_lock(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_lock", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitLock)]
+pub async fn submit_lock(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_lock", pars, async move |pars| {
         to_bridge_res(providers()?.lock.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_pay_dao(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_pay_dao", pars, async move |pars| {
+#[wasm_bindgen(js_name=payDao)]
+pub async fn pay_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("pay_dao", pars, async move |pars| {
         to_bridge_res(providers()?.pay_dao.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_pay_dao(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_pay_dao", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitPayDao)]
+pub async fn submit_pay_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_pay_dao", pars, async move |pars| {
         to_bridge_res(providers()?.pay_dao.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_holders_count(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_holders_count", pars, async move |pars| {
+#[wasm_bindgen(js_name=holdersCount)]
+pub async fn holders_count(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("holders_count", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .holders_count
@@ -205,9 +205,9 @@ pub async fn bridge_holders_count(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_income_vs_spending(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_income_vs_spending", pars, async move |pars| {
+#[wasm_bindgen(js_name=incomeVsSpending)]
+pub async fn income_vs_spending(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("income_vs_spending", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .income_vs_spending
@@ -218,25 +218,25 @@ pub async fn bridge_income_vs_spending(pars: JsValue) -> Result<JsValue, JsValue
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_my_daos(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_my_daos", pars, async move |pars| {
+#[wasm_bindgen(js_name=myDaos)]
+pub async fn my_daos(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("my_daos", pars, async move |pars| {
         to_bridge_res(providers()?.my_daos.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_my_shares(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_my_shares", pars, async move |pars| {
+#[wasm_bindgen(js_name=myShares)]
+pub async fn my_shares(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("my_shares", pars, async move |pars| {
         to_bridge_res(providers()?.my_shares.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_shares_distribution(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_shares_distribution", pars, async move |pars| {
+#[wasm_bindgen(js_name=sharesDistribution)]
+pub async fn shares_distribution(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("shares_distribution", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .shares_distribution
@@ -247,17 +247,17 @@ pub async fn bridge_shares_distribution(pars: JsValue) -> Result<JsValue, JsValu
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_load_roadmap(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_load_roadmap", pars, async move |pars| {
+#[wasm_bindgen(js_name=loadRoadmap)]
+pub async fn load_roadmap(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("load_roadmap", pars, async move |pars| {
         to_bridge_res(providers()?.roadmap.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_add_roadmap_item(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_add_roadmap_item", pars, async move |pars| {
+#[wasm_bindgen(js_name=addRoadmapItem)]
+pub async fn add_roadmap_item(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("add_roadmap_item", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .add_roadmap_item
@@ -268,9 +268,9 @@ pub async fn bridge_add_roadmap_item(pars: JsValue) -> Result<JsValue, JsValue> 
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_add_roadmap_item(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_add_roadmap_item", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitAddRoadmapItem)]
+pub async fn submit_add_roadmap_item(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_add_roadmap_item", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .add_roadmap_item
@@ -282,40 +282,40 @@ pub async fn bridge_submit_add_roadmap_item(pars: JsValue) -> Result<JsValue, Js
 }
 
 #[wasm_bindgen]
-pub async fn bridge_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_unlock", pars, async move |pars| {
+pub async fn unlock(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("unlock", pars, async move |pars| {
         to_bridge_res(providers()?.unlock.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_unlock", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitUnlock)]
+pub async fn submit_unlock(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_unlock", pars, async move |pars| {
         to_bridge_res(providers()?.unlock.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_check_for_updates(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_check_for_updates", pars, async move |pars| {
+#[wasm_bindgen(js_name=checkForUpdates)]
+pub async fn check_for_updates(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("check_for_updates", pars, async move |pars| {
         to_bridge_res(providers()?.app_updates.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_update_app_txs(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_update_app_txs", pars, async move |pars| {
+#[wasm_bindgen(js_name=updateAppTxs)]
+pub async fn update_app_txs(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("update_app_txs", pars, async move |pars| {
         to_bridge_res(providers()?.update_app.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_update_app(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_update_app", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitUpdateApp)]
+pub async fn submit_update_app(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_update_app", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .update_app
@@ -327,25 +327,25 @@ pub async fn bridge_submit_update_app(pars: JsValue) -> Result<JsValue, JsValue>
 }
 
 /// To pre fill the form to update data
-#[wasm_bindgen]
-pub async fn bridge_updatable_data(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_updatable_data", pars, async move |pars| {
+#[wasm_bindgen(js_name=updatableData)]
+pub async fn updatable_data(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("updatable_data", pars, async move |pars| {
         to_bridge_res(providers()?.update_data.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_update_data(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_update_data", pars, async move |pars| {
+#[wasm_bindgen(js_name=updateData)]
+pub async fn update_data(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("update_data", pars, async move |pars| {
         to_js(providers()?.update_data.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_update_dao_data(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_update_dao_data", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitUpdateDaoData)]
+pub async fn submit_update_dao_data(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_update_dao_data", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .update_data
@@ -357,48 +357,48 @@ pub async fn bridge_submit_update_dao_data(pars: JsValue) -> Result<JsValue, JsV
 }
 
 #[wasm_bindgen]
-pub async fn bridge_drain(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_drain", pars, async move |pars| {
+pub async fn drain(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("drain", pars, async move |pars| {
         to_bridge_res(providers()?.drain.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_drain(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_drain", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitDrain)]
+pub async fn submit_drain(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_drain", pars, async move |pars| {
         to_bridge_res(providers()?.drain.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_view_dao(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_view_dao", pars, async move |pars| {
+#[wasm_bindgen(js_name=viewDao)]
+pub async fn view_dao(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("view_dao", pars, async move |pars| {
         to_bridge_res(providers()?.view_dao.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
 #[wasm_bindgen]
-pub async fn bridge_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_withdraw", pars, async move |pars| {
+pub async fn withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("withdraw", pars, async move |pars| {
         to_bridge_res(providers()?.withdraw.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_withdraw", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitWithdraw)]
+pub async fn submit_withdraw(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_withdraw", pars, async move |pars| {
         to_bridge_res(providers()?.withdraw.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_load_withdrawals", pars, async move |pars| {
+#[wasm_bindgen(js_name=loadWithdrawals)]
+pub async fn load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("load_withdrawals", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .withdrawals_history
@@ -409,9 +409,9 @@ pub async fn bridge_load_withdrawals(pars: JsValue) -> Result<JsValue, JsValue> 
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_calculate_shares_price(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_calculate_shares_price", pars, async move |pars| {
+#[wasm_bindgen(js_name=calculateSharesPrice)]
+pub async fn calculate_shares_price(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("calculate_shares_price", pars, async move |pars| {
         to_js(
             providers()?
                 .calculate_total_price
@@ -422,9 +422,9 @@ pub async fn bridge_calculate_shares_price(pars: JsValue) -> Result<JsValue, JsV
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_calculate_max_funds(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_calculate_max_funds", pars, async move |pars| {
+#[wasm_bindgen(js_name=calculateMaxFunds)]
+pub async fn calculate_max_funds(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("calculate_max_funds", pars, async move |pars| {
         to_js(
             providers()?
                 .calculate_total_price
@@ -435,15 +435,15 @@ pub async fn bridge_calculate_max_funds(pars: JsValue) -> Result<JsValue, JsValu
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_my_dividend(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_my_dividend", pars, async move |pars| {
+#[wasm_bindgen(js_name=myDividend)]
+pub async fn my_dividend(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("my_dividend", pars, async move |pars| {
         to_bridge_res(providers()?.dividend.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name=getBalanceChange)]
 pub async fn get_balance_change(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("get_balance_change", pars, async move |pars| {
         to_bridge_res(
@@ -457,40 +457,40 @@ pub async fn get_balance_change(pars: JsValue) -> Result<JsValue, JsValue> {
 }
 
 #[wasm_bindgen]
-pub async fn bridge_reclaim(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_reclaim", pars, async move |pars| {
+pub async fn reclaim(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("reclaim", pars, async move |pars| {
         to_bridge_res(providers()?.reclaim.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_reclaim(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_reclaim", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitReclaim)]
+pub async fn submit_reclaim(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_reclaim", pars, async move |pars| {
         to_bridge_res(providers()?.reclaim.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
 #[wasm_bindgen]
-pub async fn bridge_description(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_description", pars, async move |pars| {
+pub async fn description(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("description", pars, async move |pars| {
         to_bridge_res(providers()?.description.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_reserve_wyre(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_reserve_wyre", pars, async move |pars| {
+#[wasm_bindgen(js_name=reserveWyre)]
+pub async fn reserve_wyre(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("reserve_wyre", pars, async move |pars| {
         to_bridge_res(providers()?.wyre.reserve(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_holders_change(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_holders_change", pars, async move |pars| {
+#[wasm_bindgen(js_name=holdersChange)]
+pub async fn holders_change(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("holders_change", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .holders_count
@@ -501,49 +501,49 @@ pub async fn bridge_holders_change(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_rekey_owner", pars, async move |pars| {
+#[wasm_bindgen(js_name=rekeyOwner)]
+pub async fn rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("rekey_owner", pars, async move |pars| {
         to_js(providers()?.rekey.txs(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_rekey_owner", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitRekeyOwner)]
+pub async fn submit_rekey_owner(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_rekey_owner", pars, async move |pars| {
         to_bridge_res(providers()?.rekey.submit(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_raised_funds(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_raised_funds", pars, async move |pars| {
+#[wasm_bindgen(js_name=raisedFunds)]
+pub async fn raised_funds(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("raised_funds", pars, async move |pars| {
         to_js(providers()?.raised.data(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_calculate_hash(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_calculate_hash", pars, async move |pars| {
+#[wasm_bindgen(js_name=calculateHash)]
+pub async fn calculate_hash(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("calculate_hash", pars, async move |pars| {
         to_js(providers()?.hash.hash(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_wasm_version() -> Result<JsValue, JsValue> {
-    log_wrap_sync_no_pars("bridge_wasm_version", move || {
+#[wasm_bindgen(js_name=wasmVersion)]
+pub async fn wasm_version() -> Result<JsValue, JsValue> {
+    log_wrap_sync_no_pars("wasm_version", move || {
         to_js(providers()?.metadata.wasm_version())
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_set_dev_settings", pars, async move |pars| {
+#[wasm_bindgen(js_name=setDevSettings)]
+pub async fn set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("set_dev_settings", pars, async move |pars| {
         to_js(
             providers()?
                 .dev_settings
@@ -554,9 +554,9 @@ pub async fn bridge_set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> 
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_set_dev_settings", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitSetDevSettings)]
+pub async fn submit_set_dev_settings(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_set_dev_settings", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .dev_settings
@@ -567,17 +567,17 @@ pub async fn bridge_submit_set_dev_settings(pars: JsValue) -> Result<JsValue, Js
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_get_team(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_get_team", pars, async move |pars| {
+#[wasm_bindgen(js_name=getTeam)]
+pub async fn get_team(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("get_team", pars, async move |pars| {
         to_bridge_res(providers()?.team.get(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_add_team_member(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_add_team_member", pars, async move |pars| {
+#[wasm_bindgen(js_name=addTeamMember)]
+pub async fn add_team_member(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("add_team_member", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .team
@@ -588,9 +588,9 @@ pub async fn bridge_add_team_member(pars: JsValue) -> Result<JsValue, JsValue> {
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_edit_team_member(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_edit_team_member", pars, async move |pars| {
+#[wasm_bindgen(js_name=editTeamMember)]
+pub async fn edit_team_member(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("edit_team_member", pars, async move |pars| {
         to_bridge_res(
             providers()?
                 .team
@@ -601,17 +601,17 @@ pub async fn bridge_edit_team_member(pars: JsValue) -> Result<JsValue, JsValue> 
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_set_team(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_set_team", pars, async move |pars| {
+#[wasm_bindgen(js_name=setTeam)]
+pub async fn set_team(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("set_team", pars, async move |pars| {
         to_bridge_res(providers()?.team.set(parse_bridge_pars(pars)?).await)
     })
     .await
 }
 
-#[wasm_bindgen]
-pub async fn bridge_submit_set_team(pars: JsValue) -> Result<JsValue, JsValue> {
-    log_wrap("bridge_submit_set_team", pars, async move |pars| {
+#[wasm_bindgen(js_name=submitSetTeam)]
+pub async fn submit_set_team(pars: JsValue) -> Result<JsValue, JsValue> {
+    log_wrap("submit_set_team", pars, async move |pars| {
         to_bridge_res(providers()?.team.submit(parse_bridge_pars(pars)?).await)
     })
     .await
@@ -629,13 +629,13 @@ where
 
 /// Wrap function call with logging
 /// Used for async functions with parameters
-async fn log_wrap<Fut>(
+async fn log_wrap<Fut, T>(
     label: &str,
     pars: JsValue,
     handler: impl FnOnce(JsValue) -> Fut + Send,
-) -> Result<JsValue, JsValue>
+) -> Result<T, JsValue>
 where
-    Fut: Future<Output = Result<JsValue, JsValue>>,
+    Fut: Future<Output = Result<T, JsValue>>,
 {
     log::debug!("{label}, pars: {:?}", pars);
     let res = handler(pars.clone()).await;
