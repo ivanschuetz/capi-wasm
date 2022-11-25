@@ -77,9 +77,6 @@ impl From<ValidateDaoInputsError> for JsValue {
 
             _ => to_js_value(match error {
                 ValidateDaoInputsError::AllFieldsValidation(e) => format!("{e:?}"),
-                ValidateDaoInputsError::SingleFieldValidation { field, error } => {
-                    format!("{field:?} => {error:?}")
-                }
                 ValidateDaoInputsError::NonValidation(msg) => msg,
             }),
         }

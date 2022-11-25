@@ -174,153 +174,123 @@ pub fn validate_dao_inputs(
     let min_invest_amount_res = validate_min_invest_amount(&inputs.min_invest_amount);
     let max_invest_amount_res = validate_max_invest_amount(&inputs.max_invest_amount);
 
-    let dao_name_err = dao_name_res.clone().err();
-    let dao_description_url_err = dao_description_url_res.clone().err();
-    let creator_address_err = creator_address_res.clone().err();
-    let share_supply_err = share_supply_res.clone().err();
-    let shares_for_investors_err = shares_for_investors_res.clone().err();
-    let share_price_err = share_price_res.clone().err();
-    let image_url_err = image_url_res.clone().err();
-    let social_media_url_err = social_media_url_res.clone().err();
-    let investors_share_err = investors_share_res.clone().err();
-    let min_raise_target_err = min_raise_target_res.clone().err();
-    let validate_min_raised_target_end_date_err = min_raised_target_end_date_res.clone().err();
-    let prospectus_url_err = prospectus_url_res.clone().err();
-    let prospectus_bytes_err = prospectus_bytes_res.clone().err();
-    let min_invest_amount_err = min_invest_amount_res.clone().err();
-    let max_invest_amount_err = max_invest_amount_res.clone().err();
+    match (
+        &dao_name_res,
+        &dao_description_url_res,
+        &creator_address_res,
+        &share_supply_res,
+        &shares_for_investors_res,
+        &share_price_res,
+        &image_url_res,
+        &social_media_url_res,
+        &investors_share_res,
+        &min_raise_target_res,
+        &min_raised_target_end_date_res,
+        &prospectus_url_res,
+        &prospectus_bytes_res,
+        &min_invest_amount_res,
+        &max_invest_amount_res,
+    ) {
+        (
+            Ok(dao_name),
+            Ok(dao_descr),
+            Ok(creator_address),
+            Ok(share_supply),
+            Ok(shares_for_investors),
+            Ok(share_price),
+            Ok(image_url),
+            Ok(social_media_url),
+            Ok(investors_share),
+            Ok(min_raise_target),
+            Ok(min_raise_target_end_date),
+            Ok(prospectus_url),
+            Ok(prospectus_bytes),
+            Ok(min_invest_amount),
+            Ok(max_invest_amount),
+        ) => {
+            // derived from other fields
+            let asset_name = generate_asset_name(&dao_name).map_err(|_| {
+                ValidateDaoInputsError::NonValidation(format!(
+                    "Error generating asset name, based on: {dao_name}"
+                ))
+            })?;
 
-    if [
-        dao_name_err,
-        dao_description_url_err,
-        creator_address_err,
-        share_supply_err,
-        shares_for_investors_err,
-        share_price_err,
-        image_url_err,
-        social_media_url_err,
-        investors_share_err,
-        min_raise_target_err,
-        validate_min_raised_target_end_date_err,
-        prospectus_url_err,
-        prospectus_bytes_err,
-        min_invest_amount_err,
-        max_invest_amount_err,
-    ]
-    .iter()
-    .any(|e| e.is_some())
-    {
-        let errors = CreateAssetsInputErrors {
-            name: dao_name_res.err(),
-            description: dao_description_url_res.err(),
-            creator: creator_address_res.err(),
-            share_supply: share_supply_res.err(),
-            shares_for_investors: shares_for_investors_res.err(),
-            share_price: share_price_res.err(),
-            image_url: image_url_res.err(),
-            social_media_url: social_media_url_res.err(),
-            investors_share: investors_share_res.err(),
-            min_raise_target: min_raise_target_res.err(),
-            min_raise_target_end_date: min_raised_target_end_date_res.err(),
-            prospectus_url: prospectus_url_res.err(),
-            prospectus_bytes: prospectus_bytes_res.err(),
-            min_invest_amount: min_invest_amount_res.err(),
-            max_invest_amount: max_invest_amount_res.err(),
-        };
-        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
+            // TODO should these check available shares instead of supply?
+
+            if shares_for_investors > share_supply {
+                let errors = CreateAssetsInputErrors {
+                    shares_for_investors: Some(
+                        ValidationError::SharesForInvestorsGreaterThanSupply,
+                    ),
+                    ..CreateAssetsInputErrors::default()
+                };
+                return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
+            }
+
+            if min_invest_amount > share_supply {
+                let errors = CreateAssetsInputErrors {
+                    min_invest_amount: Some(ValidationError::ShareCountLargerThanAvailable),
+                    ..CreateAssetsInputErrors::default()
+                };
+                return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
+            }
+
+            if max_invest_amount > share_supply {
+                let errors = CreateAssetsInputErrors {
+                    max_invest_amount: Some(ValidationError::ShareCountLargerThanAvailable),
+                    ..CreateAssetsInputErrors::default()
+                };
+                return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
+            }
+
+            if min_invest_amount > max_invest_amount {
+                let errors = CreateAssetsInputErrors {
+                    min_invest_amount: Some(ValidationError::MustBeLessThanMaxInvestAmount),
+                    max_invest_amount: Some(ValidationError::MustBeGreaterThanMinInvestAmount),
+                    ..CreateAssetsInputErrors::default()
+                };
+                return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
+            }
+
+            Ok(ValidatedDaoInputs {
+                name: dao_name.clone(),
+                description_url: dao_descr.clone(),
+                creator: creator_address.clone(),
+                token_name: asset_name,
+                share_supply: share_supply.clone(),
+                shares_for_investors: shares_for_investors.clone(),
+                share_price: share_price.clone(),
+                investors_share: investors_share.clone(),
+                social_media_url: social_media_url.clone(),
+                min_raise_target: min_raise_target.clone(),
+                min_raise_target_end_date: min_raise_target_end_date.clone(),
+                image_url: image_url.clone(),
+                prospectus_url: prospectus_url.clone(),
+                prospectus_bytes: prospectus_bytes.clone(),
+                min_invest_amount: min_invest_amount.clone(),
+                max_invest_amount: max_invest_amount.clone(),
+            })
+        }
+        _ => Err(ValidateDaoInputsError::AllFieldsValidation(
+            CreateAssetsInputErrors {
+                name: dao_name_res.err(),
+                description: dao_description_url_res.err(),
+                creator: creator_address_res.err(),
+                share_supply: share_supply_res.err(),
+                shares_for_investors: shares_for_investors_res.err(),
+                share_price: share_price_res.err(),
+                image_url: image_url_res.err(),
+                social_media_url: social_media_url_res.err(),
+                investors_share: investors_share_res.err(),
+                min_raise_target: min_raise_target_res.err(),
+                min_raise_target_end_date: min_raised_target_end_date_res.err(),
+                prospectus_url: prospectus_url_res.err(),
+                prospectus_bytes: prospectus_bytes_res.err(),
+                min_invest_amount: min_invest_amount_res.err(),
+                max_invest_amount: max_invest_amount_res.err(),
+            },
+        )),
     }
-
-    // Note error handling here: these errors *should* not happen, as there are caught above.
-    // this is to protect from programmatic errors - being careful, because we want to avoid crashes in WASM at any cost.
-    // ideally ensure it via the compiler - couldn't find how quickly other than nesting all the validations with match which is not a great alternative.
-    let dao_name = dao_name_res.map_err(|e| to_single_field_val_error("dao_name", e))?;
-    let dao_description_url =
-        dao_description_url_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
-    let creator_address =
-        creator_address_res.map_err(|e| to_single_field_val_error("creator_address", e))?;
-    let investors_share =
-        investors_share_res.map_err(|e| to_single_field_val_error("investors_share", e))?;
-    let share_supply =
-        share_supply_res.map_err(|e| to_single_field_val_error("share_supply", e))?;
-    let shares_for_investors = shares_for_investors_res
-        .map_err(|e| to_single_field_val_error("shares_for_investors", e))?;
-    let share_price = share_price_res.map_err(|e| to_single_field_val_error("share_price", e))?;
-    let social_media_url =
-        social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
-    let image_url = image_url_res.map_err(|e| to_single_field_val_error("image_url", e))?;
-    let min_raise_target =
-        min_raise_target_res.map_err(|e| to_single_field_val_error("min_raise_target", e))?;
-    let min_raise_target_end_date = min_raised_target_end_date_res
-        .map_err(|e| to_single_field_val_error("min_raise_target_end_date", e))?;
-    let prospectus_url =
-        prospectus_url_res.map_err(|e| to_single_field_val_error("prospectus_url", e))?;
-    let prospectus_bytes =
-        prospectus_bytes_res.map_err(|e| to_single_field_val_error("prospectus_bytes", e))?;
-    let min_invest_amount =
-        min_invest_amount_res.map_err(|e| to_single_field_val_error("min_invest_amount", e))?;
-    let max_invest_amount =
-        max_invest_amount_res.map_err(|e| to_single_field_val_error("max_invest_amount", e))?;
-
-    // derived from other fields
-    let asset_name = generate_asset_name(&dao_name).map_err(|_| {
-        ValidateDaoInputsError::NonValidation(format!(
-            "Error generating asset name, based on: {dao_name}"
-        ))
-    })?;
-
-    // TODO should these check available shares instead of supply?
-
-    if shares_for_investors > share_supply {
-        let errors = CreateAssetsInputErrors {
-            shares_for_investors: Some(ValidationError::SharesForInvestorsGreaterThanSupply),
-            ..CreateAssetsInputErrors::default()
-        };
-        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
-    }
-
-    if min_invest_amount > share_supply {
-        let errors = CreateAssetsInputErrors {
-            min_invest_amount: Some(ValidationError::ShareCountLargerThanAvailable),
-            ..CreateAssetsInputErrors::default()
-        };
-        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
-    }
-
-    if max_invest_amount > share_supply {
-        let errors = CreateAssetsInputErrors {
-            max_invest_amount: Some(ValidationError::ShareCountLargerThanAvailable),
-            ..CreateAssetsInputErrors::default()
-        };
-        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
-    }
-
-    if min_invest_amount > max_invest_amount {
-        let errors = CreateAssetsInputErrors {
-            min_invest_amount: Some(ValidationError::MustBeLessThanMaxInvestAmount),
-            max_invest_amount: Some(ValidationError::MustBeGreaterThanMinInvestAmount),
-            ..CreateAssetsInputErrors::default()
-        };
-        return Err(ValidateDaoInputsError::AllFieldsValidation(errors));
-    }
-
-    Ok(ValidatedDaoInputs {
-        name: dao_name,
-        description_url: dao_description_url,
-        creator: creator_address,
-        token_name: asset_name,
-        share_supply,
-        shares_for_investors,
-        share_price,
-        investors_share,
-        social_media_url,
-        min_raise_target,
-        min_raise_target_end_date,
-        image_url,
-        prospectus_url,
-        prospectus_bytes,
-        min_invest_amount,
-        max_invest_amount,
-    })
 }
 
 /// The assets creation signed transactions and the specs to create the dao
@@ -346,10 +316,6 @@ pub struct CreateDaoResJs {
 #[derive(Debug, Clone, Serialize)]
 pub enum ValidateDaoInputsError {
     AllFieldsValidation(CreateAssetsInputErrors),
-    SingleFieldValidation {
-        field: String,
-        error: ValidationError,
-    },
     NonValidation(String),
 }
 
@@ -564,13 +530,6 @@ pub fn validate_min_raised_target_end_date(input: &str) -> Result<Timestamp, Val
         return Err(ValidationError::MustBeAfterNow);
     }
     Ok(timestamp)
-}
-
-pub fn to_single_field_val_error(field_name: &str, e: ValidationError) -> ValidateDaoInputsError {
-    ValidateDaoInputsError::SingleFieldValidation {
-        field: field_name.to_owned(),
-        error: e,
-    }
 }
 
 /// The assets creation signed transactions and the specs to create the dao

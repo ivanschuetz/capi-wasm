@@ -145,81 +145,65 @@ fn validate_inputs(
     let min_invest_shares_res = validate_min_invest_amount(&pars.min_invest_amount);
     let max_invest_shares_res = validate_max_invest_amount(&pars.max_invest_amount);
 
-    let dao_name_err = dao_name_res.clone().err();
-    let dao_description_err = dao_description_res.clone().err();
-    let image_url_err = image_url_res.clone().err();
-    let social_media_url_err = social_media_url_res.clone().err();
-    let prospectus_url_err = prospectus_url_res.clone().err();
-    let prospectus_bytes_err = prospectus_bytes_res.clone().err();
-    let prospectus_hash_err = prospectus_hash_res.clone().err();
-    let min_invest_amount_err = min_invest_shares_res.clone().err();
-    let max_invest_amount_err = max_invest_shares_res.clone().err();
+    match (
+        &dao_name_res,
+        &dao_description_res,
+        &image_url_res,
+        &social_media_url_res,
+        &prospectus_url_res,
+        &prospectus_bytes_res,
+        &prospectus_hash_res,
+        &min_invest_shares_res,
+        &max_invest_shares_res,
+    ) {
+        (
+            Ok(dao_name),
+            Ok(dao_descr),
+            Ok(image_url),
+            Ok(social_media_url),
+            Ok(prospectus_url),
+            Ok(prospectus_bytes),
+            Ok(prospectus_hash),
+            Ok(min_invest_shares),
+            Ok(max_invest_shares),
+        ) => {
+            if prospectus_bytes.is_some() && prospectus_hash.is_some() {
+                // there are OR, so can't be set at the same time
+                return Err(ValidateDataUpdateInputsError::NonValidation(
+                    "prospectus_bytes_and_hash_set".to_owned(),
+                ));
+            }
 
-    if [
-        dao_name_err,
-        dao_description_err,
-        social_media_url_err,
-        image_url_err,
-        prospectus_url_err,
-        prospectus_bytes_err,
-        prospectus_hash_err,
-        min_invest_amount_err,
-        max_invest_amount_err,
-    ]
-    .iter()
-    .any(|e| e.is_some())
-    {
-        let errors = ValidateUpateDataInputErrors {
-            name: dao_name_res.err(),
-            description: dao_description_res.err(),
-            image_url: image_url_res.err(),
-            social_media_url: social_media_url_res.err(),
-            min_invest_shares: min_invest_shares_res.err(),
-            max_invest_shares: max_invest_shares_res.err(),
-            prospectus_url: prospectus_url_res.err(),
-            prospectus_bytes: prospectus_bytes_res.err(),
-            prospectus_hash: prospectus_hash_res.err(),
-        };
-        return Err(ValidateDataUpdateInputsError::AllFieldsValidation(errors));
+            let prospectus = to_maybe_prospectus(
+                prospectus_url.clone(),
+                prospectus_hash.clone(),
+                prospectus_bytes.clone(),
+            )?;
+
+            Ok(UpdatableDaoData {
+                project_name: dao_name.clone(),
+                project_desc_url: dao_descr.clone(),
+                image_url: image_url.clone(),
+                social_media_url: social_media_url.clone(),
+                prospectus,
+                min_invest_shares: min_invest_shares.clone(),
+                max_invest_shares: max_invest_shares.clone(),
+            })
+        }
+        _ => Err(ValidateDataUpdateInputsError::AllFieldsValidation(
+            ValidateUpateDataInputErrors {
+                name: dao_name_res.err(),
+                description: dao_description_res.err(),
+                image_url: image_url_res.err(),
+                social_media_url: social_media_url_res.err(),
+                prospectus_url: prospectus_url_res.err(),
+                prospectus_bytes: prospectus_bytes_res.err(),
+                prospectus_hash: prospectus_hash_res.err(),
+                min_invest_shares: min_invest_shares_res.err(),
+                max_invest_shares: max_invest_shares_res.err(),
+            },
+        )),
     }
-
-    let dao_name = dao_name_res.map_err(|e| to_single_field_val_error("dao_name", e))?;
-    let dao_description =
-        dao_description_res.map_err(|e| to_single_field_val_error("dao_description", e))?;
-    let image_url = image_url_res.map_err(|e| to_single_field_val_error("image_url", e))?;
-
-    let social_media_url =
-        social_media_url_res.map_err(|e| to_single_field_val_error("social_media_url", e))?;
-
-    let prospectus_url =
-        prospectus_url_res.map_err(|e| to_single_field_val_error("prospectus_url", e))?;
-    let prospectus_bytes =
-        prospectus_bytes_res.map_err(|e| to_single_field_val_error("prospectus_bytes", e))?;
-    let prospectus_hash =
-        prospectus_hash_res.map_err(|e| to_single_field_val_error("prospectus_hash", e))?;
-    let min_invest_shares =
-        min_invest_shares_res.map_err(|e| to_single_field_val_error("min_invest_amount", e))?;
-    let max_invest_shares =
-        max_invest_shares_res.map_err(|e| to_single_field_val_error("max_invest_amount", e))?;
-
-    if prospectus_bytes.is_some() && prospectus_hash.is_some() {
-        // there are OR, so can't be set at the same time
-        return Err(ValidateDataUpdateInputsError::NonValidation(
-            "prospectus_bytes_and_hash_set".to_owned(),
-        ));
-    }
-
-    let prospectus = to_maybe_prospectus(prospectus_url, prospectus_hash, prospectus_bytes)?;
-
-    Ok(UpdatableDaoData {
-        project_name: dao_name,
-        project_desc_url: dao_description,
-        image_url: image_url.clone(),
-        social_media_url,
-        prospectus,
-        min_invest_shares,
-        max_invest_shares,
-    })
 }
 
 /// If hash is set, it means that we're getting an unchanged prospectus (the hash of the already saved prospectus)
@@ -270,21 +254,7 @@ pub struct ValidateUpateDataInputErrors {
 #[derive(Debug, Clone, Serialize)]
 pub enum ValidateDataUpdateInputsError {
     AllFieldsValidation(ValidateUpateDataInputErrors),
-    SingleFieldValidation {
-        field: String,
-        error: ValidationError,
-    },
     NonValidation(String),
-}
-
-pub fn to_single_field_val_error(
-    field_name: &str,
-    e: ValidationError,
-) -> ValidateDataUpdateInputsError {
-    ValidateDataUpdateInputsError::SingleFieldValidation {
-        field: field_name.to_owned(),
-        error: e,
-    }
 }
 
 impl From<ValidateDataUpdateInputsError> for FrError {
@@ -300,11 +270,6 @@ impl From<ValidateDataUpdateInputsError> for FrError {
                 insert_if_some(&mut hm, "prospectus_url", errors.prospectus_url);
                 insert_if_some(&mut hm, "min_invest_shares", errors.min_invest_shares);
                 insert_if_some(&mut hm, "max_invest_shares", errors.max_invest_shares);
-                FrError::Validations(hm)
-            }
-            ValidateDataUpdateInputsError::SingleFieldValidation { field, error } => {
-                let mut hm = HashMap::new();
-                hm.insert(field, error);
                 FrError::Validations(hm)
             }
             ValidateDataUpdateInputsError::NonValidation(msg) => FrError::Msg(msg),
