@@ -88,6 +88,7 @@ pub struct CreateDaoRes {
     pub dao: DaoJs,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum ValidationDaoInputsOrAnyhowError {
     Validation(ValidateDaoInputsError),
@@ -127,10 +128,9 @@ impl CreateDaoFormInputsJs {
 }
 
 pub fn validated_inputs_to_dao_specs(inputs: &ValidatedDaoInputs) -> Result<SetupDaoSpecs> {
-    let prospectus = match inputs.prospectus_data()? {
-        Some((url, bytes)) => Some(Prospectus::new(&bytes, url)),
-        None => None,
-    };
+    let prospectus = inputs
+        .prospectus_data()?
+        .map(|(url, bytes)| Prospectus::new(&bytes, url));
 
     SetupDaoSpecs::new(
         inputs.name.clone(),
@@ -209,7 +209,7 @@ pub fn validate_dao_inputs(
             Ok(max_invest_amount),
         ) => {
             // derived from other fields
-            let asset_name = generate_asset_name(&dao_name).map_err(|_| {
+            let asset_name = generate_asset_name(dao_name).map_err(|_| {
                 ValidateDaoInputsError::NonValidation(format!(
                     "Error generating asset name, based on: {dao_name}"
                 ))
@@ -255,20 +255,20 @@ pub fn validate_dao_inputs(
             Ok(ValidatedDaoInputs {
                 name: dao_name.clone(),
                 description_url: dao_descr.clone(),
-                creator: creator_address.clone(),
+                creator: *creator_address,
                 token_name: asset_name,
-                share_supply: share_supply.clone(),
-                shares_for_investors: shares_for_investors.clone(),
-                share_price: share_price.clone(),
-                investors_share: investors_share.clone(),
+                share_supply: *share_supply,
+                shares_for_investors: *shares_for_investors,
+                share_price: *share_price,
+                investors_share: *investors_share,
                 social_media_url: social_media_url.clone(),
-                min_raise_target: min_raise_target.clone(),
-                min_raise_target_end_date: min_raise_target_end_date.clone(),
+                min_raise_target: *min_raise_target,
+                min_raise_target_end_date: *min_raise_target_end_date,
                 image_url: image_url.clone(),
                 prospectus_url: prospectus_url.clone(),
                 prospectus_bytes: prospectus_bytes.clone(),
-                min_invest_amount: min_invest_amount.clone(),
-                max_invest_amount: max_invest_amount.clone(),
+                min_invest_amount: *min_invest_amount,
+                max_invest_amount: *max_invest_amount,
             })
         }
         _ => Err(ValidateDaoInputsError::AllFieldsValidation(
@@ -390,14 +390,14 @@ pub fn validate_text_min_max_length(
 
 pub fn validate_image_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
     match url {
-        Some(url) => Ok(Some(validate_text_min_max_length(&url, 0, 200)?)),
+        Some(url) => Ok(Some(validate_text_min_max_length(url, 0, 200)?)),
         None => Ok(None),
     }
 }
 
 pub fn validate_prospectus_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
     match url {
-        Some(url) => Ok(Some(validate_text_min_max_length(&url, 0, 200)?)),
+        Some(url) => Ok(Some(validate_text_min_max_length(url, 0, 200)?)),
         None => Ok(None),
     }
 }

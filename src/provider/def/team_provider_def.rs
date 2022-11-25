@@ -63,7 +63,7 @@ impl TeamProvider for TeamProviderDef {
         let tx_id = submit_dev_settings(
             &algod,
             &DevSettingsSigned {
-                app_call_tx: signed_js_tx_to_signed_tx1(&tx)?,
+                app_call_tx: signed_js_tx_to_signed_tx1(tx)?,
             },
         )
         .await?;

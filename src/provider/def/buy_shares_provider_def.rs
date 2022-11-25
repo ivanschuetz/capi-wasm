@@ -185,7 +185,7 @@ async fn calc_total_shares_if_buys(
     dao_id: DaoId,
     amount_to_buy: ShareAmount,
 ) -> Result<IfBuySharesCalculation> {
-    let investor_state_res = dao_investor_state(&algod, investor, dao_id.0).await;
+    let investor_state_res = dao_investor_state(algod, investor, dao_id.0).await;
     let owned_shares = match investor_state_res {
         Ok(state) => ShareAmount::new(state.shares.val()),
         Err(e) => {

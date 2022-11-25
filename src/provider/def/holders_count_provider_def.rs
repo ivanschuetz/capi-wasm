@@ -142,12 +142,9 @@ fn count_more_than_duration_ago(
 ) -> Option<LastHoldersCount> {
     let mut counts = counts.counts.clone();
     counts.reverse();
-    for count in counts {
-        if now - count.date >= duration {
-            return Some(count);
-        }
-    }
-    None
+    counts
+        .into_iter()
+        .find(|count| now - count.date >= duration)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -5,7 +5,10 @@ use base::{
     state::account_state::funds_holdings,
 };
 use mbase::{
-    models::{funds::{FundsAmount, FundsAssetId}, capi_deps::CapiAssetDaoDeps},
+    models::{
+        capi_deps::CapiAssetDaoDeps,
+        funds::{FundsAmount, FundsAssetId},
+    },
     state::dao_app_state::dao_global_state,
 };
 
@@ -19,7 +22,7 @@ pub async fn owned_funds(
     capi_deps: &CapiAssetDaoDeps,
 ) -> Result<FundsAmount> {
     let holdings = funds_holdings(algod, &dao.app_address(), funds_asset_id).await?;
-    let available_funds = dao_global_state(&algod, dao.app_id).await?.available;
+    let available_funds = dao_global_state(algod, dao.app_id).await?.available;
 
     let not_available_funds = FundsAmount::new(
         holdings

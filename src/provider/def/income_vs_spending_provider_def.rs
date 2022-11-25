@@ -157,7 +157,7 @@ fn to_income_vs_spending_res(
         start_time,
         end_time,
         interval,
-        &funds_asset_specs,
+        funds_asset_specs,
     )?;
 
     Ok(IncomeVsSpendingResJs {

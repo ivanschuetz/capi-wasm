@@ -63,25 +63,25 @@ impl FundsRaisingProvider for FundsRaisingProviderDef {
 }
 
 fn goal_reached_top() -> Result<Decimal, FrError> {
-    Ok(Decimal::from_f64_retain(1.1).ok_or_else(|| {
+    Decimal::from_f64_retain(1.1).ok_or_else(|| {
         FrError::Msg("Unexpected error converting hardcoded value to decimal".to_owned())
-    })?)
+    })
 }
 
 fn percentage_delta(percentage: Decimal) -> Result<Decimal, FrError> {
-    Ok(percentage
+    percentage
         .checked_sub(1.into())
-        .ok_or_else(|| FrError::Msg(format!("Unexpected error sub: {percentage:?} - 1")))?)
+        .ok_or_else(|| FrError::Msg(format!("Unexpected error sub: {percentage:?} - 1")))
 }
 
 fn raised_diff_percentage(dao_state: &CentralAppGlobalState) -> Result<Decimal, FrError> {
     // Note that min funds target is illegal state: the project should have always a funds target
-    Ok((dao_state.raised.as_decimal())
+    (dao_state.raised.as_decimal())
         .checked_div(dao_state.min_funds_target.as_decimal())
         .ok_or_else(|| {
             FrError::Msg(format!(
                 "Error div: {:?} (raised) / {:?} (min funds target)",
                 dao_state.raised, dao_state.min_funds_target
             ))
-        })?)
+        })
 }

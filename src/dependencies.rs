@@ -82,7 +82,7 @@ pub fn data_type() -> Result<DataType> {
 
     log::debug!("Data type: {:?}", str);
 
-    match str.as_ref() {
+    match str {
         "real" => Ok(DataType::Real),
         "mock" => Ok(DataType::Mock),
         _ => Err(anyhow!("Invalid data type: {str}")),
