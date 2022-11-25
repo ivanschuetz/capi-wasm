@@ -1,11 +1,13 @@
 use super::create_dao_provider::{
     CreateDaoFormInputsJs, CreateDaoPassthroughParJs, ValidateDaoInputsError,
-    ValidationDaoInputsOrAnyhowError,
 };
-use crate::js::{
-    common::to_js_value,
-    inputs_validation_js::{to_validation_error_js, ValidationErrorJs},
-    to_sign_js::ToSignJs,
+use crate::{
+    error::FrError,
+    js::{
+        common::to_js_value,
+        inputs_validation_js::{to_validation_error_js, ValidationErrorJs},
+        to_sign_js::ToSignJs,
+    },
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -15,10 +17,7 @@ use wasm_bindgen::JsValue;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait CreateAssetsProvider {
-    async fn txs(
-        &self,
-        pars: CreateDaoAssetsParJs,
-    ) -> Result<CreateDaoAssetsResJs, ValidationDaoInputsOrAnyhowError>;
+    async fn txs(&self, pars: CreateDaoAssetsParJs) -> Result<CreateDaoAssetsResJs, FrError>;
 }
 
 /// Errors to be shown next to the respective input fields

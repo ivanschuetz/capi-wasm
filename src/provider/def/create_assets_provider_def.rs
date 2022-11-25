@@ -1,9 +1,10 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::error::FrError;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_assets_provider::{
     CreateAssetsProvider, CreateDaoAssetsParJs, CreateDaoAssetsResJs,
 };
-use crate::provider::create_dao_provider::{validate_dao_inputs, ValidationDaoInputsOrAnyhowError};
+use crate::provider::create_dao_provider::validate_dao_inputs;
 use crate::provider::create_dao_provider::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs};
 use crate::service::constants::{MAX_RAISABLE_AMOUNT, PRECISION};
 use algonaut::core::Address;
@@ -22,10 +23,7 @@ pub struct CreateAssetsProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl CreateAssetsProvider for CreateAssetsProviderDef {
-    async fn txs(
-        &self,
-        pars: CreateDaoAssetsParJs,
-    ) -> Result<CreateDaoAssetsResJs, ValidationDaoInputsOrAnyhowError> {
+    async fn txs(&self, pars: CreateDaoAssetsParJs) -> Result<CreateDaoAssetsResJs, FrError> {
         let funds_asset_specs = funds_asset_specs()?;
 
         // Note: partly redundant validation here (to_dao_specs validates everything again)

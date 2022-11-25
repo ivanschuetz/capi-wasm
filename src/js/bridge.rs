@@ -11,12 +11,12 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen(js_name=createDaoAssetsTxs)]
 pub async fn create_dao_assets_txs(pars: JsValue) -> Result<JsValue, JsValue> {
     log_wrap("create_dao_assets", pars, async move |pars| {
-        providers()?
-            .create_assets
-            .txs(parse_bridge_pars(pars)?)
-            .await
-            .map_err(|e| e.into())
-            .and_then(|r| to_js_res(&r))
+        to_js(
+            providers()?
+                .create_assets
+                .txs(parse_bridge_pars(pars)?)
+                .await,
+        )
     })
     .await
 }

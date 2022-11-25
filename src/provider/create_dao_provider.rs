@@ -1,7 +1,6 @@
 use crate::dependencies::FundsAssetSpecs;
 use crate::error::FrError;
 use crate::inputs_validation::ValidationError;
-use crate::js::common::to_js_value;
 use crate::js::common::SignedTxFromJs;
 use crate::js::to_sign_js::ToSignJs;
 use crate::model::dao_js::DaoJs;
@@ -21,7 +20,6 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fmt::Debug;
-use wasm_bindgen::JsValue;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -86,34 +84,6 @@ pub struct CreateDaoFormInputsJs {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDaoRes {
     pub dao: DaoJs,
-}
-
-#[allow(clippy::large_enum_variant)]
-#[derive(Debug)]
-pub enum ValidationDaoInputsOrAnyhowError {
-    Validation(ValidateDaoInputsError),
-    Anyhow(anyhow::Error),
-}
-
-impl From<anyhow::Error> for ValidationDaoInputsOrAnyhowError {
-    fn from(e: anyhow::Error) -> Self {
-        ValidationDaoInputsOrAnyhowError::Anyhow(e)
-    }
-}
-
-impl From<ValidateDaoInputsError> for ValidationDaoInputsOrAnyhowError {
-    fn from(e: ValidateDaoInputsError) -> Self {
-        ValidationDaoInputsOrAnyhowError::Validation(e)
-    }
-}
-
-impl From<ValidationDaoInputsOrAnyhowError> for JsValue {
-    fn from(e: ValidationDaoInputsOrAnyhowError) -> Self {
-        match e {
-            ValidationDaoInputsOrAnyhowError::Validation(e) => e.into(),
-            ValidationDaoInputsOrAnyhowError::Anyhow(e) => to_js_value(e),
-        }
-    }
 }
 
 impl CreateDaoFormInputsJs {
