@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 use crate::dependencies::capi_deps;
+use crate::error::FrError;
 use crate::provider::balance_provider::{
     BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
 };
@@ -21,7 +22,7 @@ pub struct BalanceProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl BalanceProvider for BalanceProviderDef {
-    async fn get(&self, pars: BalanceParJs) -> Result<BalanceResJs> {
+    async fn get(&self, pars: BalanceParJs) -> Result<BalanceResJs, FrError> {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
 
@@ -43,7 +44,10 @@ impl BalanceProvider for BalanceProviderDef {
     }
 
     // TODO move somewhere else thsi is for dao funds not user balance
-    async fn get_balance_change(&self, pars: BalanceChangeParJs) -> Result<BalanceChangeResJs> {
+    async fn get_balance_change(
+        &self,
+        pars: BalanceChangeParJs,
+    ) -> Result<BalanceChangeResJs, FrError> {
         let algod = algod();
         let indexer = indexer();
         let capi_deps = capi_deps()?;

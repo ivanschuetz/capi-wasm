@@ -1,5 +1,8 @@
-use crate::provider::roadmap_provider::{
-    GetRoadmapParJs, GetRoadmapResJs, RoadmapItemJs, RoadmapProvider,
+use crate::{
+    error::FrError,
+    provider::roadmap_provider::{
+        GetRoadmapParJs, GetRoadmapResJs, RoadmapItemJs, RoadmapProvider,
+    },
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -11,7 +14,7 @@ pub struct RoadmapProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl RoadmapProvider for RoadmapProviderMock {
-    async fn get(&self, _: GetRoadmapParJs) -> Result<GetRoadmapResJs> {
+    async fn get(&self, _: GetRoadmapParJs) -> Result<GetRoadmapResJs, FrError> {
         req_delay().await;
 
         Ok(GetRoadmapResJs {

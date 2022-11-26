@@ -1,4 +1,5 @@
 use crate::{
+    error::FrError,
     js::to_sign_js::ToSignJs,
     provider::optin_to_app_provider::{OptInToAppParJs, OptInToAppResJs, OptinToAppProvider},
 };
@@ -7,7 +8,7 @@ use algonaut::{
     core::Address,
     transaction::{tx_group::TxGroup, Transaction},
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::flows::shared::app::optin_to_dao_app;
 use mbase::{dependencies::algod, models::dao_app_id::DaoAppId};
@@ -17,7 +18,7 @@ pub struct OptinToAppProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl OptinToAppProvider for OptinToAppProviderDef {
-    async fn txs(&self, pars: OptInToAppParJs) -> Result<OptInToAppResJs> {
+    async fn txs(&self, pars: OptInToAppParJs) -> Result<OptInToAppResJs, FrError> {
         let algod = algod();
 
         if is_opted_in(
@@ -43,10 +44,10 @@ impl OptinToAppProvider for OptinToAppProviderDef {
 
             // sanity check
             if optins.len() != 1 {
-                return Err(anyhow!(
+                return Err(FrError::Internal(format!(
                     "Invalid generated app optins count: {}",
                     optins.len()
-                ));
+                )));
             }
 
             Ok(OptInToAppResJs {

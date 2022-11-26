@@ -1,4 +1,7 @@
-use crate::provider::my_daos_provider::{MyDaoJs, MyDaosParJs, MyDaosProvider, MyDaosResJs};
+use crate::{
+    error::FrError,
+    provider::my_daos_provider::{MyDaoJs, MyDaosParJs, MyDaosProvider, MyDaosResJs},
+};
 use anyhow::Result;
 use async_trait::async_trait;
 
@@ -9,7 +12,7 @@ pub struct MyDaosProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl MyDaosProvider for MyDaosProviderMock {
-    async fn get(&self, _: MyDaosParJs) -> Result<MyDaosResJs> {
+    async fn get(&self, _: MyDaosParJs) -> Result<MyDaosResJs, FrError> {
         req_delay().await;
 
         Ok(MyDaosResJs {

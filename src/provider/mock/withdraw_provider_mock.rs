@@ -1,5 +1,6 @@
 use super::mock_tx_id;
 use crate::dependencies::funds_asset_specs;
+use crate::error::FrError;
 use crate::provider::def::withdraw_provider_def::withdrawal_view_data;
 use crate::provider::mock::{mock_to_sign, req_delay};
 use crate::provider::withdraw_provider::{
@@ -16,7 +17,7 @@ pub struct WithdrawProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl WithdrawProvider for WithdrawProviderMock {
-    async fn txs(&self, pars: WithdrawParJs) -> Result<WithdrawResJs> {
+    async fn txs(&self, pars: WithdrawParJs) -> Result<WithdrawResJs, FrError> {
         log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
         let algod = algod();
@@ -40,7 +41,7 @@ impl WithdrawProvider for WithdrawProviderMock {
         })
     }
 
-    async fn submit(&self, pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs> {
+    async fn submit(&self, pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs, FrError> {
         let funds_asset_specs = funds_asset_specs()?;
 
         // validate - for UI

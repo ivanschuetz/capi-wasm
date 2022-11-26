@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::provider::my_shares_provider::{MySharesParJs, MySharesProvider, MySharesResJs};
 use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
@@ -14,7 +15,7 @@ pub struct MySharesProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl MySharesProvider for MySharesProviderDef {
-    async fn get(&self, pars: MySharesParJs) -> Result<MySharesResJs> {
+    async fn get(&self, pars: MySharesParJs) -> Result<MySharesResJs, FrError> {
         let algod = algod();
 
         let dao_id = pars.dao_id.parse()?;
@@ -28,12 +29,12 @@ impl MySharesProvider for MySharesProviderDef {
         let locked_shares = match dao_investor_state(&algod, my_address, dao.app_id).await {
             Ok(state) => state.shares,
             Err(ApplicationLocalStateError::NotOptedIn) => ShareAmount::new(0), // not invested -> 0 shares
-            Err(e) => return Err(Error::msg(e)),
+            Err(e) => return Err(FrError::Internal(e.to_string())),
         };
 
         let free_shares = match asset_holdings(&algod, my_address, dao.shares_asset_id).await {
             Ok(shares) => ShareAmount(shares),
-            Err(e) => return Err(Error::msg(e)),
+            Err(e) => return Err(FrError::Internal(e.to_string())),
         };
 
         let total_shares = locked_shares.add(&free_shares)

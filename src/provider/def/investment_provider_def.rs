@@ -1,4 +1,5 @@
 use crate::dependencies::FundsAssetSpecs;
+use crate::error::FrError;
 use crate::provider::investment_provider::{
     AvailableSharesParJs, AvailableSharesResJs, InvestmentProvider, LoadInvestorParJs,
     LoadInvestorResJs,
@@ -33,7 +34,10 @@ pub struct InvestmentProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl InvestmentProvider for InvestmentProviderDef {
-    async fn available_shares(&self, pars: AvailableSharesParJs) -> Result<AvailableSharesResJs> {
+    async fn available_shares(
+        &self,
+        pars: AvailableSharesParJs,
+    ) -> Result<AvailableSharesResJs, FrError> {
         let algod = algod();
 
         let dao_id: DaoId = pars.dao_id.parse()?;
@@ -50,7 +54,10 @@ impl InvestmentProvider for InvestmentProviderDef {
     }
 
     // TODO parallelize requests if possible
-    async fn get_investor_data(&self, pars: LoadInvestorParJs) -> Result<LoadInvestorResJs> {
+    async fn get_investor_data(
+        &self,
+        pars: LoadInvestorParJs,
+    ) -> Result<LoadInvestorResJs, FrError> {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;

@@ -4,10 +4,12 @@ use chrono::{DateTime, Duration, Utc};
 use mbase::date_util::DateTimeExt;
 use serde::{Deserialize, Serialize};
 
+use crate::error::FrError;
+
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait IncomeVsSpendingProvider {
-    async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs>;
+    async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

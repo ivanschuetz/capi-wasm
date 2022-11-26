@@ -1,4 +1,6 @@
-use std::{collections::HashMap, convert::TryFrom};
+use std::{
+    collections::HashMap, convert::TryFrom, error::Error, num::ParseIntError, string::FromUtf8Error,
+};
 
 use crate::{
     inputs_validation::ValidationError,
@@ -21,6 +23,7 @@ pub enum FrError {
     NotEnoughFundsAsset { to_buy: AssetAmount },
     Validation(ValidationError),
     Validations(HashMap<String, ValidationError>),
+    Internal(String), // Things we can't explain to users. Text is for developers (can be forwarded with error reporting).
     Msg(String), // this is temporary / last resort: we expect to map all the errors to localized error messages in js
 }
 
@@ -50,8 +53,13 @@ impl TryFrom<FrError> for JsValue {
                 id: "not_enough_funds_asset".to_owned(),
                 details: Some(to_buy.0.to_string()),
             }),
+            // TODO is this not being handled in JS?
             FrError::Msg(msg) => to_js_res(FrErrorWithId {
                 id: "msg".to_owned(),
+                details: Some(msg),
+            }),
+            FrError::Internal(msg) => to_js_res(FrErrorWithId {
+                id: "internal".to_owned(),
                 details: Some(msg),
             }),
             FrError::Validation(validation) => {
@@ -85,6 +93,46 @@ impl From<anyhow::Error> for FrError {
 impl From<ServiceError> for FrError {
     fn from(e: ServiceError) -> Self {
         FrError::Msg(e.to_string())
+    }
+}
+
+impl From<ParseIntError> for FrError {
+    fn from(e: ParseIntError) -> Self {
+        FrError::Msg(e.to_string())
+    }
+}
+
+impl From<rust_decimal::Error> for FrError {
+    fn from(e: rust_decimal::Error) -> Self {
+        FrError::Msg(e.to_string())
+    }
+}
+
+impl From<FromUtf8Error> for FrError {
+    fn from(e: FromUtf8Error) -> Self {
+        FrError::Msg(e.to_string())
+    }
+}
+
+impl From<serde_json::Error> for FrError {
+    fn from(e: serde_json::Error) -> Self {
+        FrError::Msg(e.to_string())
+    }
+}
+
+impl From<Box<dyn Error + 'static>> for FrError {
+    fn from(e: Box<dyn Error + 'static>) -> Self {
+        FrError::Msg(e.to_string())
+    }
+}
+
+trait Hello {
+    fn get_value(&self) -> i32;
+}
+struct MyStruct(i32);
+impl Hello for MyStruct {
+    fn get_value(&self) -> i32 {
+        self.0
     }
 }
 

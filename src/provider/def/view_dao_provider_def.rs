@@ -1,4 +1,5 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::error::FrError;
 use crate::model::dao_js::ToDaoJs;
 use crate::provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs};
 use crate::service::available_funds::owned_funds;
@@ -16,7 +17,7 @@ pub struct ViewDaoProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl ViewDaoProvider for ViewDaoProviderDef {
-    async fn get(&self, pars: ViewDaoParJs) -> Result<ViewDaoResJs> {
+    async fn get(&self, pars: ViewDaoParJs) -> Result<ViewDaoResJs, FrError> {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;

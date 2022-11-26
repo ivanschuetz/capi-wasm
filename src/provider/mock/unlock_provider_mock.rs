@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::provider::mock::req_delay;
 use crate::provider::unlock_provider::{
     SubmitUnlockParJs, SubmitUnlockResJs, UnlockParJs, UnlockProvider, UnlockResJs,
@@ -13,7 +14,7 @@ pub struct UnlockProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UnlockProvider for UnlockProviderMock {
-    async fn txs(&self, pars: UnlockParJs) -> Result<UnlockResJs> {
+    async fn txs(&self, pars: UnlockParJs) -> Result<UnlockResJs, FrError> {
         let algod = algod();
 
         let investor_address = pars.investor_address.parse().map_err(Error::msg)?;
@@ -25,7 +26,7 @@ impl UnlockProvider for UnlockProviderMock {
         })
     }
 
-    async fn submit(&self, _: SubmitUnlockParJs) -> Result<SubmitUnlockResJs> {
+    async fn submit(&self, _: SubmitUnlockParJs) -> Result<SubmitUnlockResJs, FrError> {
         req_delay().await;
 
         Ok(SubmitUnlockResJs {})

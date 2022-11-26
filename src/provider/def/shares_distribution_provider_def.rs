@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::js::explorer_links::explorer_address_link_env;
 use crate::provider::shares_distribution_provider::{
     ShareHoldingPercentageJs, SharedDistributionParJs, SharedDistributionResJs,
@@ -16,7 +17,7 @@ pub struct SharesDistributionProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl SharesDistributionProvider for SharesDistributionProviderDef {
-    async fn get(&self, pars: SharedDistributionParJs) -> Result<SharedDistributionResJs> {
+    async fn get(&self, pars: SharedDistributionParJs) -> Result<SharedDistributionResJs, FrError> {
         let algod = algod();
         let indexer = indexer();
 

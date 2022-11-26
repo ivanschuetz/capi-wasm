@@ -2,10 +2,12 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
+use crate::error::FrError;
+
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait WithdrawalHistoryProvider {
-    async fn get(&self, pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs>;
+    async fn get(&self, pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

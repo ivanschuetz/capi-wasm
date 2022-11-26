@@ -17,7 +17,7 @@ pub struct UpdateDataProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UpdateDataProvider for UpdateDataProviderMock {
-    async fn get(&self, _: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
+    async fn get(&self, _: UpdatableDataParJs) -> Result<UpdatableDataResJs, FrError> {
         let fetcher = fetcher();
 
         req_delay().await;
@@ -58,7 +58,7 @@ impl UpdateDataProvider for UpdateDataProviderMock {
         })
     }
 
-    async fn submit(&self, _: SubmitUpdateDataParJs) -> Result<()> {
+    async fn submit(&self, _: SubmitUpdateDataParJs) -> Result<(), FrError> {
         req_delay().await;
 
         Ok(())

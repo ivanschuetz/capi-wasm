@@ -1,10 +1,11 @@
+use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::team_provider::{
     AddTeamMemberParsJs, AddTeamMemberResJs, EditTeamMemberParsJs, EditTeamMemberResJs,
     GetTeamParsJs, GetTeamResJs, SetTeamParsJs, SetTeamResJs, SubmitSetTeamParJs, TeamProvider,
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::api::fetcher::Fetcher;
 use base::dependencies::fetcher;
@@ -18,7 +19,7 @@ pub struct TeamProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl TeamProvider for TeamProviderDef {
-    async fn get(&self, pars: GetTeamParsJs) -> Result<GetTeamResJs> {
+    async fn get(&self, pars: GetTeamParsJs) -> Result<GetTeamResJs, FrError> {
         let fetcher = fetcher();
         let bytes = fetcher.get(&pars.url).await?;
 
@@ -27,15 +28,21 @@ impl TeamProvider for TeamProviderDef {
         Ok(GetTeamResJs { team })
     }
 
-    async fn add_team_member(&self, pars: AddTeamMemberParsJs) -> Result<AddTeamMemberResJs> {
+    async fn add_team_member(
+        &self,
+        pars: AddTeamMemberParsJs,
+    ) -> Result<AddTeamMemberResJs, FrError> {
         add_team_member_shared(pars).await
     }
 
-    async fn edit_team_member(&self, pars: EditTeamMemberParsJs) -> Result<EditTeamMemberResJs> {
+    async fn edit_team_member(
+        &self,
+        pars: EditTeamMemberParsJs,
+    ) -> Result<EditTeamMemberResJs, FrError> {
         edit_team_member_shared(pars).await
     }
 
-    async fn set(&self, pars: SetTeamParsJs) -> Result<SetTeamResJs> {
+    async fn set(&self, pars: SetTeamParsJs) -> Result<SetTeamResJs, FrError> {
         let algod = algod();
 
         let owner = pars.owner_address.parse().map_err(Error::msg)?;
@@ -49,14 +56,14 @@ impl TeamProvider for TeamProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitSetTeamParJs) -> Result<()> {
+    async fn submit(&self, pars: SubmitSetTeamParJs) -> Result<(), FrError> {
         let algod = algod();
 
         if pars.txs.len() != 1 {
-            return Err(anyhow!(
+            return Err(FrError::Internal(format!(
                 "Unexpected add roadmap item txs length: {}",
                 pars.txs.len()
-            ));
+            )));
         }
         let tx = &pars.txs[0];
 
@@ -77,7 +84,9 @@ impl TeamProvider for TeamProviderDef {
 }
 
 /// shared def / mock
-pub async fn add_team_member_shared(pars: AddTeamMemberParsJs) -> Result<AddTeamMemberResJs> {
+pub async fn add_team_member_shared(
+    pars: AddTeamMemberParsJs,
+) -> Result<AddTeamMemberResJs, FrError> {
     let mut members = pars.existing_members;
     members.push(pars.inputs.to_team_member());
 
@@ -90,16 +99,18 @@ pub async fn add_team_member_shared(pars: AddTeamMemberParsJs) -> Result<AddTeam
 }
 
 /// shared def / mock
-pub async fn edit_team_member_shared(pars: EditTeamMemberParsJs) -> Result<EditTeamMemberResJs> {
+pub async fn edit_team_member_shared(
+    pars: EditTeamMemberParsJs,
+) -> Result<EditTeamMemberResJs, FrError> {
     let mut members = pars.existing_members;
     let edited_member = pars.inputs;
 
     if let Some(index) = members.iter().position(|m| m.uuid == edited_member.uuid) {
         members[index] = edited_member;
     } else {
-        return Err(anyhow!(
+        return Err(FrError::Internal(format!(
             "Invalid state: edited team member must be in existing members"
-        ));
+        )));
     }
 
     let team_to_save = serde_json::to_string(&members)?;

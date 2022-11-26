@@ -6,7 +6,6 @@ use crate::{
     provider::buy_shares::{
         BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
         SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
-        ValidationBuySharesInputsOrAnyhowError,
     },
     service::{
         invest_or_lock::submit_apps_optins_from_js, number_formats::validate_share_amount_positive,
@@ -42,10 +41,7 @@ pub struct BuySharesProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl BuySharesProvider for BuySharesProviderDef {
-    async fn txs(
-        &self,
-        pars: InvestParJs,
-    ) -> Result<InvestResJs, ValidationBuySharesInputsOrAnyhowError> {
+    async fn txs(&self, pars: InvestParJs) -> Result<InvestResJs, FrError> {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
 

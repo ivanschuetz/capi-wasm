@@ -1,4 +1,5 @@
 use crate::dependencies::FundsAssetSpecs;
+use crate::error::FrError;
 use crate::js::common::SignedTxFromJs;
 use crate::js::to_sign_js::ToSignJs;
 use crate::service::number_formats::validate_funds_amount_input;
@@ -16,8 +17,8 @@ use super::withdrawal_history_provider::WithdrawalViewData;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait WithdrawProvider {
-    async fn txs(&self, pars: WithdrawParJs) -> Result<WithdrawResJs>;
-    async fn submit(&self, pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs>;
+    async fn txs(&self, pars: WithdrawParJs) -> Result<WithdrawResJs, FrError>;
+    async fn submit(&self, pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

@@ -6,7 +6,7 @@ use crate::provider::lock_provider::{
 };
 use crate::service::invest_or_lock::submit_apps_optins_from_js;
 use crate::service::number_formats::validate_share_amount_positive;
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::flows::lock::lock::{submit_lock, LockSigned};
 use base::flows::{create_dao::storage::load_dao::load_dao, lock::lock::lock};
@@ -43,7 +43,7 @@ impl LockProvider for LockProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitLockParJs) -> Result<SubmitLockResJs> {
+    async fn submit(&self, pars: SubmitLockParJs) -> Result<SubmitLockResJs, FrError> {
         let algod = algod();
 
         if let Some(app_opt_ins) = pars.app_opt_ins {
@@ -52,7 +52,10 @@ impl LockProvider for LockProviderDef {
 
         // sanity check
         if pars.txs.len() != 2 {
-            return Err(anyhow!("Invalid app optins count: {}", pars.txs.len()));
+            return Err(FrError::Internal(format!(
+                "Invalid app optins count: {}",
+                pars.txs.len()
+            )));
         }
 
         // lock tx group

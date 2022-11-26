@@ -3,10 +3,12 @@ use async_trait::async_trait;
 use base::queries::my_daos::MyStoredDao;
 use serde::{Deserialize, Serialize};
 
+use crate::error::FrError;
+
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait MyDaosProvider {
-    async fn get(&self, pars: MyDaosParJs) -> Result<MyDaosResJs>;
+    async fn get(&self, pars: MyDaosParJs) -> Result<MyDaosResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

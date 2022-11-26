@@ -1,9 +1,10 @@
+use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::unlock_provider::{
     SubmitUnlockParJs, SubmitUnlockResJs, UnlockParJs, UnlockProvider, UnlockResJs,
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::unlock::unlock::{submit_unlock, unlock, UnlockSigned};
@@ -16,7 +17,7 @@ pub struct UnlockProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UnlockProvider for UnlockProviderDef {
-    async fn txs(&self, pars: UnlockParJs) -> Result<UnlockResJs> {
+    async fn txs(&self, pars: UnlockParJs) -> Result<UnlockResJs, FrError> {
         let algod = algod();
 
         let dao = load_dao(&algod, pars.dao_id.parse()?).await?;
@@ -36,11 +37,14 @@ impl UnlockProvider for UnlockProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitUnlockParJs) -> Result<SubmitUnlockResJs> {
+    async fn submit(&self, pars: SubmitUnlockParJs) -> Result<SubmitUnlockResJs, FrError> {
         let algod = algod();
 
         if pars.txs.len() != 1 {
-            return Err(anyhow!("Invalid unlock txs count: {}", pars.txs.len()));
+            return Err(FrError::Internal(format!(
+                "Invalid unlock txs count: {}",
+                pars.txs.len()
+            )));
         }
         let app_call_tx = &pars.txs[0];
 

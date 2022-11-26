@@ -1,5 +1,4 @@
-use std::convert::TryInto;
-
+use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::add_roadmap_item_provider::{
@@ -17,13 +16,14 @@ use base::roadmap::add_roadmap_item::{
 use data_encoding::BASE64;
 use mbase::date_util::timestamp_seconds_to_date;
 use mbase::dependencies::algod;
+use std::convert::TryInto;
 
 pub struct AddRoadmapItemProviderDef {}
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl AddRoadmapItemProvider for AddRoadmapItemProviderDef {
-    async fn txs(&self, pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs> {
+    async fn txs(&self, pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs, FrError> {
         let algod = algod();
 
         let dao_creator = pars.creator_address.parse().map_err(Error::msg)?;
@@ -50,14 +50,17 @@ impl AddRoadmapItemProvider for AddRoadmapItemProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitAddRoadmapItemParJs) -> Result<SubmitAddRoadmapItemResJs> {
+    async fn submit(
+        &self,
+        pars: SubmitAddRoadmapItemParJs,
+    ) -> Result<SubmitAddRoadmapItemResJs, FrError> {
         let algod = algod();
 
         if pars.txs.len() != 1 {
-            return Err(anyhow!(
+            return Err(FrError::Internal(format!(
                 "Unexpected add roadmap item txs length: {}",
                 pars.txs.len()
-            ));
+            )));
         }
         let tx = &pars.txs[0];
 

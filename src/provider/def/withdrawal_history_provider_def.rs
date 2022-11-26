@@ -1,5 +1,6 @@
 use crate::{
     dependencies::{funds_asset_specs, FundsAssetSpecs},
+    error::FrError,
     provider::withdrawal_history_provider::{
         LoadWithdrawalParJs, LoadWithdrawalResJs, WithdrawalHistoryProvider, WithdrawalViewData,
     },
@@ -20,7 +21,7 @@ pub struct WithdrawalHistoryProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl WithdrawalHistoryProvider for WithdrawalHistoryProviderDef {
-    async fn get(&self, pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs> {
+    async fn get(&self, pars: LoadWithdrawalParJs) -> Result<LoadWithdrawalResJs, FrError> {
         let algod = algod();
         let indexer = indexer();
 
@@ -37,7 +38,7 @@ pub async fn load_withdrawals(
     indexer: &Indexer,
     funds_asset_specs: &FundsAssetSpecs,
     dao_id: DaoId,
-) -> Result<Vec<WithdrawalViewData>> {
+) -> Result<Vec<WithdrawalViewData>, FrError> {
     let entries = withdrawals(algod, indexer, dao_id, funds_asset_specs.id, &None, &None).await?;
     let mut reqs_view_data = vec![];
     for entry in entries {

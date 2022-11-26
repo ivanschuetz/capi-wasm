@@ -2,13 +2,16 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
-use crate::js::{common::SignedTxFromJs, to_sign_js::ToSignJs};
+use crate::{
+    error::FrError,
+    js::{common::SignedTxFromJs, to_sign_js::ToSignJs},
+};
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait PayDaoProvider {
-    async fn txs(&self, pars: PayDaoParJs) -> Result<PayDaoResJs>;
-    async fn submit(&self, pars: SubmitPayDaoParJs) -> Result<SubmitPayDaoResJs>;
+    async fn txs(&self, pars: PayDaoParJs) -> Result<PayDaoResJs, FrError>;
+    async fn submit(&self, pars: SubmitPayDaoParJs) -> Result<SubmitPayDaoResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

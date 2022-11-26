@@ -1,4 +1,7 @@
-use crate::provider::my_daos_provider::{MyDaosParJs, MyDaosProvider, MyDaosResJs};
+use crate::{
+    error::FrError,
+    provider::my_daos_provider::{MyDaosParJs, MyDaosProvider, MyDaosResJs},
+};
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::queries::my_daos::my_daos;
@@ -9,7 +12,7 @@ pub struct MyDaosProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl MyDaosProvider for MyDaosProviderDef {
-    async fn get(&self, pars: MyDaosParJs) -> Result<MyDaosResJs> {
+    async fn get(&self, pars: MyDaosParJs) -> Result<MyDaosResJs, FrError> {
         let algod = algod();
         let indexer = indexer();
 

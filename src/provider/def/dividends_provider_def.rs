@@ -1,5 +1,6 @@
 use super::investment_provider_def::{fetch_claimable_dividend, investor_local_state_view_data};
 use crate::dependencies::capi_deps;
+use crate::error::FrError;
 use crate::provider::dividends_provider::{DividendsParJs, DividendsProvider};
 use crate::service::constants::PRECISION;
 use crate::{
@@ -17,7 +18,7 @@ pub struct DividendsProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl DividendsProvider for DividendsProviderDef {
-    async fn get(&self, pars: DividendsParJs) -> Result<String> {
+    async fn get(&self, pars: DividendsParJs) -> Result<String, FrError> {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
         let capi_deps = capi_deps()?;

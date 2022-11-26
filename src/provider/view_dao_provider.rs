@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::model::dao_js::DaoJs;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -8,7 +9,7 @@ use std::fmt::Debug;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait ViewDaoProvider {
-    async fn get(&self, pars: ViewDaoParJs) -> Result<ViewDaoResJs>;
+    async fn get(&self, pars: ViewDaoParJs) -> Result<ViewDaoResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

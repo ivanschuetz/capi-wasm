@@ -1,4 +1,7 @@
-use crate::js::{common::SignedTxFromJs, to_sign_js::ToSignJs};
+use crate::{
+    error::FrError,
+    js::{common::SignedTxFromJs, to_sign_js::ToSignJs},
+};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -6,8 +9,8 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait UnlockProvider {
-    async fn txs(&self, pars: UnlockParJs) -> Result<UnlockResJs>;
-    async fn submit(&self, pars: SubmitUnlockParJs) -> Result<SubmitUnlockResJs>;
+    async fn txs(&self, pars: UnlockParJs) -> Result<UnlockResJs, FrError>;
+    async fn submit(&self, pars: SubmitUnlockParJs) -> Result<SubmitUnlockResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

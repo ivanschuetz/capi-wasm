@@ -1,5 +1,8 @@
-use crate::provider::app_updates_provider::{
-    AppUpdatesProvider, CheckForUpdatesParJs, CheckForUpdatesResJs, UpdateDataJs,
+use crate::{
+    error::FrError,
+    provider::app_updates_provider::{
+        AppUpdatesProvider, CheckForUpdatesParJs, CheckForUpdatesResJs, UpdateDataJs,
+    },
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -11,7 +14,7 @@ pub struct AppUpdatesProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl AppUpdatesProvider for AppUpdatesProviderMock {
-    async fn get(&self, _: CheckForUpdatesParJs) -> Result<CheckForUpdatesResJs> {
+    async fn get(&self, _: CheckForUpdatesParJs) -> Result<CheckForUpdatesResJs, FrError> {
         req_delay().await;
 
         Ok(CheckForUpdatesResJs {

@@ -26,7 +26,7 @@ impl RekeyProvider for RekeyProviderMock {
         })
     }
 
-    async fn submit(&self, _pars: SubmitRekeyParJs) -> Result<SubmitRekeyResJs> {
+    async fn submit(&self, _pars: SubmitRekeyParJs) -> Result<SubmitRekeyResJs, FrError> {
         req_delay().await;
 
         Ok(SubmitRekeyResJs {})

@@ -1,5 +1,6 @@
 use crate::{
     dependencies::{capi_deps, funds_asset_specs},
+    error::FrError,
     js::explorer_links::explorer_tx_id_link_env,
     provider::funds_activity_provider::{
         FundsActivityProvider, FundsActivityViewData, LoadFundsActivityParJs,
@@ -28,7 +29,7 @@ pub struct FundsActivityProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl FundsActivityProvider for FundsActivityProviderDef {
-    async fn get(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
+    async fn get(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs, FrError> {
         let algod = algod();
         let indexer = indexer();
         let capi_deps = capi_deps()?;

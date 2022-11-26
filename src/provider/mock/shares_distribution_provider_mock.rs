@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::js::explorer_links::explorer_address_link_env;
 use crate::provider::def::shares_distribution_provider_def::{
     not_owned_shares_holdings, shorten_address,
@@ -19,7 +20,7 @@ pub struct SharesDistributionProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl SharesDistributionProvider for SharesDistributionProviderMock {
-    async fn get(&self, _: SharedDistributionParJs) -> Result<SharedDistributionResJs> {
+    async fn get(&self, _: SharedDistributionParJs) -> Result<SharedDistributionResJs, FrError> {
         req_delay().await;
 
         let fake_supply = 10_000_000;
@@ -119,9 +120,9 @@ impl SharesDistributionProvider for SharesDistributionProviderMock {
         // this is mock data, but it needs to make sense for the chart to work properly
         let amount_sum: u64 = holders.iter().map(|h| h.amount.val()).sum();
         if amount_sum >= fake_supply {
-            return Err(anyhow!(
+            return Err(FrError::Internal(format!(
                 "Invalid mock data: amount sum ({amount_sum}) >= supply ({fake_supply})"
-            ));
+            )));
         }
 
         let mut holders_js = vec![];

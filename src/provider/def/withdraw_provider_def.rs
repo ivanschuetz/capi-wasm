@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::js::explorer_links::explorer_tx_id_link_env;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::withdraw_provider::{
@@ -16,7 +17,7 @@ use crate::{
 use crate::{
     js::common::signed_js_tx_to_signed_tx1, service::drain_if_needed::prepare_pars_and_submit_drain,
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::flows::withdraw::withdraw::{submit_withdraw, WithdrawSigned};
 use base::flows::{
@@ -33,7 +34,7 @@ pub struct WithdrawProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl WithdrawProvider for WithdrawProviderDef {
-    async fn txs(&self, pars: WithdrawParJs) -> Result<WithdrawResJs> {
+    async fn txs(&self, pars: WithdrawParJs) -> Result<WithdrawResJs, FrError> {
         log::debug!("_bridge_withdraw, pars: {:?}", pars);
 
         let algod = algod();
@@ -89,7 +90,7 @@ impl WithdrawProvider for WithdrawProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs> {
+    async fn submit(&self, pars: SubmitWithdrawParJs) -> Result<SubmitWithdrawResJs, FrError> {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
 
@@ -97,10 +98,10 @@ impl WithdrawProvider for WithdrawProviderDef {
 
         // 1 tx if only withdrawal, 2 if withdrawal with drain
         if pars.txs.len() != 1 && pars.txs.len() != 2 {
-            return Err(anyhow!(
+            return Err(FrError::Internal(format!(
                 "Unexpected withdraw txs length: {}",
                 pars.txs.len()
-            ));
+            )));
         }
 
         if pars.txs.len() == 2 {

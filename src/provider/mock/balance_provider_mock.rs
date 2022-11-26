@@ -1,5 +1,8 @@
-use crate::provider::balance_provider::{
-    BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
+use crate::{
+    error::FrError,
+    provider::balance_provider::{
+        BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
+    },
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -11,7 +14,7 @@ pub struct BalanceProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl BalanceProvider for BalanceProviderMock {
-    async fn get(&self, _: BalanceParJs) -> Result<BalanceResJs> {
+    async fn get(&self, _: BalanceParJs) -> Result<BalanceResJs, FrError> {
         req_delay().await;
 
         Ok(BalanceResJs {
@@ -20,7 +23,10 @@ impl BalanceProvider for BalanceProviderMock {
         })
     }
 
-    async fn get_balance_change(&self, _: BalanceChangeParJs) -> Result<BalanceChangeResJs> {
+    async fn get_balance_change(
+        &self,
+        _: BalanceChangeParJs,
+    ) -> Result<BalanceChangeResJs, FrError> {
         Ok(BalanceChangeResJs {
             change: "up".to_owned(),
         })

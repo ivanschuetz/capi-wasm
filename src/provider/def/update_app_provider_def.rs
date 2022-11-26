@@ -1,4 +1,5 @@
 use crate::dependencies::capi_deps;
+use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::update_app_provider::{
@@ -6,7 +7,7 @@ use crate::provider::update_app_provider::{
     UpdateDaoAppResJs,
 };
 use crate::service::constants::{MAX_RAISABLE_AMOUNT, PRECISION};
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::dependencies::teal_api;
 use base::flows::create_dao::setup::create_app::{
@@ -25,7 +26,7 @@ pub struct UpdateAppProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UpdateAppProvider for UpdateAppProviderDef {
-    async fn txs(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs> {
+    async fn txs(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs, FrError> {
         let algod = algod();
         let api = teal_api();
         let capi_deps = capi_deps()?;
@@ -73,14 +74,14 @@ impl UpdateAppProvider for UpdateAppProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitUpdateAppParJs) -> Result<SubmitUpdateAppResJs> {
+    async fn submit(&self, pars: SubmitUpdateAppParJs) -> Result<SubmitUpdateAppResJs, FrError> {
         let algod = algod();
 
         if pars.txs.len() != 1 {
-            return Err(anyhow!(
+            return Err(FrError::Internal(format!(
                 "Unexpected update app txs length: {}",
                 pars.txs.len()
-            ));
+            )));
         }
         let tx = &pars.txs[0];
 

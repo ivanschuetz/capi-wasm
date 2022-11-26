@@ -2,11 +2,19 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
+use crate::error::FrError;
+
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait InvestmentProvider {
-    async fn available_shares(&self, pars: AvailableSharesParJs) -> Result<AvailableSharesResJs>;
-    async fn get_investor_data(&self, pars: LoadInvestorParJs) -> Result<LoadInvestorResJs>;
+    async fn available_shares(
+        &self,
+        pars: AvailableSharesParJs,
+    ) -> Result<AvailableSharesResJs, FrError>;
+    async fn get_investor_data(
+        &self,
+        pars: LoadInvestorParJs,
+    ) -> Result<LoadInvestorResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

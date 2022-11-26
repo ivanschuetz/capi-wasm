@@ -11,7 +11,7 @@ use crate::provider::update_data_provider::{
     SubmitUpdateDataParJs, UpdatableDataParJs, UpdatableDataResJs, UpdateDataParJs,
     UpdateDataPassthroughJs, UpdateDataProvider, UpdateDataResJs,
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::api::fetcher::Fetcher;
 use base::dependencies::fetcher;
@@ -31,7 +31,7 @@ pub struct UpdateDataProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UpdateDataProvider for UpdateDataProviderDef {
-    async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs> {
+    async fn get(&self, pars: UpdatableDataParJs) -> Result<UpdatableDataResJs, FrError> {
         let algod = algod();
         let fetcher = fetcher();
 
@@ -98,14 +98,14 @@ impl UpdateDataProvider for UpdateDataProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitUpdateDataParJs) -> Result<()> {
+    async fn submit(&self, pars: SubmitUpdateDataParJs) -> Result<(), FrError> {
         let algod = algod();
 
         if pars.txs.len() != 1 && pars.txs.len() != 2 {
-            return Err(anyhow!(
+            return Err(FrError::Internal(format!(
                 "Unexpected update app data txs length: {}",
                 pars.txs.len()
-            ));
+            )));
         }
         let update_tx = &pars.txs[0];
         let maybe_increase_min_balance_tx = if pars.txs.len() == 2 {
@@ -146,15 +146,15 @@ fn validate_inputs(
     let max_invest_shares_res = validate_max_invest_amount(&pars.max_invest_amount);
 
     match (
-        &dao_name_res,
-        &dao_description_res,
-        &image_url_res,
-        &social_media_url_res,
-        &prospectus_url_res,
-        &prospectus_bytes_res,
-        &prospectus_hash_res,
-        &min_invest_shares_res,
-        &max_invest_shares_res,
+        dao_name_res,
+        dao_description_res,
+        image_url_res,
+        social_media_url_res,
+        prospectus_url_res,
+        prospectus_bytes_res,
+        prospectus_hash_res,
+        min_invest_shares_res,
+        max_invest_shares_res,
     ) {
         (
             Ok(dao_name),
@@ -174,23 +174,30 @@ fn validate_inputs(
                 ));
             }
 
-            let prospectus = to_maybe_prospectus(
-                prospectus_url.clone(),
-                prospectus_hash.clone(),
-                prospectus_bytes.clone(),
-            )?;
+            let prospectus =
+                to_maybe_prospectus(prospectus_url, prospectus_hash, prospectus_bytes)?;
 
             Ok(UpdatableDaoData {
-                project_name: dao_name.clone(),
-                project_desc_url: dao_descr.clone(),
-                image_url: image_url.clone(),
-                social_media_url: social_media_url.clone(),
+                project_name: dao_name,
+                project_desc_url: dao_descr,
+                image_url,
+                social_media_url,
                 prospectus,
-                min_invest_shares: *min_invest_shares,
-                max_invest_shares: *max_invest_shares,
+                min_invest_shares,
+                max_invest_shares,
             })
         }
-        _ => Err(ValidateDataUpdateInputsError::AllFieldsValidation(
+        (
+            dao_name_res,
+            dao_description_res,
+            image_url_res,
+            social_media_url_res,
+            min_invest_shares_res,
+            prospectus_url_res,
+            prospectus_bytes_res,
+            prospectus_hash_res,
+            max_invest_shares_res,
+        ) => Err(ValidateDataUpdateInputsError::AllFieldsValidation(
             ValidateUpateDataInputErrors {
                 name: dao_name_res.err(),
                 description: dao_description_res.err(),

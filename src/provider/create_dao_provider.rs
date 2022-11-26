@@ -27,7 +27,7 @@ pub trait CreateDaoProvider {
     async fn txs(&self, pars: CreateDaoParJs) -> Result<CreateDaoResJs, FrError>;
     /// create daos specs + signed assets txs -> create dao result
     /// submits the signed assets, creates rest of dao with generated asset ids
-    async fn submit(&self, pars: SubmitCreateDaoParJs) -> Result<CreateDaoRes>;
+    async fn submit(&self, pars: SubmitCreateDaoParJs) -> Result<CreateDaoRes, FrError>;
 }
 
 pub struct ValidatedDaoInputs {

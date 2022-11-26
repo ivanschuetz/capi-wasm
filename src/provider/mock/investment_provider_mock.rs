@@ -1,7 +1,10 @@
 use super::req_delay;
-use crate::provider::investment_provider::{
-    AvailableSharesParJs, AvailableSharesResJs, InvestmentProvider, LoadInvestorParJs,
-    LoadInvestorResJs,
+use crate::{
+    error::FrError,
+    provider::investment_provider::{
+        AvailableSharesParJs, AvailableSharesResJs, InvestmentProvider, LoadInvestorParJs,
+        LoadInvestorResJs,
+    },
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -11,7 +14,10 @@ pub struct InvestmentProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl InvestmentProvider for InvestmentProviderMock {
-    async fn available_shares(&self, _pars: AvailableSharesParJs) -> Result<AvailableSharesResJs> {
+    async fn available_shares(
+        &self,
+        _pars: AvailableSharesParJs,
+    ) -> Result<AvailableSharesResJs, FrError> {
         req_delay().await;
         let available_shares = 1_000;
         Ok(AvailableSharesResJs {
@@ -20,7 +26,7 @@ impl InvestmentProvider for InvestmentProviderMock {
         })
     }
 
-    async fn get_investor_data(&self, _: LoadInvestorParJs) -> Result<LoadInvestorResJs> {
+    async fn get_investor_data(&self, _: LoadInvestorParJs) -> Result<LoadInvestorResJs, FrError> {
         req_delay().await;
 
         Ok(LoadInvestorResJs {

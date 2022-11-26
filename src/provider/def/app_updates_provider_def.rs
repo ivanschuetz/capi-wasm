@@ -1,5 +1,8 @@
-use crate::provider::app_updates_provider::{
-    AppUpdatesProvider, CheckForUpdatesParJs, CheckForUpdatesResJs, UpdateDataJs,
+use crate::{
+    error::FrError,
+    provider::app_updates_provider::{
+        AppUpdatesProvider, CheckForUpdatesParJs, CheckForUpdatesResJs, UpdateDataJs,
+    },
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -14,7 +17,7 @@ pub struct AppUpdatesProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl AppUpdatesProvider for AppUpdatesProviderDef {
-    async fn get(&self, pars: CheckForUpdatesParJs) -> Result<CheckForUpdatesResJs> {
+    async fn get(&self, pars: CheckForUpdatesParJs) -> Result<CheckForUpdatesResJs, FrError> {
         let algod = algod();
         let api = teal_api();
 

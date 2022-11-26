@@ -1,4 +1,5 @@
 use crate::dependencies::{capi_deps, funds_asset_specs, FundsAssetSpecs};
+use crate::error::FrError;
 use crate::provider::income_vs_spending_provider::{
     to_interval_data, ChartDataPointJs, IncomeVsSpendingParJs, IncomeVsSpendingProvider,
     IncomeVsSpendingResJs, IntervalData,
@@ -21,7 +22,7 @@ pub struct IncomeVsSpendingProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl IncomeVsSpendingProvider for IncomeVsSpendingProviderDef {
-    async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs> {
+    async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs, FrError> {
         let algod = algod();
         let indexer = indexer();
         let funds_asset_specs = funds_asset_specs()?;
@@ -89,7 +90,7 @@ pub fn to_income_vs_spending_res_static_bounds(
     spending: Vec<ChartDataPoint>,
     funds_asset_specs: &FundsAssetSpecs,
     interval_data: IntervalData,
-) -> Result<IncomeVsSpendingResJs> {
+) -> Result<IncomeVsSpendingResJs, FrError> {
     to_income_vs_spending_res(
         income,
         spending,
@@ -108,7 +109,7 @@ pub fn to_income_vs_spending_res_dynamic_bounds(
     spending: Vec<ChartDataPoint>,
     funds_asset_specs: &FundsAssetSpecs,
     grouping_interval: Duration,
-) -> Result<IncomeVsSpendingResJs> {
+) -> Result<IncomeVsSpendingResJs, FrError> {
     let income_bounds = determine_min_max_local_bounds(&income);
     let spending_bounds = determine_min_max_local_bounds(&spending);
 
@@ -148,7 +149,7 @@ fn to_income_vs_spending_res(
     start_time: DateTime<Utc>,
     end_time: DateTime<Utc>,
     interval: Duration,
-) -> Result<IncomeVsSpendingResJs> {
+) -> Result<IncomeVsSpendingResJs, FrError> {
     let mut all_points = income;
     all_points.extend(spending);
 

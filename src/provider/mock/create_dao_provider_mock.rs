@@ -39,7 +39,7 @@ impl CreateDaoProvider for CreateDaoProviderMock {
         })
     }
 
-    async fn submit(&self, _: SubmitCreateDaoParJs) -> Result<CreateDaoRes> {
+    async fn submit(&self, _: SubmitCreateDaoParJs) -> Result<CreateDaoRes, FrError> {
         req_delay().await;
 
         Ok(CreateDaoRes {

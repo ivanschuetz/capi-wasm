@@ -5,7 +5,7 @@ use crate::provider::create_dao_provider::validate_address;
 use crate::provider::rekey_provider::{
     RekeyParJs, RekeyProvider, RekeyResJs, SubmitRekeyParJs, SubmitRekeyResJs,
 };
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use base::flows::create_dao::storage::load_dao::load_dao;
 use base::flows::rekey::rekey::{rekey, submit_rekey, RekeySigned};
@@ -32,11 +32,14 @@ impl RekeyProvider for RekeyProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitRekeyParJs) -> Result<SubmitRekeyResJs> {
+    async fn submit(&self, pars: SubmitRekeyParJs) -> Result<SubmitRekeyResJs, FrError> {
         let algod = algod();
 
         if pars.txs.len() != 1 {
-            return Err(anyhow!("Unexpected rekey txs length: {}", pars.txs.len()));
+            return Err(FrError::Internal(format!(
+                "Unexpected rekey txs length: {}",
+                pars.txs.len()
+            )));
         }
 
         submit_rekey(

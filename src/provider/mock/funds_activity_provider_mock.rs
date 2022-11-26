@@ -1,5 +1,6 @@
 use super::req_delay;
 use crate::{
+    error::FrError,
     provider::{
         def::shares_distribution_provider_def::shorten_address,
         funds_activity_provider::{
@@ -17,7 +18,7 @@ pub struct FundsActivityProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl FundsActivityProvider for FundsActivityProviderMock {
-    async fn get(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs> {
+    async fn get(&self, pars: LoadFundsActivityParJs) -> Result<LoadFundsActivityResJs, FrError> {
         req_delay().await;
 
         // note that short_amount will be set at the end, based on amount

@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::provider::mock::req_delay;
 use crate::provider::update_app_provider::{
     SubmitUpdateAppParJs, SubmitUpdateAppResJs, UpdateAppProvider, UpdateDaoAppParJs,
@@ -14,7 +15,7 @@ pub struct UpdateAppProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl UpdateAppProvider for UpdateAppProviderMock {
-    async fn txs(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs> {
+    async fn txs(&self, pars: UpdateDaoAppParJs) -> Result<UpdateDaoAppResJs, FrError> {
         let algod = algod();
 
         let owner = pars.owner.parse().map_err(Error::msg)?;
@@ -26,7 +27,7 @@ impl UpdateAppProvider for UpdateAppProviderMock {
         })
     }
 
-    async fn submit(&self, _: SubmitUpdateAppParJs) -> Result<SubmitUpdateAppResJs> {
+    async fn submit(&self, _: SubmitUpdateAppParJs) -> Result<SubmitUpdateAppResJs, FrError> {
         req_delay().await;
 
         Ok(SubmitUpdateAppResJs {})

@@ -1,4 +1,7 @@
-use crate::js::{common::SignedTxFromJs, to_sign_js::ToSignJs};
+use crate::{
+    error::FrError,
+    js::{common::SignedTxFromJs, to_sign_js::ToSignJs},
+};
 use anyhow::Result;
 use async_trait::async_trait;
 use base::team::TeamMember;
@@ -8,13 +11,19 @@ use uuid::Uuid;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait TeamProvider {
-    async fn get(&self, pars: GetTeamParsJs) -> Result<GetTeamResJs>;
+    async fn get(&self, pars: GetTeamParsJs) -> Result<GetTeamResJs, FrError>;
 
-    async fn add_team_member(&self, pars: AddTeamMemberParsJs) -> Result<AddTeamMemberResJs>;
-    async fn edit_team_member(&self, pars: EditTeamMemberParsJs) -> Result<EditTeamMemberResJs>;
+    async fn add_team_member(
+        &self,
+        pars: AddTeamMemberParsJs,
+    ) -> Result<AddTeamMemberResJs, FrError>;
+    async fn edit_team_member(
+        &self,
+        pars: EditTeamMemberParsJs,
+    ) -> Result<EditTeamMemberResJs, FrError>;
 
-    async fn set(&self, pars: SetTeamParsJs) -> Result<SetTeamResJs>;
-    async fn submit(&self, pars: SubmitSetTeamParJs) -> Result<()>;
+    async fn set(&self, pars: SetTeamParsJs) -> Result<SetTeamResJs, FrError>;
+    async fn submit(&self, pars: SubmitSetTeamParJs) -> Result<(), FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

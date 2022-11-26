@@ -11,7 +11,7 @@ use std::fmt::Debug;
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait RekeyProvider {
     async fn txs(&self, pars: RekeyParJs) -> Result<RekeyResJs, FrError>;
-    async fn submit(&self, pars: SubmitRekeyParJs) -> Result<SubmitRekeyResJs>;
+    async fn submit(&self, pars: SubmitRekeyParJs) -> Result<SubmitRekeyResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::js::explorer_links::explorer_tx_id_link_env;
 use crate::provider::roadmap_provider::{
     GetRoadmapParJs, GetRoadmapResJs, RoadmapItemJs, RoadmapProvider,
@@ -14,7 +15,7 @@ pub struct RoadmapProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl RoadmapProvider for RoadmapProviderDef {
-    async fn get(&self, pars: GetRoadmapParJs) -> Result<GetRoadmapResJs> {
+    async fn get(&self, pars: GetRoadmapParJs) -> Result<GetRoadmapResJs, FrError> {
         let indexer = indexer();
 
         let dao_creator = pars.creator_address.parse().map_err(Error::msg)?;

@@ -2,13 +2,19 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
-use crate::js::{common::SignedTxFromJs, to_sign_js::ToSignJs};
+use crate::{
+    error::FrError,
+    js::{common::SignedTxFromJs, to_sign_js::ToSignJs},
+};
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait AddRoadmapItemProvider {
-    async fn txs(&self, pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs>;
-    async fn submit(&self, pars: SubmitAddRoadmapItemParJs) -> Result<SubmitAddRoadmapItemResJs>;
+    async fn txs(&self, pars: AddRoadmapItemParJs) -> Result<AddRoadmapItemResJs, FrError>;
+    async fn submit(
+        &self,
+        pars: SubmitAddRoadmapItemParJs,
+    ) -> Result<SubmitAddRoadmapItemResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

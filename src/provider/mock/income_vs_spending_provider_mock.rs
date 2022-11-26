@@ -1,4 +1,5 @@
 use crate::dependencies::funds_asset_specs;
+use crate::error::FrError;
 use crate::provider::def::income_vs_spending_provider_def::{
     to_income_vs_spending_res_static_bounds, ChartDataPoint,
 };
@@ -16,7 +17,7 @@ pub struct IncomeVsSpendingProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl IncomeVsSpendingProvider for IncomeVsSpendingProviderMock {
-    async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs> {
+    async fn get(&self, pars: IncomeVsSpendingParJs) -> Result<IncomeVsSpendingResJs, FrError> {
         let funds_asset_specs = funds_asset_specs()?;
 
         let now = Utc::now();

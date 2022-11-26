@@ -2,7 +2,7 @@ use crate::error::FrError;
 use crate::js::common::{signed_js_tx_to_signed_tx1, SignedTxFromJs};
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_dao_provider::validate_min_raised_target_end_date;
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use base::dev_settings::{dev_settings, submit_dev_settings, DevSettings, DevSettingsSigned};
 use base::flows::create_dao::storage::load_dao::load_dao;
 use mbase::dependencies::algod;
@@ -39,14 +39,17 @@ impl DevProviderDef {
         })
     }
 
-    pub async fn submit(&self, pars: SubmitDevSettingsParJs) -> Result<SubmitDevSettingsResJs> {
+    pub async fn submit(
+        &self,
+        pars: SubmitDevSettingsParJs,
+    ) -> Result<SubmitDevSettingsResJs, FrError> {
         let algod = algod();
 
         if pars.txs.len() != 1 {
-            return Err(anyhow!(
+            return Err(FrError::Internal(format!(
                 "Unexpected add roadmap item txs length: {}",
                 pars.txs.len()
-            ));
+            )));
         }
         let tx = &pars.txs[0];
 

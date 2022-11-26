@@ -1,4 +1,5 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::drain_provider::{
@@ -19,7 +20,7 @@ pub struct DrainProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl DrainProvider for DrainProviderDef {
-    async fn txs(&self, pars: DrainParJs) -> Result<DrainResJs> {
+    async fn txs(&self, pars: DrainParJs) -> Result<DrainResJs, FrError> {
         let algod = algod();
         let capi_deps = capi_deps()?;
 
@@ -44,7 +45,7 @@ impl DrainProvider for DrainProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitDrainParJs) -> Result<SubmitDrainResJs> {
+    async fn submit(&self, pars: SubmitDrainParJs) -> Result<SubmitDrainResJs, FrError> {
         let algod = algod();
 
         let app_call_tx = &pars.txs[0];

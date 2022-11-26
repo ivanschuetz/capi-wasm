@@ -2,12 +2,12 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
-use crate::js::to_sign_js::ToSignJs;
+use crate::{error::FrError, js::to_sign_js::ToSignJs};
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait OptinToAppProvider {
-    async fn txs(&self, pars: OptInToAppParJs) -> Result<OptInToAppResJs>;
+    async fn txs(&self, pars: OptInToAppParJs) -> Result<OptInToAppResJs, FrError>;
 }
 
 // TODO rename structs in BuyShares*

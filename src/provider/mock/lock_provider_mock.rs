@@ -27,7 +27,7 @@ impl LockProvider for LockProviderMock {
         })
     }
 
-    async fn submit(&self, _: SubmitLockParJs) -> Result<SubmitLockResJs> {
+    async fn submit(&self, _: SubmitLockParJs) -> Result<SubmitLockResJs, FrError> {
         req_delay().await;
 
         Ok(SubmitLockResJs {})

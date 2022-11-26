@@ -1,5 +1,8 @@
 use super::req_delay;
-use crate::provider::wyre_provider::{WyreProvider, WyreReserveParsJs, WyreReserveResJs};
+use crate::{
+    error::FrError,
+    provider::wyre_provider::{WyreProvider, WyreReserveParsJs, WyreReserveResJs},
+};
 use anyhow::Result;
 use async_trait::async_trait;
 
@@ -10,7 +13,7 @@ pub struct WyreProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl WyreProvider for WyreProviderMock {
-    async fn reserve(&self, _pars: WyreReserveParsJs) -> Result<WyreReserveResJs> {
+    async fn reserve(&self, _pars: WyreReserveParsJs) -> Result<WyreReserveResJs, FrError> {
         req_delay().await;
 
         Ok(WyreReserveResJs {

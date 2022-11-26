@@ -1,4 +1,7 @@
-use crate::provider::wyre_provider::{WyreProvider, WyreReserveParsJs, WyreReserveResJs};
+use crate::{
+    error::FrError,
+    provider::wyre_provider::{WyreProvider, WyreReserveParsJs, WyreReserveResJs},
+};
 use algonaut::core::Address;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -11,7 +14,7 @@ pub struct WyreProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl WyreProvider for WyreProviderDef {
-    async fn reserve(&self, pars: WyreReserveParsJs) -> Result<WyreReserveResJs> {
+    async fn reserve(&self, pars: WyreReserveParsJs) -> Result<WyreReserveResJs, FrError> {
         let api = test_wyre_api()?;
 
         let address = pars.address.parse().map_err(Error::msg)?;

@@ -1,3 +1,4 @@
+use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::pay_dao_provider::{
@@ -6,7 +7,7 @@ use crate::provider::pay_dao_provider::{
 use crate::{
     dependencies::funds_asset_specs, service::number_formats::validate_funds_amount_input,
 };
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::flows::pay_dao::pay_dao::pay_dao_app;
 use base::flows::pay_dao::pay_dao::{submit_pay_dao, PayDaoSigned};
@@ -18,7 +19,7 @@ pub struct PayDaoProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl PayDaoProvider for PayDaoProviderDef {
-    async fn txs(&self, pars: PayDaoParJs) -> Result<PayDaoResJs> {
+    async fn txs(&self, pars: PayDaoParJs) -> Result<PayDaoResJs, FrError> {
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
 
@@ -40,11 +41,14 @@ impl PayDaoProvider for PayDaoProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitPayDaoParJs) -> Result<SubmitPayDaoResJs> {
+    async fn submit(&self, pars: SubmitPayDaoParJs) -> Result<SubmitPayDaoResJs, FrError> {
         let algod = algod();
 
         if pars.txs.len() != 1 {
-            return Err(anyhow!("Unexpected pay dao txs length: {}", pars.txs.len()));
+            return Err(FrError::Internal(format!(
+                "Unexpected pay dao txs length: {}",
+                pars.txs.len()
+            )));
         }
         let tx = &pars.txs[0];
 

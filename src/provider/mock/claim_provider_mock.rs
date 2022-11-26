@@ -1,6 +1,9 @@
 use super::{mock_to_sign, req_delay};
-use crate::provider::claim_provider::{
-    ClaimParJs, ClaimProvider, ClaimResJs, SubmitClaimParJs, SubmitClaimResJs,
+use crate::{
+    error::FrError,
+    provider::claim_provider::{
+        ClaimParJs, ClaimProvider, ClaimResJs, SubmitClaimParJs, SubmitClaimResJs,
+    },
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -11,7 +14,7 @@ pub struct ClaimProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl ClaimProvider for ClaimProviderMock {
-    async fn txs(&self, pars: ClaimParJs) -> Result<ClaimResJs> {
+    async fn txs(&self, pars: ClaimParJs) -> Result<ClaimResJs, FrError> {
         let algod = algod();
 
         let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;
@@ -23,7 +26,7 @@ impl ClaimProvider for ClaimProviderMock {
         })
     }
 
-    async fn submit(&self, _: SubmitClaimParJs) -> Result<SubmitClaimResJs> {
+    async fn submit(&self, _: SubmitClaimParJs) -> Result<SubmitClaimResJs, FrError> {
         req_delay().await;
 
         Ok(SubmitClaimResJs {})

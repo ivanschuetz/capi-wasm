@@ -1,5 +1,6 @@
 use super::{mock_address, mock_dao_for_users_view_data, req_delay};
 use crate::{
+    error::FrError,
     provider::view_dao_provider::{ViewDaoParJs, ViewDaoProvider, ViewDaoResJs},
     service::number_formats::format_u64_readable,
 };
@@ -12,7 +13,7 @@ pub struct ViewDaoProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl ViewDaoProvider for ViewDaoProviderMock {
-    async fn get(&self, _: ViewDaoParJs) -> Result<ViewDaoResJs> {
+    async fn get(&self, _: ViewDaoParJs) -> Result<ViewDaoResJs, FrError> {
         req_delay().await;
 
         let dao = mock_dao_for_users_view_data()?;

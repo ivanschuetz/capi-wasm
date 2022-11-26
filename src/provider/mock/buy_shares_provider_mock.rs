@@ -5,7 +5,6 @@ use crate::{
         buy_shares::{
             BuySharesProvider, InvestParJs, InvestResJs, SubmitBuySharesParJs,
             SubmitBuySharesPassthroughParJs, SubmitBuySharesResJs,
-            ValidationBuySharesInputsOrAnyhowError,
         },
         mock::mock_msgpack_tx,
     },
@@ -20,10 +19,7 @@ pub struct BuySharesProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl BuySharesProvider for BuySharesProviderMock {
-    async fn txs(
-        &self,
-        pars: InvestParJs,
-    ) -> Result<InvestResJs, ValidationBuySharesInputsOrAnyhowError> {
+    async fn txs(&self, pars: InvestParJs) -> Result<InvestResJs, FrError> {
         let algod = algod();
 
         let investor_address = &pars.investor_address.parse().map_err(Error::msg)?;

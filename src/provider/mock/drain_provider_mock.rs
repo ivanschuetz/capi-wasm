@@ -1,7 +1,10 @@
 use super::{mock_to_sign, req_delay};
-use crate::provider::drain_provider::{
-    DrainParJs, DrainProvider, DrainResJs, SubmitDrainParJs, SubmitDrainPassthroughParJs,
-    SubmitDrainResJs,
+use crate::{
+    error::FrError,
+    provider::drain_provider::{
+        DrainParJs, DrainProvider, DrainResJs, SubmitDrainParJs, SubmitDrainPassthroughParJs,
+        SubmitDrainResJs,
+    },
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -12,7 +15,7 @@ pub struct DrainProviderMock {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl DrainProvider for DrainProviderMock {
-    async fn txs(&self, pars: DrainParJs) -> Result<DrainResJs> {
+    async fn txs(&self, pars: DrainParJs) -> Result<DrainResJs, FrError> {
         let algod = algod();
         let drainer_address = pars.drainer_address.parse().map_err(Error::msg)?;
 
@@ -26,7 +29,7 @@ impl DrainProvider for DrainProviderMock {
         })
     }
 
-    async fn submit(&self, _: SubmitDrainParJs) -> Result<SubmitDrainResJs> {
+    async fn submit(&self, _: SubmitDrainParJs) -> Result<SubmitDrainResJs, FrError> {
         req_delay().await;
 
         Ok(SubmitDrainResJs {

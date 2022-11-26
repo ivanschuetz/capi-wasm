@@ -9,7 +9,7 @@ use crate::provider::create_dao_provider::{
 };
 use crate::service::constants::PRECISION;
 use algonaut::transaction::Transaction;
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::dependencies::teal_api;
 use base::flows::create_dao::model::{SetupDaoSigned, SetupDaoToSign};
@@ -109,17 +109,17 @@ impl CreateDaoProvider for CreateDaoProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitCreateDaoParJs) -> Result<CreateDaoRes> {
+    async fn submit(&self, pars: SubmitCreateDaoParJs) -> Result<CreateDaoRes, FrError> {
         // log::debug!("in bridge_submit_create_dao, pars: {:?}", pars);
 
         let algod = algod();
         let funds_asset_specs = funds_asset_specs()?;
 
         if pars.txs.len() != 3 {
-            return Err(anyhow!(
+            return Err(FrError::Internal(format!(
                 "Unexpected signed dao txs length: {}",
                 pars.txs.len()
-            ));
+            )));
         }
 
         // TODO (low prio) improve this access, it's easy for the indices to get out of sync

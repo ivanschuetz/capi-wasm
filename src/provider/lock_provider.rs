@@ -11,7 +11,7 @@ use crate::{
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait LockProvider {
     async fn txs(&self, pars: LockParJs) -> Result<LockResJs, FrError>;
-    async fn submit(&self, pars: SubmitLockParJs) -> Result<SubmitLockResJs>;
+    async fn submit(&self, pars: SubmitLockParJs) -> Result<SubmitLockResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

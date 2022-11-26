@@ -1,4 +1,7 @@
-use crate::js::{common::SignedTxFromJs, to_sign_js::ToSignJs};
+use crate::{
+    error::FrError,
+    js::{common::SignedTxFromJs, to_sign_js::ToSignJs},
+};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -6,8 +9,8 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait ClaimProvider {
-    async fn txs(&self, pars: ClaimParJs) -> Result<ClaimResJs>;
-    async fn submit(&self, pars: SubmitClaimParJs) -> Result<SubmitClaimResJs>;
+    async fn txs(&self, pars: ClaimParJs) -> Result<ClaimResJs, FrError>;
+    async fn submit(&self, pars: SubmitClaimParJs) -> Result<SubmitClaimResJs, FrError>;
 }
 
 #[derive(Debug, Clone, Deserialize)]

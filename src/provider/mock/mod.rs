@@ -1,5 +1,6 @@
 use crate::{
-    js::to_sign_js::ToSignJs, model::dao_js::DaoJs, service::number_formats::format_u64_readable,
+    error::FrError, js::to_sign_js::ToSignJs, model::dao_js::DaoJs,
+    service::number_formats::format_u64_readable,
 };
 use algonaut::{
     algod::v2::Algod,
@@ -79,7 +80,7 @@ pub fn mock_tx_id() -> String {
     "3CUYREVXKFMJOSWJRC3GY6UEAJ3BA36RGN4PKSL7CYRLCWZSIT3A".to_string()
 }
 
-pub fn mock_dao_for_users_view_data() -> Result<DaoJs> {
+pub fn mock_dao_for_users_view_data() -> Result<DaoJs, FrError> {
     Ok(DaoJs {
         name: "Test name".to_owned(),
         descr_url: None,

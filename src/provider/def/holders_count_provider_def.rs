@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 use crate::{
+    error::FrError,
     provider::holders_count_provider::{
         HoldersChangeParJs, HoldersChangeResJs, HoldersCountParJs, HoldersCountProvider,
         HoldersCountResJs,
@@ -20,7 +21,7 @@ pub struct HoldersCountProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl HoldersCountProvider for HoldersCountProviderDef {
-    async fn get(&self, pars: HoldersCountParJs) -> Result<HoldersCountResJs> {
+    async fn get(&self, pars: HoldersCountParJs) -> Result<HoldersCountResJs, FrError> {
         let indexer = indexer();
 
         let asset_id = pars.asset_id.parse()?;
@@ -34,7 +35,7 @@ impl HoldersCountProvider for HoldersCountProviderDef {
         })
     }
 
-    async fn change(&self, pars: HoldersChangeParJs) -> Result<HoldersChangeResJs> {
+    async fn change(&self, pars: HoldersChangeParJs) -> Result<HoldersChangeResJs, FrError> {
         let indexer = indexer();
 
         let asset_id = pars.asset_id.parse()?;

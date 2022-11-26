@@ -1,11 +1,12 @@
 use crate::dependencies::{capi_deps, funds_asset_specs};
+use crate::error::FrError;
 use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::claim_provider::{
     ClaimParJs, ClaimProvider, ClaimResJs, SubmitClaimParJs, SubmitClaimResJs,
 };
 use crate::service::drain_if_needed::{drain_if_needed_tx, prepare_pars_and_submit_drain};
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::diagnostics::log_claim_diagnostics;
 use base::flows::claim::claim::{claim, submit_claim, ClaimSigned};
@@ -18,7 +19,7 @@ pub struct ClaimProviderDef {}
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl ClaimProvider for ClaimProviderDef {
-    async fn txs(&self, pars: ClaimParJs) -> Result<ClaimResJs> {
+    async fn txs(&self, pars: ClaimParJs) -> Result<ClaimResJs, FrError> {
         let algod = algod();
         let funds_asset_id = funds_asset_specs()?.id;
         let capi_deps = capi_deps()?;
@@ -46,12 +47,15 @@ impl ClaimProvider for ClaimProviderDef {
         })
     }
 
-    async fn submit(&self, pars: SubmitClaimParJs) -> Result<SubmitClaimResJs> {
+    async fn submit(&self, pars: SubmitClaimParJs) -> Result<SubmitClaimResJs, FrError> {
         let algod = algod();
 
         // 1 tx if only claim, 2 if claim + 1 drain
         if pars.txs.len() != 1 && pars.txs.len() != 2 {
-            return Err(anyhow!("Unexpected claim txs length: {}", pars.txs.len()));
+            return Err(FrError::Internal(format!(
+                "Unexpected claim txs length: {}",
+                pars.txs.len()
+            )));
         }
 
         if pars.txs.len() == 2 {

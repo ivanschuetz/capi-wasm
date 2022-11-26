@@ -15,10 +15,7 @@ use wasm_bindgen::JsValue;
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait BuySharesProvider {
-    async fn txs(
-        &self,
-        pars: InvestParJs,
-    ) -> Result<InvestResJs, ValidationBuySharesInputsOrAnyhowError>;
+    async fn txs(&self, pars: InvestParJs) -> Result<InvestResJs, FrError>;
     async fn submit(&self, pars: SubmitBuySharesParJs) -> Result<SubmitBuySharesResJs, FrError>;
 }
 
