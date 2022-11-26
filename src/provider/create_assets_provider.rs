@@ -1,18 +1,11 @@
-use super::create_dao_provider::{
-    CreateDaoFormInputsJs, CreateDaoPassthroughParJs, ValidateDaoInputsError,
-};
+use super::create_dao_provider::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs};
 use crate::{
     error::FrError,
-    js::{
-        common::to_js_value,
-        inputs_validation_js::{to_validation_error_js, ValidationErrorJs},
-        to_sign_js::ToSignJs,
-    },
+    js::{inputs_validation_js::ValidationErrorJs, to_sign_js::ToSignJs},
 };
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::JsValue;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -42,44 +35,6 @@ pub struct CreateAssetsInputErrorsJs {
     pub image_url: Option<ValidationErrorJs>,
     pub prospectus_url: Option<ValidationErrorJs>,
     pub prospectus_bytes: Option<ValidationErrorJs>,
-}
-
-impl From<ValidateDaoInputsError> for JsValue {
-    fn from(error: ValidateDaoInputsError) -> JsValue {
-        match error {
-            ValidateDaoInputsError::AllFieldsValidation(e) => {
-                let errors_js = CreateAssetsInputErrorsJs {
-                    type_identifier: "input_errors".to_owned(),
-                    name: e.name.map(to_validation_error_js),
-                    description: e.description.map(to_validation_error_js),
-                    creator: e.creator.map(to_validation_error_js),
-                    share_supply: e.share_supply.map(to_validation_error_js),
-                    share_price: e.share_price.map(to_validation_error_js),
-                    investors_share: e.investors_share.map(to_validation_error_js),
-                    social_media_url: e.social_media_url.map(to_validation_error_js),
-                    min_raise_target: e.min_raise_target.map(to_validation_error_js),
-                    min_raise_target_end_date: e
-                        .min_raise_target_end_date
-                        .map(to_validation_error_js),
-                    image_url: e.image_url.map(to_validation_error_js),
-                    prospectus_url: e.prospectus_url.map(to_validation_error_js),
-                    prospectus_bytes: e.prospectus_bytes.map(to_validation_error_js),
-                    min_invest_shares: e.min_invest_amount.map(to_validation_error_js),
-                    max_invest_shares: e.max_invest_amount.map(to_validation_error_js),
-                    shares_for_investors: e.shares_for_investors.map(to_validation_error_js),
-                };
-                match JsValue::from_serde(&errors_js) {
-                    Ok(js) => js,
-                    Err(e) => to_js_value(e),
-                }
-            }
-
-            _ => to_js_value(match error {
-                ValidateDaoInputsError::AllFieldsValidation(e) => format!("{e:?}"),
-                ValidateDaoInputsError::NonValidation(msg) => msg,
-            }),
-        }
-    }
 }
 
 /// Specs to create assets (we need to sign this first, to get asset ids for the rest of the flow)

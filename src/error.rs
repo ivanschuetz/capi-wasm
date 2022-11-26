@@ -8,7 +8,10 @@ use crate::{
         common::to_js_res,
         inputs_validation_js::{to_validation_error_js, ValidationErrorJs},
     },
-    provider::create_dao_provider::ValidateDaoInputsError,
+    provider::{
+        create_assets_provider::CreateAssetsInputErrorsJs,
+        create_dao_provider::{CreateAssetsInputErrors, ValidateDaoInputsError},
+    },
 };
 use algonaut::error::ServiceError;
 use mbase::{models::asset_amount::AssetAmount, state::app_state::ApplicationLocalStateError};
@@ -22,6 +25,7 @@ pub enum FrError {
     NotEnoughAlgos,
     NotEnoughFundsAsset { to_buy: AssetAmount },
     Validation(ValidationError),
+    CreateDaoValidations(CreateAssetsInputErrors),
     Validations(HashMap<String, ValidationError>),
     Internal(String), // Things we can't explain to users. Text is for developers (can be forwarded with error reporting).
     Msg(String), // this is temporary / last resort: we expect to map all the errors to localized error messages in js
@@ -30,7 +34,12 @@ pub enum FrError {
 // temporary: TODO: generalize validation and add a Validation case to FrError, return FrError instead of ValidateDaoInputsError
 impl From<ValidateDaoInputsError> for FrError {
     fn from(e: ValidateDaoInputsError) -> Self {
-        FrError::Msg(format!("{:?}", e))
+        match e {
+            ValidateDaoInputsError::AllFieldsValidation(errors) => {
+                FrError::CreateDaoValidations(errors)
+            }
+            ValidateDaoInputsError::NonValidation(msg) => FrError::Msg(msg),
+        }
     }
 }
 
@@ -78,6 +87,33 @@ impl TryFrom<FrError> for JsValue {
                 to_js_res(FrErrorWithId {
                     id: "validations".to_owned(),
                     details: Some(map_js),
+                })
+            }
+            FrError::CreateDaoValidations(e) => {
+                let errors_js = CreateAssetsInputErrorsJs {
+                    type_identifier: "input_errors".to_owned(),
+                    name: e.name.map(to_validation_error_js),
+                    description: e.description.map(to_validation_error_js),
+                    creator: e.creator.map(to_validation_error_js),
+                    share_supply: e.share_supply.map(to_validation_error_js),
+                    share_price: e.share_price.map(to_validation_error_js),
+                    investors_share: e.investors_share.map(to_validation_error_js),
+                    social_media_url: e.social_media_url.map(to_validation_error_js),
+                    min_raise_target: e.min_raise_target.map(to_validation_error_js),
+                    min_raise_target_end_date: e
+                        .min_raise_target_end_date
+                        .map(to_validation_error_js),
+                    image_url: e.image_url.map(to_validation_error_js),
+                    prospectus_url: e.prospectus_url.map(to_validation_error_js),
+                    prospectus_bytes: e.prospectus_bytes.map(to_validation_error_js),
+                    min_invest_shares: e.min_invest_amount.map(to_validation_error_js),
+                    max_invest_shares: e.max_invest_amount.map(to_validation_error_js),
+                    shares_for_investors: e.shares_for_investors.map(to_validation_error_js),
+                };
+
+                to_js_res(FrErrorWithId {
+                    id: "validations".to_owned(),
+                    details: Some(&errors_js),
                 })
             }
         }
