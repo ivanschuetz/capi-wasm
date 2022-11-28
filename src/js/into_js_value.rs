@@ -41,6 +41,7 @@ use crate::{
 };
 use serde::Serialize;
 use serde_wasm_bindgen::to_value;
+use std::fmt::Debug;
 use wasm_bindgen::JsValue;
 
 use super::to_sign_js::ToSignJs;
@@ -380,7 +381,13 @@ impl From<SetTeamResJs> for JsValue {
     }
 }
 
-fn to_js<T: Serialize>(obj: T) -> JsValue {
-    // TODO panic with msg
-    to_value(&obj).unwrap()
+fn to_js<T: Serialize + Debug>(obj: T) -> JsValue {
+    let res = to_value(&obj);
+    match res {
+        Ok(val) => val,
+        Err(e) => panic!(
+            "Unexpected: couldn't serialize obj to JsValue. Err: {:?}, obj: {:?}",
+            e, obj
+        ),
+    }
 }
