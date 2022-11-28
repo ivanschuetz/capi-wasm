@@ -1,5 +1,6 @@
 use crate::{
     error::FrError,
+    model::QuantityChangeJs,
     provider::balance_provider::{
         BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
     },
@@ -28,7 +29,7 @@ impl BalanceProvider for BalanceProviderMock {
         _: BalanceChangeParJs,
     ) -> Result<BalanceChangeResJs, FrError> {
         Ok(BalanceChangeResJs {
-            change: "up".to_owned(),
+            change: QuantityChangeJs::Up.to_owned(),
         })
     }
 }

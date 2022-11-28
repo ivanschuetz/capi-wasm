@@ -1,6 +1,7 @@
 use super::req_delay;
 use crate::{
     error::FrError,
+    model::QuantityChangeJs,
     provider::holders_count_provider::{
         HoldersChangeParJs, HoldersChangeResJs, HoldersCountParJs, HoldersCountProvider,
         HoldersCountResJs,
@@ -24,7 +25,7 @@ impl HoldersCountProvider for HoldersCountProviderMock {
 
     async fn change(&self, _pars: HoldersChangeParJs) -> Result<HoldersChangeResJs, FrError> {
         Ok(HoldersChangeResJs {
-            change: "down".to_owned(),
+            change: QuantityChangeJs::Down,
         })
     }
 }

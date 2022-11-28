@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 
 use crate::{
     error::FrError,
+    model::QuantityChangeJs,
     provider::holders_count_provider::{
         HoldersChangeParJs, HoldersChangeResJs, HoldersCountParJs, HoldersCountProvider,
         HoldersCountResJs,
@@ -59,9 +60,9 @@ impl HoldersCountProvider for HoldersCountProviderDef {
                     count_more_than_duration_ago(&last_counts, duration, now)
                 {
                     let change_str = match current_holders_count.cmp(&count.count) {
-                        Ordering::Less => "down",
-                        Ordering::Equal => "eq",
-                        Ordering::Greater => "up",
+                        Ordering::Less => QuantityChangeJs::Down,
+                        Ordering::Equal => QuantityChangeJs::Eq,
+                        Ordering::Greater => QuantityChangeJs::Up,
                     };
 
                     HoldersChangeResJs {
@@ -70,7 +71,7 @@ impl HoldersCountProvider for HoldersCountProviderDef {
                 } else {
                     // no count to compare with (far enough in the past) - so change can't be determined
                     HoldersChangeResJs {
-                        change: "unknown".to_owned(),
+                        change: QuantityChangeJs::Unknown,
                     }
                 };
 
@@ -91,7 +92,7 @@ impl HoldersCountProvider for HoldersCountProviderDef {
                     },
                 )?;
                 Ok(HoldersChangeResJs {
-                    change: "unknown".to_owned(),
+                    change: QuantityChangeJs::Unknown,
                 })
             }
         }

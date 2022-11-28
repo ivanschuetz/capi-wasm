@@ -3,9 +3,11 @@ use anyhow::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::{Debug, Display};
+use tsify::Tsify;
 use wasm_bindgen::JsValue;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct SignedTxFromJs {
     pub blob: Vec<u8>,
 }

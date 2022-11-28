@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{error::FrError, js::bridge::log_wrap_new};
+use crate::{error::FrError, js::bridge::log_wrap_new, model::QuantityChangeJs};
 
 use super::providers;
 
@@ -44,7 +44,7 @@ pub struct HoldersChangeParJs {
 #[derive(Tsify, Debug, Clone, Serialize)]
 #[tsify(into_wasm_abi)]
 pub struct HoldersChangeResJs {
-    pub change: String,
+    pub change: QuantityChangeJs,
 }
 
 #[wasm_bindgen(js_name=holdersCount)]

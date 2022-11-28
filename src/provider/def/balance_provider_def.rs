@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 
 use crate::dependencies::capi_deps;
 use crate::error::FrError;
+use crate::model::QuantityChangeJs;
 use crate::provider::balance_provider::{
     BalanceChangeParJs, BalanceChangeResJs, BalanceParJs, BalanceProvider, BalanceResJs,
 };
@@ -75,9 +76,9 @@ impl BalanceProvider for BalanceProviderDef {
         log::debug!("current balance: {current_balance:?}");
 
         let change_str = match current_balance.val().cmp(&past_balance.val()) {
-            Ordering::Less => "down",
-            Ordering::Equal => "eq",
-            Ordering::Greater => "up",
+            Ordering::Less => QuantityChangeJs::Down,
+            Ordering::Equal => QuantityChangeJs::Eq,
+            Ordering::Greater => QuantityChangeJs::Up,
         };
 
         Ok(BalanceChangeResJs {

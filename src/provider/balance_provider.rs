@@ -1,5 +1,5 @@
 use super::providers;
-use crate::{error::FrError, js::bridge::log_wrap_new};
+use crate::{error::FrError, js::bridge::log_wrap_new, model::QuantityChangeJs};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -38,7 +38,7 @@ pub struct BalanceChangeParJs {
 #[derive(Tsify, Debug, Clone, Serialize)]
 #[tsify(into_wasm_abi)]
 pub struct BalanceChangeResJs {
-    pub change: String,
+    pub change: QuantityChangeJs,
 }
 
 #[wasm_bindgen]
@@ -56,4 +56,3 @@ pub async fn get_balance_change(pars: BalanceChangeParJs) -> Result<BalanceChang
     })
     .await
 }
-    
