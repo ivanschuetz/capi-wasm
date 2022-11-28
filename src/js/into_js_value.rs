@@ -40,6 +40,7 @@ use crate::{
     service::wallet_connect_tx::WalletConnectTx,
 };
 use serde::Serialize;
+use serde_wasm_bindgen::to_value;
 use wasm_bindgen::JsValue;
 
 use super::to_sign_js::ToSignJs;
@@ -380,5 +381,6 @@ impl From<SetTeamResJs> for JsValue {
 }
 
 fn to_js<T: Serialize>(obj: T) -> JsValue {
-    JsValue::from_serde(&obj).unwrap()
+    // TODO panic with msg
+    to_value(&obj).unwrap()
 }
