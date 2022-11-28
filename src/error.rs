@@ -1,6 +1,4 @@
-use std::{
-    collections::HashMap, convert::TryFrom, error::Error, num::ParseIntError, string::FromUtf8Error,
-};
+use std::{collections::HashMap, error::Error, num::ParseIntError, string::FromUtf8Error};
 
 use crate::{
     inputs_validation::ValidationError,
@@ -49,73 +47,76 @@ impl From<ValidationError> for FrError {
     }
 }
 
-impl TryFrom<FrError> for JsValue {
-    type Error = JsValue;
+impl From<FrError> for JsValue {
+    fn from(error: FrError) -> Self {
+        match try_from(error) {
+            Ok(js_value) => js_value,
+            Err(js_value) => js_value,
+        }
+    }
+}
 
-    fn try_from(e: FrError) -> Result<Self, Self::Error> {
-        match e {
-            FrError::NotEnoughAlgos => to_js_res(FrErrorWithId::<String> {
-                id: "not_enough_algos".to_owned(),
-                details: None,
-            }),
-            FrError::NotEnoughFundsAsset { to_buy } => to_js_res(FrErrorWithId {
-                id: "not_enough_funds_asset".to_owned(),
-                details: Some(to_buy.0.to_string()),
-            }),
-            // TODO is this not being handled in JS?
-            FrError::Msg(msg) => to_js_res(FrErrorWithId {
-                id: "msg".to_owned(),
-                details: Some(msg),
-            }),
-            FrError::Internal(msg) => to_js_res(FrErrorWithId {
-                id: "internal".to_owned(),
-                details: Some(msg),
-            }),
-            FrError::Validation(validation) => {
-                let error_js = to_validation_error_js(validation);
-                to_js_res(FrErrorWithId {
-                    id: "validation".to_owned(),
-                    details: Some(error_js),
-                })
-            }
-            FrError::Validations(validations) => {
-                let map_js: HashMap<String, ValidationErrorJs> = validations
-                    .into_iter()
-                    .map(|(k, v)| (k, to_validation_error_js(v)))
-                    .collect();
+fn try_from(e: FrError) -> Result<JsValue, JsValue> {
+    match e {
+        FrError::NotEnoughAlgos => to_js_res(FrErrorWithId::<String> {
+            id: "not_enough_algos".to_owned(),
+            details: None,
+        }),
+        FrError::NotEnoughFundsAsset { to_buy } => to_js_res(FrErrorWithId {
+            id: "not_enough_funds_asset".to_owned(),
+            details: Some(to_buy.0.to_string()),
+        }),
+        // TODO is this not being handled in JS?
+        FrError::Msg(msg) => to_js_res(FrErrorWithId {
+            id: "msg".to_owned(),
+            details: Some(msg),
+        }),
+        FrError::Internal(msg) => to_js_res(FrErrorWithId {
+            id: "internal".to_owned(),
+            details: Some(msg),
+        }),
+        FrError::Validation(validation) => {
+            let error_js = to_validation_error_js(validation);
+            to_js_res(FrErrorWithId {
+                id: "validation".to_owned(),
+                details: Some(error_js),
+            })
+        }
+        FrError::Validations(validations) => {
+            let map_js: HashMap<String, ValidationErrorJs> = validations
+                .into_iter()
+                .map(|(k, v)| (k, to_validation_error_js(v)))
+                .collect();
 
-                to_js_res(FrErrorWithId {
-                    id: "validations".to_owned(),
-                    details: Some(map_js),
-                })
-            }
-            FrError::CreateDaoValidations(e) => {
-                let errors_js = CreateAssetsInputErrorsJs {
-                    type_identifier: "input_errors".to_owned(),
-                    name: e.name.map(to_validation_error_js),
-                    description: e.description.map(to_validation_error_js),
-                    creator: e.creator.map(to_validation_error_js),
-                    share_supply: e.share_supply.map(to_validation_error_js),
-                    share_price: e.share_price.map(to_validation_error_js),
-                    investors_share: e.investors_share.map(to_validation_error_js),
-                    social_media_url: e.social_media_url.map(to_validation_error_js),
-                    min_raise_target: e.min_raise_target.map(to_validation_error_js),
-                    min_raise_target_end_date: e
-                        .min_raise_target_end_date
-                        .map(to_validation_error_js),
-                    image_url: e.image_url.map(to_validation_error_js),
-                    prospectus_url: e.prospectus_url.map(to_validation_error_js),
-                    prospectus_bytes: e.prospectus_bytes.map(to_validation_error_js),
-                    min_invest_shares: e.min_invest_amount.map(to_validation_error_js),
-                    max_invest_shares: e.max_invest_amount.map(to_validation_error_js),
-                    shares_for_investors: e.shares_for_investors.map(to_validation_error_js),
-                };
+            to_js_res(FrErrorWithId {
+                id: "validations".to_owned(),
+                details: Some(map_js),
+            })
+        }
+        FrError::CreateDaoValidations(e) => {
+            let errors_js = CreateAssetsInputErrorsJs {
+                type_identifier: "input_errors".to_owned(),
+                name: e.name.map(to_validation_error_js),
+                description: e.description.map(to_validation_error_js),
+                creator: e.creator.map(to_validation_error_js),
+                share_supply: e.share_supply.map(to_validation_error_js),
+                share_price: e.share_price.map(to_validation_error_js),
+                investors_share: e.investors_share.map(to_validation_error_js),
+                social_media_url: e.social_media_url.map(to_validation_error_js),
+                min_raise_target: e.min_raise_target.map(to_validation_error_js),
+                min_raise_target_end_date: e.min_raise_target_end_date.map(to_validation_error_js),
+                image_url: e.image_url.map(to_validation_error_js),
+                prospectus_url: e.prospectus_url.map(to_validation_error_js),
+                prospectus_bytes: e.prospectus_bytes.map(to_validation_error_js),
+                min_invest_shares: e.min_invest_amount.map(to_validation_error_js),
+                max_invest_shares: e.max_invest_amount.map(to_validation_error_js),
+                shares_for_investors: e.shares_for_investors.map(to_validation_error_js),
+            };
 
-                to_js_res(FrErrorWithId {
-                    id: "validations".to_owned(),
-                    details: Some(&errors_js),
-                })
-            }
+            to_js_res(FrErrorWithId {
+                id: "validations".to_owned(),
+                details: Some(&errors_js),
+            })
         }
     }
 }

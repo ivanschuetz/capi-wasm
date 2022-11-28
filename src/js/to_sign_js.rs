@@ -4,11 +4,13 @@ use algonaut::transaction::Transaction;
 use anyhow::{Error, Result};
 use serde::Serialize;
 use serde_json::Value;
+use tsify::Tsify;
 
 // We always return transactions serialized to both my algo and wallet connect formats
 // this could be optimized by passing the connected wallet type as parameter - so we return just the format for it
 // but that seems overkill, for now at least
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct ToSignJs {
     pub my_algo: Vec<Value>,
     pub wc: Vec<WalletConnectTx>,

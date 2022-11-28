@@ -2,9 +2,11 @@ use algonaut::transaction::Transaction;
 use anyhow::Result;
 use data_encoding::BASE64;
 use serde::Serialize;
+use tsify::Tsify;
 
 // Passed directly to WalletConnect in JS
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct WalletConnectTx {
     txn: String,
     message: String,

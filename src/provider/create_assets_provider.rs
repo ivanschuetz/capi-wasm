@@ -1,11 +1,16 @@
-use super::create_dao_provider::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs};
+use super::{
+    create_dao_provider::{CreateDaoFormInputsJs, CreateDaoPassthroughParJs},
+    providers,
+};
 use crate::{
     error::FrError,
-    js::{inputs_validation_js::ValidationErrorJs, to_sign_js::ToSignJs},
+    js::{bridge::log_wrap_new, inputs_validation_js::ValidationErrorJs, to_sign_js::ToSignJs},
 };
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -39,13 +44,25 @@ pub struct CreateAssetsInputErrorsJs {
 
 /// Specs to create assets (we need to sign this first, to get asset ids for the rest of the flow)
 /// Note that asset price isn't here, as this is not needed/related to asset creation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct CreateDaoAssetsParJs {
     pub inputs: CreateDaoFormInputsJs,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct CreateDaoAssetsResJs {
     pub to_sign: ToSignJs,
     pub pt: CreateDaoPassthroughParJs, // passthrough
+}
+
+#[wasm_bindgen(js_name=createDaoAssetsTxs)]
+pub async fn create_dao_assets_txs(
+    pars: CreateDaoAssetsParJs,
+) -> Result<CreateDaoAssetsResJs, FrError> {
+    log_wrap_new("create_dao_assets", pars, async move |pars| {
+        providers()?.create_assets.txs(pars).await
+    })
+    .await
 }

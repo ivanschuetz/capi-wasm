@@ -1,6 +1,7 @@
 use crate::dependencies::FundsAssetSpecs;
 use crate::error::FrError;
 use crate::inputs_validation::ValidationError;
+use crate::js::bridge::log_wrap_new;
 use crate::js::common::SignedTxFromJs;
 use crate::js::to_sign_js::ToSignJs;
 use crate::model::dao_js::DaoJs;
@@ -20,6 +21,10 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fmt::Debug;
+use tsify::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
+
+use super::providers;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -61,7 +66,8 @@ impl ValidatedDaoInputs {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Tsify, Debug, Clone, Serialize, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct CreateDaoFormInputsJs {
     pub creator: String, // not strictly a form input ("field"), but for purpose here it can be
     pub dao_name: String,
@@ -81,7 +87,8 @@ pub struct CreateDaoFormInputsJs {
     pub max_invest_amount: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct CreateDaoRes {
     pub dao: DaoJs,
 }
@@ -264,19 +271,22 @@ pub fn validate_dao_inputs(
 }
 
 /// The assets creation signed transactions and the specs to create the dao
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct CreateDaoParJs {
     pub pt: CreateDaoPassthroughParJs,
     // same order as the unsigned txs were sent to JS
     pub create_assets_signed_txs: Vec<SignedTxFromJs>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Tsify, Debug, Clone, Serialize, Deserialize)]
+#[tsify(from_wasm_abi, into_wasm_abi)]
 pub struct CreateDaoPassthroughParJs {
     pub inputs: CreateDaoFormInputsJs,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct CreateDaoResJs {
     pub to_sign: ToSignJs,
     pub pt: SubmitSetupDaoPassthroughParJs, // passthrough
@@ -503,7 +513,8 @@ pub fn validate_min_raised_target_end_date(input: &str) -> Result<Timestamp, Val
 }
 
 /// The assets creation signed transactions and the specs to create the dao
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct SubmitCreateDaoParJs {
     pub txs: Vec<SignedTxFromJs>,
     pub pt: SubmitSetupDaoPassthroughParJs, // passthrough
@@ -517,4 +528,20 @@ pub struct SubmitSetupDaoPassthroughParJs {
     pub app_id: u64,
     pub description_url: Option<String>,
     pub setup_date: String,
+}
+
+#[wasm_bindgen(js_name=createDao)]
+pub async fn create_dao(pars: CreateDaoParJs) -> Result<CreateDaoResJs, FrError> {
+    log_wrap_new("create_dao", pars, async move |pars| {
+        providers()?.create_dao.txs(pars).await
+    })
+    .await
+}
+
+#[wasm_bindgen(js_name=submitCreateDao)]
+pub async fn submit_create_dao(pars: SubmitCreateDaoParJs) -> Result<CreateDaoRes, FrError> {
+    log_wrap_new("submit_create_dao", pars, async move |pars| {
+        providers()?.create_dao.submit(pars).await
+    })
+    .await
 }

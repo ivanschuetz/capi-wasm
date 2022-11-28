@@ -5,7 +5,7 @@ pub mod error;
 mod inputs_validation;
 pub mod js;
 mod model;
-mod provider;
+pub mod provider;
 mod service;
 
 use anyhow::{anyhow, Result};

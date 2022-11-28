@@ -93,9 +93,8 @@ use super::{
     withdrawal_history_provider::WithdrawalHistoryProvider,
     wyre_provider::WyreProvider,
 };
-use crate::{dependencies::data_type, js::common::to_js_value};
+use crate::{dependencies::data_type, error::FrError};
 use mbase::dependencies::DataType;
-use wasm_bindgen::JsValue;
 
 pub struct Providers<'a> {
     pub funds_activity: &'a dyn FundsActivityProvider,
@@ -139,9 +138,9 @@ pub struct Providers<'a> {
 }
 
 // we return JsValue for convenience, this is used only in the bridge (which returns JsValue)
-pub fn providers<'a>() -> Result<Providers<'a>, JsValue> {
+pub fn providers<'a>() -> Result<Providers<'a>, FrError> {
     // note that we create data_type here instead of parametrizing, it's noise as all the bridge functions would have to pass it and no good reason for it.
-    let data_type = data_type().map_err(to_js_value)?;
+    let data_type = data_type()?;
     log::info!("Data type config: {data_type:?}");
     Ok(match data_type {
         DataType::Real => def_providers(),

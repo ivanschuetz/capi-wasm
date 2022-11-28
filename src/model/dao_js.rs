@@ -9,8 +9,10 @@ use base::flows::create_dao::model::Dao;
 use chrono::Utc;
 use mbase::{models::funds::FundsAmount, state::dao_app_state::Prospectus};
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Tsify, Debug, Clone, Serialize, Deserialize)]
+#[tsify(from_wasm_abi, into_wasm_abi)]
 pub struct DaoJs {
     pub name: String,
     pub descr_url: Option<String>,

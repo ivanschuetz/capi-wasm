@@ -1,13 +1,17 @@
 use crate::error::FrError;
+use crate::js::bridge::log_wrap_new;
 use crate::js::common::{signed_js_tx_to_signed_tx1, SignedTxFromJs};
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::create_dao_provider::validate_min_raised_target_end_date;
+use crate::provider::providers;
 use anyhow::{Error, Result};
 use base::dev_settings::{dev_settings, submit_dev_settings, DevSettings, DevSettingsSigned};
 use base::flows::create_dao::storage::load_dao::load_dao;
 use mbase::dependencies::algod;
 use mbase::util::network_util::wait_for_pending_transaction;
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 pub struct DevProviderDef {}
 
@@ -69,22 +73,44 @@ impl DevProviderDef {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct DevSettingsParJs {
     pub dao_id: String,
     pub sender_address: String,
     pub min_raise_target_end_date: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct DevSettingsResJs {
     pub to_sign: ToSignJs,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct SubmitDevSettingsParJs {
     pub txs: Vec<SignedTxFromJs>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct SubmitDevSettingsResJs {}
+
+#[wasm_bindgen(js_name=setDevSettings)]
+pub async fn set_dev_settings(pars: DevSettingsParJs) -> Result<DevSettingsResJs, FrError> {
+    log_wrap_new("set_dev_settings", pars, async move |pars| {
+        providers()?.dev_settings.txs(pars).await
+    })
+    .await
+}
+
+#[wasm_bindgen(js_name=submitSetDevSettings)]
+pub async fn submit_set_dev_settings(
+    pars: SubmitDevSettingsParJs,
+) -> Result<SubmitDevSettingsResJs, FrError> {
+    log_wrap_new("submit_set_dev_settings", pars, async move |pars| {
+        providers()?.dev_settings.submit(pars).await
+    })
+    .await
+}

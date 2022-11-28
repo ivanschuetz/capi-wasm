@@ -1,8 +1,12 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::error::FrError;
+use crate::{error::FrError, js::bridge::log_wrap_new};
+
+use super::providers;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -17,24 +21,44 @@ pub trait HoldersCountProvider {
 
 // TODO use dao_id (convention?), in HoldersChangeParJs too
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct HoldersCountParJs {
     pub asset_id: String,
     pub app_id: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct HoldersCountResJs {
     pub count: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct HoldersChangeParJs {
     pub asset_id: String,
     pub app_id: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct HoldersChangeResJs {
     pub change: String,
+}
+
+#[wasm_bindgen(js_name=holdersCount)]
+pub async fn holders_count(pars: HoldersCountParJs) -> Result<HoldersCountResJs, FrError> {
+    log_wrap_new("holders_count", pars, async move |pars| {
+        providers()?.holders_count.get(pars).await
+    })
+    .await
+}
+
+#[wasm_bindgen(js_name=holdersChange)]
+pub async fn holders_change(pars: HoldersChangeParJs) -> Result<HoldersChangeResJs, FrError> {
+    log_wrap_new("holders_change", pars, async move |pars| {
+        providers()?.holders_count.change(pars).await
+    })
+    .await
 }

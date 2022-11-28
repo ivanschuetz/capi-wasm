@@ -2,6 +2,7 @@ use crate::{
     error::FrError,
     inputs_validation::ValidationError,
     js::{
+        bridge::log_wrap_new,
         common::{to_js_value, SignedTxFromJs},
         inputs_validation_js::{to_validation_error_js, ValidationErrorJs},
         to_sign_js::ToSignJs,
@@ -10,7 +11,10 @@ use crate::{
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::JsValue;
+use tsify::Tsify;
+use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
+
+use super::providers;
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -20,7 +24,8 @@ pub trait BuySharesProvider {
 }
 
 // TODO rename structs in BuyShares*
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct InvestParJs {
     pub dao_id: String,
     pub share_count: String,
@@ -39,13 +44,15 @@ pub struct SignedProspectusJs {
     pub hash: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct InvestResJs {
     pub to_sign: ToSignJs,
     pub pt: SubmitBuySharesPassthroughParJs,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Tsify, Debug, Clone, Deserialize)]
+#[tsify(from_wasm_abi)]
 pub struct SubmitBuySharesParJs {
     pub investor_address: String,
     // in case that the transaction fails, to calculate how much we offer the user to buy on on-ramp
@@ -59,7 +66,8 @@ pub struct SubmitBuySharesPassthroughParJs {
     pub dao_msg_pack: Vec<u8>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct SubmitBuySharesResJs {
     pub message: String,
 }
@@ -138,4 +146,22 @@ impl From<ValidateSharesInputError> for FrError {
             ValidateSharesInputError::Validation(e) => FrError::Validation(e),
         }
     }
+}
+
+#[wasm_bindgen(js_name=buyShares)]
+pub async fn buy_shares(pars: InvestParJs) -> Result<InvestResJs, FrError> {
+    log_wrap_new("buy_shares", pars, async move |pars| {
+        providers()?.buy_shares.txs(pars).await
+    })
+    .await
+}
+
+#[wasm_bindgen(js_name=submitBuyShares)]
+pub async fn submit_buy_shares(
+    pars: SubmitBuySharesParJs,
+) -> Result<SubmitBuySharesResJs, FrError> {
+    log_wrap_new("submit_buy_shares", pars, async move |pars| {
+        providers()?.buy_shares.submit(pars).await
+    })
+    .await
 }
