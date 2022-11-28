@@ -1,4 +1,4 @@
-// TODO is there a better way to do these conversions (avoid unwrap)
+// TODO is there a better way to do these conversions (avoid panic)
 // tsify does it for us for the parameters, so not sure why we've to do it for results
 
 use crate::{
