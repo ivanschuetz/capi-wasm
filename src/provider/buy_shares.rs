@@ -11,7 +11,7 @@ use crate::{
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::to_value;
+// use serde_wasm_bindgen::to_value;
 use tsify::Tsify;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
@@ -132,7 +132,8 @@ impl From<ValidateSharesInputError> for JsValue {
                     amount: to_validation_error_js(e),
                 };
 
-                match to_value(&error_js) {
+                match JsValue::from_serde(&error_js) {
+                // match to_value(&error_js) {
                     Ok(js) => js,
                     Err(e) => to_js_value(e),
                 }

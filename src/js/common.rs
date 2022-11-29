@@ -2,7 +2,7 @@ use algonaut::transaction::{SignedTransaction, Transaction};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use serde_wasm_bindgen::to_value;
+// use serde_wasm_bindgen::to_value;
 use std::fmt::{Debug, Display};
 use tsify::Tsify;
 use wasm_bindgen::JsValue;
@@ -73,5 +73,6 @@ pub fn to_js_value<T: Display>(t: T) -> JsValue {
 }
 
 pub fn to_js_res<T: Serialize>(res: T) -> Result<JsValue, JsValue> {
-    to_value(&res).map_err(to_js_value)
+    JsValue::from_serde(&res).map_err(to_js_value)
+    // to_value(&res).map_err(to_js_value)
 }

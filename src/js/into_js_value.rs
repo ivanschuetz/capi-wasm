@@ -40,7 +40,7 @@ use crate::{
     service::wallet_connect_tx::WalletConnectTx,
 };
 use serde::Serialize;
-use serde_wasm_bindgen::to_value;
+// use serde_wasm_bindgen::to_value;
 use std::fmt::Debug;
 use wasm_bindgen::JsValue;
 
@@ -382,7 +382,9 @@ impl From<SetTeamResJs> for JsValue {
 }
 
 fn to_js<T: Serialize + Debug>(obj: T) -> JsValue {
-    let res = to_value(&obj);
+    // THIS DOESN'T WORK for my algo at least it's returning the txs map with indices as keys and entries as values
+    // let res = to_value(&obj);
+    let res = JsValue::from_serde(&obj);
     match res {
         Ok(val) => val,
         Err(e) => panic!(
