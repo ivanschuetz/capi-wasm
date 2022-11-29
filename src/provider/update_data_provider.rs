@@ -55,7 +55,6 @@ pub struct UpdateDataParJs {
     // TODO remove? not updatable currently
     pub share_price: String,
 
-    pub image: Option<Vec<u8>>,
     pub image_url: Option<String>,
     pub social_media_url: String,
 

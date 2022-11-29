@@ -76,7 +76,6 @@ pub struct CreateDaoFormInputsJs {
     pub shares_for_investors: String,
     pub share_price: String,
     pub investors_share: String, // percentage (0..100), with decimals (max decimals number defined in validations)
-    pub compressed_image: Option<Vec<u8>>,
     pub image_url: Option<String>,
     pub social_media_url: String,
     pub min_raise_target: String,
