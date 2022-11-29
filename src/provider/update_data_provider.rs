@@ -1,6 +1,5 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use mbase::state::dao_app_state::Prospectus;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -8,6 +7,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use crate::{
     error::FrError,
     js::{bridge::log_wrap_new, common::SignedTxFromJs, to_sign_js::ToSignJs},
+    model::ProspectusJs,
 };
 
 use super::providers;
@@ -37,7 +37,7 @@ pub struct UpdatableDataResJs {
     pub image_base64: Option<String>, // js image cropper library expects base64
     pub social_media_url: String,
 
-    pub prospectus: Option<Prospectus>,
+    pub prospectus: Option<ProspectusJs>,
     pub min_invest_amount: String,
     pub max_invest_amount: String,
 }

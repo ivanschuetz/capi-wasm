@@ -64,7 +64,7 @@ impl UpdateDataProvider for UpdateDataProviderDef {
             image_base64,
             social_media_url: app_state.social_media_url,
 
-            prospectus: app_state.prospectus.clone(),
+            prospectus: app_state.prospectus.map(|p| p.into()),
             min_invest_amount: app_state.min_invest_amount.val().to_string(),
             max_invest_amount: app_state.max_invest_amount.val().to_string(),
         })
