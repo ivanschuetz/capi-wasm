@@ -3,14 +3,15 @@ use crate::js::common::signed_js_tx_to_signed_tx1;
 use crate::js::to_sign_js::ToSignJs;
 use crate::provider::team_provider::{
     AddTeamMemberParsJs, AddTeamMemberResJs, EditTeamMemberParsJs, EditTeamMemberResJs,
-    GetTeamParsJs, GetTeamResJs, SetTeamParsJs, SetTeamResJs, SubmitSetTeamParJs, TeamProvider,
+    GetTeamParsJs, GetTeamResJs, SetTeamParsJs, SetTeamResJs, SubmitSetTeamParJs, TeamMemberJs,
+    TeamProvider,
 };
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base::api::fetcher::Fetcher;
 use base::dependencies::fetcher;
 use base::dev_settings::{submit_dev_settings, DevSettingsSigned};
-use base::team::{team, TeamMember};
+use base::team::team;
 use mbase::dependencies::algod;
 use mbase::util::network_util::wait_for_pending_transaction;
 
@@ -23,7 +24,7 @@ impl TeamProvider for TeamProviderDef {
         let fetcher = fetcher();
         let bytes = fetcher.get(&pars.url).await?;
 
-        let team: Vec<TeamMember> = serde_json::from_slice(&bytes)?;
+        let team: Vec<TeamMemberJs> = serde_json::from_slice(&bytes)?;
 
         Ok(GetTeamResJs { team })
     }
@@ -88,7 +89,7 @@ pub async fn add_team_member_shared(
     pars: AddTeamMemberParsJs,
 ) -> Result<AddTeamMemberResJs, FrError> {
     let mut members = pars.existing_members;
-    members.push(pars.inputs.to_team_member());
+    members.push(pars.inputs.to_team_member().into());
 
     let team_to_save = serde_json::to_string(&members)?;
 

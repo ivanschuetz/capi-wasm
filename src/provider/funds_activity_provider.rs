@@ -29,7 +29,8 @@ pub struct LoadFundsActivityResJs {
 
 unsafe impl Send for LoadFundsActivityResJs {}
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Tsify, Debug, Clone, Serialize, PartialEq, Eq)]
+#[tsify(into_wasm_abi)]
 pub struct FundsActivityViewData {
     pub amount: String,
     pub short_amount: String,

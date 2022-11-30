@@ -62,35 +62,72 @@ impl TeamMemberInputs {
 #[derive(Tsify, Debug, Clone, Serialize)]
 #[tsify(into_wasm_abi)]
 pub struct GetTeamResJs {
-    pub team: Vec<TeamMember>,
+    pub team: Vec<TeamMemberJs>,
+}
+
+#[derive(Tsify, Debug, Clone, Deserialize, Serialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct TeamMemberJs {
+    pub uuid: String,
+    pub name: String,
+    pub descr: String,
+    pub role: String,
+    pub picture: String,
+    pub social_links: Vec<String>,
+}
+
+impl From<TeamMember> for TeamMemberJs {
+    fn from(tm: TeamMember) -> Self {
+        TeamMemberJs {
+            uuid: tm.uuid,
+            name: tm.name,
+            descr: tm.descr,
+            role: tm.role,
+            picture: tm.picture,
+            social_links: tm.social_links,
+        }
+    }
+}
+
+impl From<TeamMemberJs> for TeamMember {
+    fn from(tm: TeamMemberJs) -> Self {
+        TeamMember {
+            uuid: tm.uuid,
+            name: tm.name,
+            descr: tm.descr,
+            role: tm.role,
+            picture: tm.picture,
+            social_links: tm.social_links,
+        }
+    }
 }
 
 #[derive(Tsify, Debug, Clone, Deserialize)]
 #[tsify(from_wasm_abi)]
 pub struct AddTeamMemberParsJs {
     pub inputs: TeamMemberInputs, // directly here ok since it's just strings currently
-    pub existing_members: Vec<TeamMember>,
+    pub existing_members: Vec<TeamMemberJs>,
 }
 
 #[derive(Tsify, Debug, Clone, Serialize)]
 #[tsify(into_wasm_abi)]
 pub struct AddTeamMemberResJs {
-    pub team: Vec<TeamMember>, // display
-    pub to_save: String,       // upload to IPFS
+    pub team: Vec<TeamMemberJs>, // display
+    pub to_save: String,         // upload to IPFS
 }
 
 #[derive(Tsify, Debug, Clone, Deserialize)]
 #[tsify(from_wasm_abi)]
 pub struct EditTeamMemberParsJs {
-    pub inputs: TeamMember,
-    pub existing_members: Vec<TeamMember>,
+    pub inputs: TeamMemberJs,
+    pub existing_members: Vec<TeamMemberJs>,
 }
 
 #[derive(Tsify, Debug, Clone, Serialize)]
 #[tsify(into_wasm_abi)]
 pub struct EditTeamMemberResJs {
-    pub team: Vec<TeamMember>, // display
-    pub to_save: String,       // upload to IPFS
+    pub team: Vec<TeamMemberJs>, // display
+    pub to_save: String,         // upload to IPFS
 }
 
 #[derive(Tsify, Debug, Clone, Deserialize)]
