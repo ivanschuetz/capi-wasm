@@ -160,7 +160,9 @@ impl BuySharesProvider for BuySharesProviderDef {
                         .checked_sub(holdings.0)
                         .ok_or(anyhow!("Error subtracting: {buy_total_cost} - {holdings}"))?,
                 );
-                return Err(FrError::NotEnoughFundsAsset { to_buy });
+                return Err(FrError::NotEnoughFundsAsset {
+                    to_buy: to_buy.to_string(),
+                });
             }
         }
         let submit_res = submit_res?;

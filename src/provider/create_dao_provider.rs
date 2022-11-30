@@ -299,7 +299,8 @@ pub enum ValidateDaoInputsError {
 }
 
 /// Errors to be shown next to the respective input fields
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Tsify, Debug, Clone, Serialize, Default)]
+#[tsify(into_wasm_abi)]
 pub struct CreateAssetsInputErrors {
     pub name: Option<ValidationError>,
     pub description: Option<ValidationError>,

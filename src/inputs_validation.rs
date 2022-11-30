@@ -1,10 +1,13 @@
 use serde::Serialize;
+use tsify::Tsify;
 
 use crate::provider::create_dao_provider::ValidateDaoInputsError;
 
 /// Note String used for many originally numeric fields: these fields are only to display to the user
 /// using String allows to reuse them easily for different numbers, like u64 or Decimal and format them
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
+#[serde(rename_all(serialize = "camelCase"))]
 pub enum ValidationError {
     Empty,
     MinLength {
