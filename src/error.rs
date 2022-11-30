@@ -163,25 +163,6 @@ impl From<Box<dyn Error + 'static>> for FrError {
     }
 }
 
-trait Hello {
-    fn get_value(&self) -> i32;
-}
-struct MyStruct(i32);
-impl Hello for MyStruct {
-    fn get_value(&self) -> i32 {
-        self.0
-    }
-}
-
-#[derive(Debug, Serialize)]
-struct FrErrorWithId<T>
-where
-    T: Serialize,
-{
-    id: String,
-    details: Option<T>,
-}
-
 impl From<ApplicationLocalStateError<'static>> for FrError {
     fn from(e: ApplicationLocalStateError) -> Self {
         FrError::Msg(format!("{e:?}"))
