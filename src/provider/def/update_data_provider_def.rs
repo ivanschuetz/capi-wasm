@@ -25,6 +25,7 @@ use mbase::models::dao_id::DaoId;
 use mbase::state::dao_app_state::{dao_global_state, Prospectus};
 use serde::Serialize;
 use std::collections::HashMap;
+use tsify::Tsify;
 
 pub struct UpdateDataProviderDef {}
 
@@ -244,7 +245,8 @@ fn to_maybe_prospectus(
     })
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Tsify, Debug, Clone, Serialize)]
+#[tsify(into_wasm_abi)]
 pub struct ValidateUpateDataInputErrors {
     pub name: Option<ValidationError>,
     pub description: Option<ValidationError>,
@@ -262,26 +264,6 @@ pub struct ValidateUpateDataInputErrors {
 pub enum ValidateDataUpdateInputsError {
     AllFieldsValidation(ValidateUpateDataInputErrors),
     NonValidation(String),
-}
-
-impl From<ValidateDataUpdateInputsError> for FrError {
-    fn from(e: ValidateDataUpdateInputsError) -> Self {
-        match e {
-            ValidateDataUpdateInputsError::AllFieldsValidation(errors) => {
-                let mut hm = HashMap::new();
-                insert_if_some(&mut hm, "name", errors.name);
-                insert_if_some(&mut hm, "description", errors.description);
-                insert_if_some(&mut hm, "image", errors.image_url);
-                insert_if_some(&mut hm, "social_media_url", errors.social_media_url);
-                insert_if_some(&mut hm, "prospectus_bytes", errors.prospectus_bytes);
-                insert_if_some(&mut hm, "prospectus_url", errors.prospectus_url);
-                insert_if_some(&mut hm, "min_invest_shares", errors.min_invest_shares);
-                insert_if_some(&mut hm, "max_invest_shares", errors.max_invest_shares);
-                FrError::Validations(hm)
-            }
-            ValidateDataUpdateInputsError::NonValidation(msg) => FrError::Msg(msg),
-        }
-    }
 }
 
 fn insert_if_some(

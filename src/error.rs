@@ -2,7 +2,12 @@ use std::{collections::HashMap, error::Error, num::ParseIntError, string::FromUt
 
 use crate::{
     inputs_validation::ValidationError,
-    provider::create_dao_provider::{CreateAssetsInputErrors, ValidateDaoInputsError},
+    provider::{
+        create_dao_provider::{CreateAssetsInputErrors, ValidateDaoInputsError},
+        def::update_data_provider_def::{
+            ValidateDataUpdateInputsError, ValidateUpateDataInputErrors,
+        },
+    },
 };
 use algonaut::error::ServiceError;
 use mbase::state::app_state::ApplicationLocalStateError;
@@ -20,6 +25,7 @@ pub enum FrError {
     NotEnoughFundsAsset { to_buy: String },
     Validation(ValidationError),
     CreateDaoValidations(CreateAssetsInputErrors),
+    UpdateDaoDataValidations(ValidateUpateDataInputErrors),
     Validations(HashMap<String, ValidationError>),
     Internal(String), // Things we can't explain to users. Text is for developers (can be forwarded with error reporting).
     Msg(String), // this is temporary / last resort: we expect to map all the errors to localized error messages in js
@@ -36,6 +42,18 @@ impl From<ValidateDaoInputsError> for FrError {
         }
     }
 }
+
+impl From<ValidateDataUpdateInputsError> for FrError {
+    fn from(e: ValidateDataUpdateInputsError) -> Self {
+        match e {
+            ValidateDataUpdateInputsError::AllFieldsValidation(errors) => {
+                FrError::UpdateDaoDataValidations(errors)
+            }
+            ValidateDataUpdateInputsError::NonValidation(msg) => FrError::Msg(msg),
+        }
+    }
+}
+
 // export type Foo = {value: string, kind: "foo"} | {kind: "bar", value: { a: { b: string }} }
 
 pub enum Foo {}
