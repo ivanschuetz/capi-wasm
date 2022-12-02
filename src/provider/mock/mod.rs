@@ -109,6 +109,6 @@ pub fn mock_dao_for_users_view_data() -> Result<DaoJs, FrError> {
         funds_raised: "true".to_owned(),
         setup_date: Utc::now().timestamp().to_string(),
         prospectus: None,
-        team_url: None,
+        team_url: Some("https://not_used".to_string()), // team members hardcoded in team provider
     })
 }
