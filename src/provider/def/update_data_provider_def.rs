@@ -24,7 +24,6 @@ use mbase::dependencies::algod;
 use mbase::models::dao_id::DaoId;
 use mbase::state::dao_app_state::{dao_global_state, Prospectus};
 use serde::Serialize;
-use std::collections::HashMap;
 use tsify::Tsify;
 
 pub struct UpdateDataProviderDef {}
@@ -264,16 +263,6 @@ pub struct ValidateUpateDataInputErrors {
 pub enum ValidateDataUpdateInputsError {
     AllFieldsValidation(ValidateUpateDataInputErrors),
     NonValidation(String),
-}
-
-fn insert_if_some(
-    hm: &mut HashMap<String, ValidationError>,
-    key: &str,
-    value: Option<ValidationError>,
-) {
-    if let Some(value) = value {
-        hm.insert(key.to_owned(), value);
-    }
 }
 
 pub fn validate_prospectus_hash(url: &Option<String>) -> Result<Option<String>, ValidationError> {
