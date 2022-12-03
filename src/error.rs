@@ -4,8 +4,11 @@ use crate::{
     inputs_validation::ValidationError,
     provider::{
         create_dao_provider::{CreateAssetsInputErrors, ValidateDaoInputsError},
-        def::update_data_provider_def::{
-            ValidateDataUpdateInputsError, ValidateUpateDataInputErrors,
+        def::{
+            team_provider_def::{AddTeamMemberInputErrors, ValidateTeamMemberInputsError},
+            update_data_provider_def::{
+                ValidateDataUpdateInputsError, ValidateUpateDataInputErrors,
+            },
         },
     },
 };
@@ -26,6 +29,7 @@ pub enum FrError {
     Validation(ValidationError),
     CreateDaoValidations(CreateAssetsInputErrors),
     UpdateDaoDataValidations(ValidateUpateDataInputErrors),
+    AddTeamMemberValidations(AddTeamMemberInputErrors),
     Validations(HashMap<String, ValidationError>),
     Internal(String), // Things we can't explain to users. Text is for developers (can be forwarded with error reporting).
     Msg(String), // this is temporary / last resort: we expect to map all the errors to localized error messages in js
@@ -50,6 +54,17 @@ impl From<ValidateDataUpdateInputsError> for FrError {
                 FrError::UpdateDaoDataValidations(errors)
             }
             ValidateDataUpdateInputsError::NonValidation(msg) => FrError::Msg(msg),
+        }
+    }
+}
+
+impl From<ValidateTeamMemberInputsError> for FrError {
+    fn from(e: ValidateTeamMemberInputsError) -> Self {
+        match e {
+            ValidateTeamMemberInputsError::AllFieldsValidation(errors) => {
+                FrError::AddTeamMemberValidations(errors)
+            }
+            ValidateTeamMemberInputsError::NonValidation(msg) => FrError::Msg(msg),
         }
     }
 }

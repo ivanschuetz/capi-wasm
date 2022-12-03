@@ -43,21 +43,11 @@ pub struct TeamMemberInputs {
     pub descr: String,
     pub role: String,
     pub picture: String,
-    pub social_links: Vec<String>,
+    pub github_link: Option<String>,
+    pub twitter_link: Option<String>,
+    pub linkedin_link: Option<String>,
 }
 
-impl TeamMemberInputs {
-    pub fn to_team_member(&self) -> TeamMember {
-        TeamMember {
-            uuid: Uuid::new_v4().to_string(),
-            name: self.name.clone(),
-            descr: self.descr.clone(),
-            role: self.role.clone(),
-            picture: self.picture.clone(),
-            social_links: self.social_links.clone(),
-        }
-    }
-}
 
 #[derive(Tsify, Debug, Clone, Serialize)]
 #[tsify(into_wasm_abi)]
@@ -73,7 +63,9 @@ pub struct TeamMemberJs {
     pub descr: String,
     pub role: String,
     pub picture: String,
-    pub social_links: Vec<String>,
+    pub github_url: Option<String>,
+    pub twitter_url: Option<String>,
+    pub linkedin_url: Option<String>,
 }
 
 impl From<TeamMember> for TeamMemberJs {
@@ -84,7 +76,9 @@ impl From<TeamMember> for TeamMemberJs {
             descr: tm.descr,
             role: tm.role,
             picture: tm.picture,
-            social_links: tm.social_links,
+            github_url: tm.github_link,
+            twitter_url: tm.twitter_link,
+            linkedin_url: tm.linkedin_link,
         }
     }
 }
@@ -97,7 +91,9 @@ impl From<TeamMemberJs> for TeamMember {
             descr: tm.descr,
             role: tm.role,
             picture: tm.picture,
-            social_links: tm.social_links,
+            github_link: tm.github_url,
+            twitter_link: tm.twitter_url,
+            linkedin_link: tm.linkedin_url,
         }
     }
 }

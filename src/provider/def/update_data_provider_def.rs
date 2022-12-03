@@ -265,9 +265,9 @@ pub enum ValidateDataUpdateInputsError {
     NonValidation(String),
 }
 
-pub fn validate_prospectus_hash(url: &Option<String>) -> Result<Option<String>, ValidationError> {
-    match url {
-        Some(url) => Ok(Some(validate_text_min_max_length(url, 0, 200)?)),
+pub fn validate_prospectus_hash(hash: &Option<String>) -> Result<Option<String>, ValidationError> {
+    match hash {
+        Some(hash) => Ok(Some(validate_text_min_max_length(hash, 0, 200)?)),
         None => Ok(None),
     }
 }

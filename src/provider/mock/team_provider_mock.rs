@@ -28,40 +28,37 @@ impl TeamProvider for TeamProviderMock {
                 descr: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur".to_string(),
                 role: "CEO".to_string(),
                 picture: "https://placekitten.com/400/400".to_string(),
-                social_links: vec![
-                    "https://twitter.com/capi_fin".to_string(),
-                    "https://github.com/ivanschuetz".to_string(),
-                    "https://www.linkedin.com/in/ivan-schütz-61a8165a/".to_string()
-                ]
+                github_url: Some("https://github.com/ivanschuetz".to_string()),
+                twitter_url: Some("https://twitter.com/capi_fin".to_string()),
+                linkedin_url: Some("https://www.linkedin.com/in/ivan-schütz-61a8165a/".to_string()),
+
             }, TeamMemberJs {
                 uuid: "2".to_string(),
                 name: "Talon Bernard".to_string(),
                 descr: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".to_string(),
                 role: "Cofounder".to_string(),
                 picture: "https://placekitten.com/400/400".to_string(),
-                social_links: vec![
-                    "https://twitter.com/capi_fin".to_string(),
-                ],
+                twitter_url: Some("https://twitter.com/capi_fin".to_string()),
+                github_url: None,
+                linkedin_url: None,
             }, TeamMemberJs {
                 uuid: "3".to_string(),
                 name: "Barbara Jimenez".to_string(),
                 descr: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.".to_string(),
                 role: "Software engineer".to_string(),
                 picture: "https://placekitten.com/400/400".to_string(),
-                social_links: vec![
-                    "https://twitter.com/capi_fin".to_string(),
-                    "https://www.linkedin.com/in/ivan-schütz-61a8165a/".to_string(),
-                ],
+                github_url: None,
+                twitter_url: Some("https://twitter.com/capi_fin".to_string()),
+                linkedin_url: Some("https://www.linkedin.com/in/ivan-schütz-61a8165a/".to_string()),
             }, TeamMemberJs {
                 uuid: "4".to_string(),
                 name: "Colin Vu".to_string(),
                 descr: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.".to_string(),
                 role: "Marketing".to_string(),
                 picture: "https://placekitten.com/400/400".to_string(),
-                social_links: vec![
-                    "https://twitter.com/capi_fin".to_string(),
-                    "https://github.com/ivanschuetz".to_string(),
-                ],
+                github_url: Some("https://github.com/ivanschuetz".to_string()),
+                twitter_url: Some("https://twitter.com/capi_fin".to_string()),
+                linkedin_url: None,
             }
             ],
         })

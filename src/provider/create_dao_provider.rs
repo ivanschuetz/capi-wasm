@@ -368,18 +368,23 @@ pub fn validate_text_min_max_length(
     Ok(text.to_owned())
 }
 
-pub fn validate_image_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
+pub fn validate_url(url: &str) -> Result<String, ValidationError> {
+    validate_text_min_max_length(url, 0, 200)
+}
+
+pub fn validate_url_opt(url: &Option<String>) -> Result<Option<String>, ValidationError> {
     match url {
-        Some(url) => Ok(Some(validate_text_min_max_length(url, 0, 200)?)),
+        Some(url) => Ok(Some(validate_url(url)?)),
         None => Ok(None),
     }
 }
 
+pub fn validate_image_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
+    validate_url_opt(url)
+}
+
 pub fn validate_prospectus_url(url: &Option<String>) -> Result<Option<String>, ValidationError> {
-    match url {
-        Some(url) => Ok(Some(validate_text_min_max_length(url, 0, 200)?)),
-        None => Ok(None),
-    }
+    validate_url_opt(url)
 }
 
 pub fn validate_prospectus_bytes(
