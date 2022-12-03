@@ -21,6 +21,8 @@ pub struct TeamProviderMock {}
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl TeamProvider for TeamProviderMock {
     async fn get(&self, _: GetTeamParsJs) -> Result<GetTeamResJs, FrError> {
+        req_delay().await;
+
         Ok(GetTeamResJs {
             team: vec![TeamMemberJs {
                 uuid: "1".to_string(),
